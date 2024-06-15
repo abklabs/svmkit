@@ -7,14 +7,13 @@ Project Zuma is an innovative, Debian-based OS distribution designed specificall
 - **Validator Appliance:** Simplifies the operation and version control of Solana nodes. Provides community-tested configuration setups for seamless deployment and management.
 - **Cluster Management:** Enables scalable, low-effort management of large validator and RPC clusters. Supports both permissioned and permissionless Solana clusters, catering to diverse user needs.
 - **Developer Tooling:** Accelerates application development on the Solana Virtual Machine (SVM). Offers a suite of tools to streamline the building, launching, and maintaining of SVM forks.
-  On-Chain Permissions System: Facilitates secure, scalable permission management for institutional customers.
-  Ensures compliance and security in regulated environments.
+- **On-Chain Permissions System:** Facilitates secure, scalable permission management for institutional customers. Ensures compliance and security in regulated environments.
 - **Seamless Bridge to Mainnet:** Provides easy access to Solana Mainnet liquidity. Ensures interoperability and smooth transitions between different Solana environments.
 
 ## Objectives
 
 - **Lowering Expertise Barriers:** Zuma drastically reduces the technical expertise required to deploy and manage Solana nodes, making blockchain technology more accessible to a broader audience.
-  Community-Driven Development: By involving strategic partners and early customers, Zuma leverages community feedback to continuously improve and adapt to real-world needs.
+- **Community-Driven Development:** By involving strategic partners and early customers, Zuma leverages community feedback to continuously improve and adapt to real-world needs.
 - **Comprehensive Management Solution:** Zuma aims to be the go-to solution for installing and managing both permissioned and permissionless Solana clusters, with built-in mechanisms for easy bridging between them.
 
 ## Vision
