@@ -1,6 +1,6 @@
 # Zuma
 
-Project Zuma is an innovative, Debian-based OS distribution designed specifically for running Solana validator and RPC clients, including Anza and Firedancer. Tailored for flexibility, robustness, and ease of use, Zuma is optimized for deployment across various environments, including bare metal servers, virtual machines, and containerized platforms.
+Project Zuma is an innovative, Debian-based OS distribution designed specifically for running Solana validator and RPC clients, including Anza and Firedancer. Tailored for flexibility, robustness, and ease of use, Zuma targets various environments, including bare metal servers, virtual machines, and containerized platforms.
 
 ## Features
 
@@ -45,13 +45,13 @@ sudo apt-get install -y curl gnupg
 3. Add the Zuma repository to your system's software repository list:
 
 ```bash
-echo "deb https://apt.zuma.abklabs.com/ zuma main" | sudo tee /etc/apt/sources.list.d/zuma.list
+echo "deb https://apt.abklabs.com/ zuma main" | sudo tee /etc/apt/sources.list.d/zuma.list
 ```
 
 4. Import the repository's GPG key:
 
 ```bash
-curl -s https://apt.zuma.abklabs.com/pubkey.gpg | sudo apt-key add -
+curl -s https://apt.abklabs.com/pubkey.gpg | sudo apt-key add -
 ```
 
 5. Update your package lists again:
@@ -63,15 +63,58 @@ sudo apt-get update
 6. Install Zuma:
 
 ```bash
-sudo apt-get install zuma
+sudo apt-get install zuma-agave
 ```
 
-After the installation is complete, you can verify it by running:
+After the installation you will have the Agave validator client and zuma CLI on the host. Verify the installation:
 
 ```bash
 zuma --version
 
-This should display the installed version of Zuma.
+This should display the installed version of Zuma and Agave.
 ```
 
 ## Getting started
+
+```shell
+# A serious of command prompts to configure the host and validator.
+sudo zuma init
+# Starts the validator using systemd after preflight checks.
+zuma run
+```
+
+```toml
+# Example Zuma.toml
+[rpc]
+port = 8899
+
+[network]
+entrypoints = [
+  "entrypoint.mainnet-beta.solana.com:8001",
+  ...
+  "entrypoint5.mainnet-beta.solana.com:8001"
+]
+validators = [
+  "7cVfgArCheMR6Cs4t6vz5rfnqd56vZq4ndaBrY5xkxXy",
+  ...
+  "CakcnaRDHka2gXyfbEd2d3xsvkJkqsLw2akB3zsN1D2S"
+]
+
+[metrics]
+host = "https://metrics.solana.com:8086"
+db = "mainnet-beta"
+username = "mainnet-beta_write"
+password = "password"
+```
+
+```shell
+# Reload the Zuma.toml. You will be prompted if the change requires a validator restart.
+zuma reload
+```
+
+```shell
+# Print health check report
+zuma health
+# Follow the validator logs
+zuma logs
+```
