@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+log::generic () {
+    local level
+    level=$1 ; shift
+
+    printf "%s\t%s\n" "$level" "$*"
+}
+
+log::info () {
+    log::generic INFO "$@"
+}
+
+log::fatal () {
+    log::generic FATAL "$@"
+    exit 1
+}
+
+fetch-remote () {
+    remote=$1 ; shift
+    log::info "git fetching remote $remote..."
+    git fetch "$remote"
+}
+
+default-build () {
+    # shellcheck disable=SC2154,SC1091
+    ( set +u && source ci/rust-version.sh stable && env | grep rust_ && cargo +"$rust_stable" deb -p "$target" )
+    mv target/debian/*.deb "../build/$ref/."
+}
+
+build-ref () {
+    local ref branch target
+    buildfunc=default-build
+    package_name=$1 ; shift
+    ref=$1 ; shift
+    target=$1 ; shift
+
+    if [[ $# -gt 0 ]] ; then
+	buildfunc=$1 ; shift
+    fi
+
+    branch="build-$ref-$$"
+    log::info "building $ref -> $target inside $branch..."
+    mkdir -p "../build/$ref"
+    git clean -f -d -x
+    git checkout -f -b "$branch" "$ref"
+    git submodule update --init
+    cat <<EOF >> validator/Cargo.toml
+[package.metadata.deb]
+name = "$package_name"
+EOF
+    $buildfunc
+    git submodule deinit --all
+    git checkout -f master
+    git branch -d "$branch"
+}
+
+for remote in solana-labs anza-xyz PowerLedger jito-foundation pyth-network ; do
+    fetch-remote $remote
+done
+
+build-ref zuma-solana-validator solana-labs/master solana-validator
+build-ref zuma-agave-validator anza-xyz/master agave-validator
+build-ref zuma-powerledger-validator PowerLedger/upgrade_to_v1.16.28 solana-validator
+build-ref zuma-jito-validator jito-foundation/master agave-validator
+
+build-with-other-clang () {
+    local tmpdir llvmroot
+
+    tmpdir=$(mktemp -d)
+    llvmroot=/usr/lib/llvm-14
+
+    # This is a massive hack to work around lack of configurability inside crates.
+    cat <<'EOF' > "$tmpdir/c++"
+#!/usr/bin/env bash
+
+if echo "$@" | grep ROCKSDB > /dev/null ; then
+	exec $llvmroot/bin/clang++ "$@" -include cstdint
+else
+	exec $llvmroot/bin/clang++ "$@"
+fi
+EOF
+    chmod 755 "$tmpdir/c++"
+
+    ln -s $llvmroot/bin/clang "$tmpdir/clang"
+    ln -s $llvmroot/bin/clang++ "$tmpdir/clang++"
+
+    ln -s $llvmroot/bin/cc "$tmpdir/cc"
+
+    PATH=$tmpdir:$PATH LLVM_CONFIG_PATH=$llvmroot/bin/llvm-config LIBCLANG_PATH=$llvmroot/lib/libclang.so.1 default-build
+    rm -rf "$tmpdir"
+}
+
+build-ref zuma-pyth-validator pyth-network/pyth-v1.14.17 solana-validator build-with-other-clang
