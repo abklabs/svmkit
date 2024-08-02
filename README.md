@@ -45,13 +45,13 @@ sudo apt-get install -y curl gnupg
 3. Add the Zuma repository to your system's software repository list:
 
 ```bash
-echo "deb https://apt.abklabs.com/ zuma main" | sudo tee /etc/apt/sources.list.d/zuma.list
+echo "deb https://apt.abklabs.com/zuma dev main" | sudo tee /etc/apt/sources.list.d/zuma.list
 ```
 
 4. Import the repository's GPG key:
 
 ```bash
-curl -s https://apt.abklabs.com/pubkey.gpg | sudo apt-key add -
+curl -s https://apt.abklabs.com/keys/abklabs-archive-dev.asc | sudo apt-key add -
 ```
 
 5. Update your package lists again:
@@ -63,7 +63,7 @@ sudo apt-get update
 6. Install Zuma:
 
 ```bash
-sudo apt-get install zuma-agave
+sudo apt-get install zuma-agave-validator
 ```
 
 After the installation you will have the Agave validator client and zuma CLI on the host. Verify the installation:
