@@ -30,6 +30,22 @@ default-build () {
     mv target/debian/*.deb "../build/$ref/."
 }
 
+anza-build-extra () {
+    cat <<EOF >> genesis/Cargo.toml
+[package.metadata.deb]
+name = "zuma-solana-genesis"
+EOF
+
+    cat <<EOF >> faucet/Cargo.toml
+[package.metadata.deb]
+name = "zuma-solana-faucet"
+EOF
+    # shellcheck disable=SC2154,SC1091
+    ( set +u && source ci/rust-version.sh stable && env | grep rust_ && cargo +"$rust_stable" deb -p solana-genesis && cargo +"$rust_stable" deb -p solana-faucet )
+
+    default-build
+}
+
 build-ref () {
     local ref branch target
     buildfunc=default-build
@@ -62,7 +78,7 @@ for remote in solana-labs anza-xyz PowerLedger jito-foundation pyth-network ; do
 done
 
 build-ref zuma-solana-validator solana-labs/master solana-validator
-build-ref zuma-agave-validator anza-xyz/master agave-validator
+build-ref zuma-agave-validator anza-xyz/master agave-validator anza-build-extra
 build-ref zuma-powerledger-validator PowerLedger/upgrade_to_v1.16.28 solana-validator
 build-ref zuma-jito-validator jito-foundation/master agave-validator
 
