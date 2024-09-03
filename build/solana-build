@@ -66,6 +66,9 @@ build-ref () {
     cat <<EOF >> validator/Cargo.toml
 [package.metadata.deb]
 name = "$package_name"
+provides = "zuma-validator"
+conflicts = "zuma-validator"
+replaces = "zuma-validator"
 EOF
     $buildfunc
     git submodule deinit --all
