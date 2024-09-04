@@ -60,7 +60,7 @@ curl -s https://apt.abklabs.com/keys/abklabs-archive-dev.asc | sudo apt-key add 
 sudo apt-get update
 ```
 
-6. Install Zuma:
+6. Install Zuma's build of the Agave validator:
 
 ```bash
 sudo apt-get install zuma-agave-validator
