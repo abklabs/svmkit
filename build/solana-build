@@ -47,7 +47,14 @@ name = "zuma-solana-cli"
 EOF
 
     # shellcheck disable=SC2154,SC1091
-    ( set +u && source ci/rust-version.sh stable && env | grep rust_ && cargo +"$rust_stable" deb -p solana-genesis && cargo +"$rust_stable" deb -p solana-faucet && cargo +"$rust_stable" deb -p solana-cli )
+    (
+        set +u
+        source ci/rust-version.sh stable
+        env | grep rust_
+        cargo +"$rust_stable" deb -p solana-genesis
+        cargo +"$rust_stable" deb -p solana-faucet
+        cargo +"$rust_stable" deb -p solana-cli
+    )
 
     default-build
 }
