@@ -2,6 +2,13 @@
 
 SVMKit is an innovative, Debian-based OS distribution designed specifically for running Solana validator and RPC clients, including Anza and Firedancer. Tailored for flexibility, robustness, and ease of use, SVMKit targets various environments, including bare metal servers, virtual machines, and containerized platforms.
 
+## Disclaimer
+
+**This project is intended for use in testing environments only and is not yet considered production-ready.** 
+
+We are actively developing and improving the functionality. Users should exercise caution when deploying this software in mission-critical or production systems. Please report any issues or feedback to help us enhance its stability and reliability.
+
+
 ## Features
 
 - **Validator Appliance:** Simplifies the operation and version control of Solana nodes. Provides community-tested configuration setups for seamless deployment and management.
