@@ -1,13 +1,13 @@
-name: provider-xyz-native
+name: provider-svm-native
 runtime: yaml
 plugins:
   providers:
-    - name: xyz
+    - name: svm
       path: ../../bin
 
 resources:
   myRandomResource:
-    type: xyz:Random
+    type: svm:Random
     properties:
       length: 24
 

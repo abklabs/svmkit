@@ -1,7 +1,7 @@
 import pulumi
-import pulumi_xyz as xyz
+import pulumi_svm as svm
 
-my_random_resource = xyz.Random("myRandomResource", length=24)
+my_random_resource = svm.Random("myRandomResource", length=24)
 pulumi.export("output", {
     "value": my_random_resource.result,
 })

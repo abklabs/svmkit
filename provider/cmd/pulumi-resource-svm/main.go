@@ -17,8 +17,8 @@ package main
 import (
 	p "github.com/pulumi/pulumi-go-provider"
 
-	xyz "github.com/pulumi/pulumi-xyz/provider"
+	svm "github.com/abklabs/pulumi-svm/provider"
 )
 
 // Serve the provider against Pulumi's Provider protocol.
-func main() { p.RunProvider(xyz.Name, xyz.Version, xyz.Provider()) }
+func main() { p.RunProvider(svm.Name, svm.Version, svm.Provider()) }

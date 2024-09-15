@@ -25,32 +25,37 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	xyz "github.com/pulumi/pulumi-xyz/provider"
+	svm "github.com/abklabs/pulumi-svm/provider"
 )
 
-func TestRandomCreate(t *testing.T) {
+func TestKeyPairCreate(t *testing.T) {
 	prov := provider()
 
 	response, err := prov.Create(p.CreateRequest{
-		Urn: urn("Random"),
-		Properties: resource.PropertyMap{
-			"length": resource.NewNumberProperty(12),
-		},
-		Preview: false,
+		Urn:        urn("KeyPair"),
+		Properties: resource.PropertyMap{},
+		Preview:    false,
 	})
 
 	require.NoError(t, err)
-	result := response.Properties["result"].StringValue()
-	assert.Len(t, result, 12)
+
+	publicKey := response.Properties["publicKey"].StringValue()
+	privateKey := response.Properties["privateKey"].ArrayValue()
+	jsonKey := response.Properties["json"].StringValue()
+
+	assert.IsType(t, "", publicKey)
+	assert.IsType(t, "", jsonKey)
+	assert.IsType(t, []resource.PropertyValue{}, privateKey)
 }
 
 // urn is a helper function to build an urn for running integration tests.
 func urn(typ string) resource.URN {
 	return resource.NewURN("stack", "proj", "",
-		tokens.Type("test:index:"+typ), "name")
+		tokens.Type("svm:svm:"+typ), "name")
 }
 
 // Create a test server.
 func provider() integration.Server {
-	return integration.NewServer(xyz.Name, semver.MustParse("1.0.0"), xyz.Provider())
+	return integration.NewServer(svm.Name, semver.MustParse("0.0.1"), svm.Provider())
+
 }

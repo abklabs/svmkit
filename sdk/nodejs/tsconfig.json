@@ -15,7 +15,8 @@
     "files": [
         "index.ts",
         "provider.ts",
-        "random.ts",
+        "svm/index.ts",
+        "svm/keyPair.ts",
         "utilities.ts"
     ]
 }

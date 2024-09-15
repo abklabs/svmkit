@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using Pulumi;
-using Xyz = Pulumi.Xyz;
+using svm = Pulumi.svm;
 
 return await Deployment.RunAsync(() => 
 {
-    var myRandomResource = new Xyz.Random("myRandomResource", new()
+    var myRandomResource = new svm.Random("myRandomResource", new()
     {
         Length = 24,
     });

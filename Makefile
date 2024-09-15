@@ -1,10 +1,10 @@
-PROJECT_NAME := Pulumi Xyz Resource Provider
+PROJECT_NAME := Pulumi svm Resource Provider
 
-PACK             := xyz
+PACK             := svm
 PACKDIR          := sdk
-PROJECT          := github.com/pulumi/pulumi-xyz
-NODE_MODULE_NAME := @abc/xyz
-NUGET_PKG_NAME   := Abc.Xyz
+PROJECT          := github.com/abklabs/pulumi-svm
+NODE_MODULE_NAME := @abklabs/svm
+NUGET_PKG_NAME   := abklabs.svm
 
 PROVIDER        := pulumi-resource-${PACK}
 VERSION         ?= $(shell pulumictl get version)

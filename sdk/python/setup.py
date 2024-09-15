@@ -14,24 +14,24 @@ def readme():
         with open('README.md', encoding='utf-8') as f:
             return f.read()
     except FileNotFoundError:
-        return "xyz Pulumi Package - Development Version"
+        return "svm Pulumi Package - Development Version"
 
 
-setup(name='pulumi_xyz',
-      python_requires='>=3.7',
+setup(name='pulumi_svm',
+      python_requires='>=3.8',
       version=VERSION,
       long_description=readme(),
       long_description_content_type='text/markdown',
       packages=find_packages(),
       package_data={
-          'pulumi_xyz': [
+          'pulumi_svm': [
               'py.typed',
               'pulumi-plugin.json',
           ]
       },
       install_requires=[
           'parver>=0.2.1',
-          'pulumi',
+          'pulumi>=3.0.0,<4.0.0',
           'semver>=2.8.1'
       ],
       zip_safe=False)

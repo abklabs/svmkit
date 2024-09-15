@@ -14,7 +14,7 @@
 
       `${{ secrets.MyTokenName }}`
 
-1. Customize .goreleaser.yml for your provider, replacing any instances of 'xyz' with your provider's name, and paying special attention that the ldlflags are set to match your provider/go.mod exactly: 
+1. Customize .goreleaser.yml for your provider, replacing any instances of 'svm' with your provider's name, and paying special attention that the ldlflags are set to match your provider/go.mod exactly: 
 
      `-X github.com/pulumi/pulumi-aws/provider/v5/pkg/version.Version={{.Tag}}`
 

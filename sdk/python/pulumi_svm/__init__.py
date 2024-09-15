@@ -6,16 +6,23 @@ from . import _utilities
 import typing
 # Export this package's modules as members:
 from .provider import *
-from .random import *
+
+# Make subpackages available:
+if typing.TYPE_CHECKING:
+    import pulumi_svm.svm as __svm
+    svm = __svm
+else:
+    svm = _utilities.lazy_import('pulumi_svm.svm')
+
 _utilities.register(
     resource_modules="""
 [
  {
-  "pkg": "xyz",
-  "mod": "index",
-  "fqn": "pulumi_xyz",
+  "pkg": "svm",
+  "mod": "svm",
+  "fqn": "pulumi_svm.svm",
   "classes": {
-   "xyz:index:Random": "Random"
+   "svm:svm:KeyPair": "KeyPair"
   }
  }
 ]
@@ -23,9 +30,9 @@ _utilities.register(
     resource_packages="""
 [
  {
-  "pkg": "xyz",
-  "token": "pulumi:providers:xyz",
-  "fqn": "pulumi_xyz",
+  "pkg": "svm",
+  "token": "pulumi:providers:svm",
+  "fqn": "pulumi_svm",
   "class": "Provider"
  }
 ]
