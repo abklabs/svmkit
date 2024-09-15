@@ -9,9 +9,12 @@ from .provider import *
 
 # Make subpackages available:
 if typing.TYPE_CHECKING:
+    import pulumi_svm.agave as __agave
+    agave = __agave
     import pulumi_svm.svm as __svm
     svm = __svm
 else:
+    agave = _utilities.lazy_import('pulumi_svm.agave')
     svm = _utilities.lazy_import('pulumi_svm.svm')
 
 _utilities.register(
@@ -22,7 +25,8 @@ _utilities.register(
   "mod": "svm",
   "fqn": "pulumi_svm.svm",
   "classes": {
-   "svm:svm:KeyPair": "KeyPair"
+   "svm:svm:KeyPair": "KeyPair",
+   "svm:svm:Validator": "Validator"
   }
  }
 ]

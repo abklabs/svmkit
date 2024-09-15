@@ -1,10 +1,10 @@
 package svm
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/gagliardetto/solana-go"
-	p "github.com/pulumi/pulumi-go-provider"
 )
 
 type KeyPair struct{}
@@ -20,7 +20,7 @@ type KeyPairState struct {
 }
 
 // All resources must implement Create at a minimum.
-func (KeyPair) Create(ctx p.Context, name string, input KeyPairArgs, preview bool) (string, KeyPairState, error) {
+func (KeyPair) Create(ctx context.Context, name string, input KeyPairArgs, preview bool) (string, KeyPairState, error) {
 	state := KeyPairState{KeyPairArgs: input}
 	if preview {
 		return name, state, nil

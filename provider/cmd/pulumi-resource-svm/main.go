@@ -15,10 +15,24 @@
 package main
 
 import (
+	"fmt"
+	"os"
+	"strings"
+
 	p "github.com/pulumi/pulumi-go-provider"
 
 	svm "github.com/abklabs/pulumi-svm/provider"
+	"github.com/abklabs/pulumi-svm/provider/pkg/version"
 )
 
 // Serve the provider against Pulumi's Provider protocol.
-func main() { p.RunProvider(svm.Name, svm.Version, svm.Provider()) }
+func main() {
+	version := strings.TrimPrefix(version.Version, "v")
+
+	err := p.RunProvider(svm.Name, version, svm.Provider())
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %s", err.Error())
+		os.Exit(1)
+	}
+}

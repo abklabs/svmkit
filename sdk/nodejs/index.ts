@@ -13,9 +13,11 @@ utilities.lazyLoad(exports, ["Provider"], () => require("./provider"));
 
 // Export sub-modules:
 import * as svm from "./svm";
+import * as types from "./types";
 
 export {
     svm,
+    types,
 };
 pulumi.runtime.registerResourcePackage("svm", {
     version: utilities.getVersion(),

@@ -10,6 +10,11 @@ export type KeyPair = import("./keyPair").KeyPair;
 export const KeyPair: typeof import("./keyPair").KeyPair = null as any;
 utilities.lazyLoad(exports, ["KeyPair"], () => require("./keyPair"));
 
+export { ValidatorArgs } from "./validator";
+export type Validator = import("./validator").Validator;
+export const Validator: typeof import("./validator").Validator = null as any;
+utilities.lazyLoad(exports, ["Validator"], () => require("./validator"));
+
 
 const _module = {
     version: utilities.getVersion(),
@@ -17,6 +22,8 @@ const _module = {
         switch (type) {
             case "svm:svm:KeyPair":
                 return new KeyPair(name, <any>undefined, { urn })
+            case "svm:svm:Validator":
+                return new Validator(name, <any>undefined, { urn })
             default:
                 throw new Error(`unknown resource type ${type}`);
         }

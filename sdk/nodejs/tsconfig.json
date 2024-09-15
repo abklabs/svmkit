@@ -17,6 +17,10 @@
         "provider.ts",
         "svm/index.ts",
         "svm/keyPair.ts",
+        "svm/validator.ts",
+        "types/index.ts",
+        "types/input.ts",
+        "types/output.ts",
         "utilities.ts"
     ]
 }
