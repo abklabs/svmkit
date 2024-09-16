@@ -11,7 +11,7 @@ namespace Pulumi.Svm.Agave.Outputs
 {
 
     [OutputType]
-    public sealed class ValidatorFlags
+    public sealed class Flags
     {
         public readonly string BlockProductionMethod;
         public readonly string DynamicPortRange;
@@ -25,7 +25,6 @@ namespace Pulumi.Svm.Agave.Outputs
         public readonly bool? NoVoting;
         public readonly bool NoWaitForVoteToStartLeader;
         public readonly bool OnlyKnownRPC;
-        public readonly Outputs.ValidatorPaths Paths;
         public readonly bool PrivateRPC;
         public readonly string RpcBindAddress;
         public readonly int RpcPort;
@@ -34,7 +33,7 @@ namespace Pulumi.Svm.Agave.Outputs
         public readonly string WalRecoveryMode;
 
         [OutputConstructor]
-        private ValidatorFlags(
+        private Flags(
             string blockProductionMethod,
 
             string dynamicPortRange,
@@ -58,8 +57,6 @@ namespace Pulumi.Svm.Agave.Outputs
             bool noWaitForVoteToStartLeader,
 
             bool onlyKnownRPC,
-
-            Outputs.ValidatorPaths paths,
 
             bool privateRPC,
 
@@ -85,7 +82,6 @@ namespace Pulumi.Svm.Agave.Outputs
             NoVoting = noVoting;
             NoWaitForVoteToStartLeader = noWaitForVoteToStartLeader;
             OnlyKnownRPC = onlyKnownRPC;
-            Paths = paths;
             PrivateRPC = privateRPC;
             RpcBindAddress = rpcBindAddress;
             RpcPort = rpcPort;

@@ -17,7 +17,7 @@ var _ = internal.GetEnvOrDefault
 type Connection struct {
 	// SSH Agent socket path. Default to environment variable SSH_AUTH_SOCK if present.
 	AgentSocketPath *string `pulumi:"agentSocketPath"`
-	// Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 10.
+	// Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 1000.
 	DialErrorLimit *int `pulumi:"dialErrorLimit"`
 	// The address of the resource to connect to.
 	Host string `pulumi:"host"`
@@ -42,7 +42,7 @@ func (val *Connection) Defaults() *Connection {
 	}
 	tmp := *val
 	if tmp.DialErrorLimit == nil {
-		dialErrorLimit_ := 10
+		dialErrorLimit_ := 1000
 		tmp.DialErrorLimit = &dialErrorLimit_
 	}
 	if tmp.PerDialTimeout == nil {
@@ -75,7 +75,7 @@ type ConnectionInput interface {
 type ConnectionArgs struct {
 	// SSH Agent socket path. Default to environment variable SSH_AUTH_SOCK if present.
 	AgentSocketPath pulumi.StringPtrInput `pulumi:"agentSocketPath"`
-	// Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 10.
+	// Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 1000.
 	DialErrorLimit pulumi.IntPtrInput `pulumi:"dialErrorLimit"`
 	// The address of the resource to connect to.
 	Host pulumi.StringInput `pulumi:"host"`
@@ -100,7 +100,7 @@ func (val *ConnectionArgs) Defaults() *ConnectionArgs {
 	}
 	tmp := *val
 	if tmp.DialErrorLimit == nil {
-		tmp.DialErrorLimit = pulumi.IntPtr(10)
+		tmp.DialErrorLimit = pulumi.IntPtr(1000)
 	}
 	if tmp.PerDialTimeout == nil {
 		tmp.PerDialTimeout = pulumi.IntPtr(15)
@@ -145,7 +145,7 @@ func (o ConnectionOutput) AgentSocketPath() pulumi.StringPtrOutput {
 	return o.ApplyT(func(v Connection) *string { return v.AgentSocketPath }).(pulumi.StringPtrOutput)
 }
 
-// Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 10.
+// Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 1000.
 func (o ConnectionOutput) DialErrorLimit() pulumi.IntPtrOutput {
 	return o.ApplyT(func(v Connection) *int { return v.DialErrorLimit }).(pulumi.IntPtrOutput)
 }

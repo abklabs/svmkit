@@ -21,7 +21,7 @@ namespace Pulumi.Svm.Ssh.Outputs
         /// </summary>
         public readonly string? AgentSocketPath;
         /// <summary>
-        /// Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 10.
+        /// Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 1000.
         /// </summary>
         public readonly int? DialErrorLimit;
         /// <summary>

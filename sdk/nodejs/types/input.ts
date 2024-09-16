@@ -35,6 +35,29 @@ export namespace agave {
     }
 }
 
+export namespace genesis {
+    export interface PrimorialEntryArgs {
+        lamports: pulumi.Input<string>;
+        pubkey: pulumi.Input<string>;
+    }
+}
+
+export namespace solana {
+    export interface GenesisFlagsArgs {
+        clusterType?: pulumi.Input<string>;
+        faucetLamports?: pulumi.Input<string>;
+        faucetPubkey: pulumi.Input<string>;
+        identityPubkey: pulumi.Input<string>;
+        inflation?: pulumi.Input<string>;
+        lamportsPerByteYear?: pulumi.Input<string>;
+        ledgerPath: pulumi.Input<string>;
+        slotPerEpoch?: pulumi.Input<string>;
+        stakePubkey: pulumi.Input<string>;
+        targetLamportsPerSignature?: pulumi.Input<string>;
+        votePubkey: pulumi.Input<string>;
+    }
+}
+
 export namespace ssh {
     /**
      * Instructions for how to connect to a remote endpoint.
@@ -45,7 +68,7 @@ export namespace ssh {
          */
         agentSocketPath?: pulumi.Input<string>;
         /**
-         * Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 10.
+         * Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 1000.
          */
         dialErrorLimit?: pulumi.Input<number>;
         /**
@@ -83,7 +106,7 @@ export namespace ssh {
     export function connectionArgsProvideDefaults(val: ConnectionArgs): ConnectionArgs {
         return {
             ...val,
-            dialErrorLimit: (val.dialErrorLimit) ?? 10,
+            dialErrorLimit: (val.dialErrorLimit) ?? 1000,
             perDialTimeout: (val.perDialTimeout) ?? 15,
             port: (val.port) ?? 22,
             user: (val.user) ?? "root",

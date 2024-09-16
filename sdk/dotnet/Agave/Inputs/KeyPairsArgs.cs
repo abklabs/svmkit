@@ -10,7 +10,7 @@ using Pulumi.Serialization;
 namespace Pulumi.Svm.Agave.Inputs
 {
 
-    public sealed class ValidatorKeyPairsArgs : global::Pulumi.ResourceArgs
+    public sealed class KeyPairsArgs : global::Pulumi.ResourceArgs
     {
         [Input("identity", required: true)]
         private Input<string>? _identity;
@@ -36,9 +36,9 @@ namespace Pulumi.Svm.Agave.Inputs
             }
         }
 
-        public ValidatorKeyPairsArgs()
+        public KeyPairsArgs()
         {
         }
-        public static new ValidatorKeyPairsArgs Empty => new ValidatorKeyPairsArgs();
+        public static new KeyPairsArgs Empty => new KeyPairsArgs();
     }
 }

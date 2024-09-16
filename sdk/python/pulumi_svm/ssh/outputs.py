@@ -57,7 +57,7 @@ class Connection(dict):
         Instructions for how to connect to a remote endpoint.
         :param str host: The address of the resource to connect to.
         :param str agent_socket_path: SSH Agent socket path. Default to environment variable SSH_AUTH_SOCK if present.
-        :param int dial_error_limit: Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 10.
+        :param int dial_error_limit: Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 1000.
         :param str password: The password we should use for the connection.
         :param int per_dial_timeout: Max number of seconds for each dial attempt. 0 implies no maximum. Default value is 15 seconds.
         :param float port: The port to connect to. Defaults to 22.
@@ -69,7 +69,7 @@ class Connection(dict):
         if agent_socket_path is not None:
             pulumi.set(__self__, "agent_socket_path", agent_socket_path)
         if dial_error_limit is None:
-            dial_error_limit = 10
+            dial_error_limit = 1000
         if dial_error_limit is not None:
             pulumi.set(__self__, "dial_error_limit", dial_error_limit)
         if password is not None:
@@ -111,7 +111,7 @@ class Connection(dict):
     @pulumi.getter(name="dialErrorLimit")
     def dial_error_limit(self) -> Optional[int]:
         """
-        Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 10.
+        Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 1000.
         """
         return pulumi.get(self, "dial_error_limit")
 

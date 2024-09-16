@@ -13,40 +13,39 @@ import (
 
 var _ = internal.GetEnvOrDefault
 
-type ValidatorFlags struct {
-	BlockProductionMethod        string         `pulumi:"blockProductionMethod"`
-	DynamicPortRange             string         `pulumi:"dynamicPortRange"`
-	EntryPoint                   []string       `pulumi:"entryPoint"`
-	ExpectedGenesisHash          *string        `pulumi:"expectedGenesisHash"`
-	FullRpcAPI                   *bool          `pulumi:"fullRpcAPI"`
-	FullSnapshotIntervalSlots    int            `pulumi:"fullSnapshotIntervalSlots"`
-	GossipPort                   int            `pulumi:"gossipPort"`
-	KnownValidator               []string       `pulumi:"knownValidator"`
-	LimitLedgerSize              int            `pulumi:"limitLedgerSize"`
-	NoVoting                     *bool          `pulumi:"noVoting"`
-	NoWaitForVoteToStartLeader   bool           `pulumi:"noWaitForVoteToStartLeader"`
-	OnlyKnownRPC                 bool           `pulumi:"onlyKnownRPC"`
-	Paths                        ValidatorPaths `pulumi:"paths"`
-	PrivateRPC                   bool           `pulumi:"privateRPC"`
-	RpcBindAddress               string         `pulumi:"rpcBindAddress"`
-	RpcPort                      int            `pulumi:"rpcPort"`
-	TvuReceiveThreads            *int           `pulumi:"tvuReceiveThreads"`
-	UseSnapshotArchivesAtStartup string         `pulumi:"useSnapshotArchivesAtStartup"`
-	WalRecoveryMode              string         `pulumi:"walRecoveryMode"`
+type Flags struct {
+	BlockProductionMethod        string   `pulumi:"blockProductionMethod"`
+	DynamicPortRange             string   `pulumi:"dynamicPortRange"`
+	EntryPoint                   []string `pulumi:"entryPoint"`
+	ExpectedGenesisHash          *string  `pulumi:"expectedGenesisHash"`
+	FullRpcAPI                   *bool    `pulumi:"fullRpcAPI"`
+	FullSnapshotIntervalSlots    int      `pulumi:"fullSnapshotIntervalSlots"`
+	GossipPort                   int      `pulumi:"gossipPort"`
+	KnownValidator               []string `pulumi:"knownValidator"`
+	LimitLedgerSize              int      `pulumi:"limitLedgerSize"`
+	NoVoting                     *bool    `pulumi:"noVoting"`
+	NoWaitForVoteToStartLeader   bool     `pulumi:"noWaitForVoteToStartLeader"`
+	OnlyKnownRPC                 bool     `pulumi:"onlyKnownRPC"`
+	PrivateRPC                   bool     `pulumi:"privateRPC"`
+	RpcBindAddress               string   `pulumi:"rpcBindAddress"`
+	RpcPort                      int      `pulumi:"rpcPort"`
+	TvuReceiveThreads            *int     `pulumi:"tvuReceiveThreads"`
+	UseSnapshotArchivesAtStartup string   `pulumi:"useSnapshotArchivesAtStartup"`
+	WalRecoveryMode              string   `pulumi:"walRecoveryMode"`
 }
 
-// ValidatorFlagsInput is an input type that accepts ValidatorFlagsArgs and ValidatorFlagsOutput values.
-// You can construct a concrete instance of `ValidatorFlagsInput` via:
+// FlagsInput is an input type that accepts FlagsArgs and FlagsOutput values.
+// You can construct a concrete instance of `FlagsInput` via:
 //
-//	ValidatorFlagsArgs{...}
-type ValidatorFlagsInput interface {
+//	FlagsArgs{...}
+type FlagsInput interface {
 	pulumi.Input
 
-	ToValidatorFlagsOutput() ValidatorFlagsOutput
-	ToValidatorFlagsOutputWithContext(context.Context) ValidatorFlagsOutput
+	ToFlagsOutput() FlagsOutput
+	ToFlagsOutputWithContext(context.Context) FlagsOutput
 }
 
-type ValidatorFlagsArgs struct {
+type FlagsArgs struct {
 	BlockProductionMethod        pulumi.StringInput      `pulumi:"blockProductionMethod"`
 	DynamicPortRange             pulumi.StringInput      `pulumi:"dynamicPortRange"`
 	EntryPoint                   pulumi.StringArrayInput `pulumi:"entryPoint"`
@@ -59,7 +58,6 @@ type ValidatorFlagsArgs struct {
 	NoVoting                     pulumi.BoolPtrInput     `pulumi:"noVoting"`
 	NoWaitForVoteToStartLeader   pulumi.BoolInput        `pulumi:"noWaitForVoteToStartLeader"`
 	OnlyKnownRPC                 pulumi.BoolInput        `pulumi:"onlyKnownRPC"`
-	Paths                        ValidatorPathsInput     `pulumi:"paths"`
 	PrivateRPC                   pulumi.BoolInput        `pulumi:"privateRPC"`
 	RpcBindAddress               pulumi.StringInput      `pulumi:"rpcBindAddress"`
 	RpcPort                      pulumi.IntInput         `pulumi:"rpcPort"`
@@ -68,229 +66,162 @@ type ValidatorFlagsArgs struct {
 	WalRecoveryMode              pulumi.StringInput      `pulumi:"walRecoveryMode"`
 }
 
-func (ValidatorFlagsArgs) ElementType() reflect.Type {
-	return reflect.TypeOf((*ValidatorFlags)(nil)).Elem()
+func (FlagsArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*Flags)(nil)).Elem()
 }
 
-func (i ValidatorFlagsArgs) ToValidatorFlagsOutput() ValidatorFlagsOutput {
-	return i.ToValidatorFlagsOutputWithContext(context.Background())
+func (i FlagsArgs) ToFlagsOutput() FlagsOutput {
+	return i.ToFlagsOutputWithContext(context.Background())
 }
 
-func (i ValidatorFlagsArgs) ToValidatorFlagsOutputWithContext(ctx context.Context) ValidatorFlagsOutput {
-	return pulumi.ToOutputWithContext(ctx, i).(ValidatorFlagsOutput)
+func (i FlagsArgs) ToFlagsOutputWithContext(ctx context.Context) FlagsOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(FlagsOutput)
 }
 
-type ValidatorFlagsOutput struct{ *pulumi.OutputState }
+type FlagsOutput struct{ *pulumi.OutputState }
 
-func (ValidatorFlagsOutput) ElementType() reflect.Type {
-	return reflect.TypeOf((*ValidatorFlags)(nil)).Elem()
+func (FlagsOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*Flags)(nil)).Elem()
 }
 
-func (o ValidatorFlagsOutput) ToValidatorFlagsOutput() ValidatorFlagsOutput {
+func (o FlagsOutput) ToFlagsOutput() FlagsOutput {
 	return o
 }
 
-func (o ValidatorFlagsOutput) ToValidatorFlagsOutputWithContext(ctx context.Context) ValidatorFlagsOutput {
+func (o FlagsOutput) ToFlagsOutputWithContext(ctx context.Context) FlagsOutput {
 	return o
 }
 
-func (o ValidatorFlagsOutput) BlockProductionMethod() pulumi.StringOutput {
-	return o.ApplyT(func(v ValidatorFlags) string { return v.BlockProductionMethod }).(pulumi.StringOutput)
+func (o FlagsOutput) BlockProductionMethod() pulumi.StringOutput {
+	return o.ApplyT(func(v Flags) string { return v.BlockProductionMethod }).(pulumi.StringOutput)
 }
 
-func (o ValidatorFlagsOutput) DynamicPortRange() pulumi.StringOutput {
-	return o.ApplyT(func(v ValidatorFlags) string { return v.DynamicPortRange }).(pulumi.StringOutput)
+func (o FlagsOutput) DynamicPortRange() pulumi.StringOutput {
+	return o.ApplyT(func(v Flags) string { return v.DynamicPortRange }).(pulumi.StringOutput)
 }
 
-func (o ValidatorFlagsOutput) EntryPoint() pulumi.StringArrayOutput {
-	return o.ApplyT(func(v ValidatorFlags) []string { return v.EntryPoint }).(pulumi.StringArrayOutput)
+func (o FlagsOutput) EntryPoint() pulumi.StringArrayOutput {
+	return o.ApplyT(func(v Flags) []string { return v.EntryPoint }).(pulumi.StringArrayOutput)
 }
 
-func (o ValidatorFlagsOutput) ExpectedGenesisHash() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v ValidatorFlags) *string { return v.ExpectedGenesisHash }).(pulumi.StringPtrOutput)
+func (o FlagsOutput) ExpectedGenesisHash() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v Flags) *string { return v.ExpectedGenesisHash }).(pulumi.StringPtrOutput)
 }
 
-func (o ValidatorFlagsOutput) FullRpcAPI() pulumi.BoolPtrOutput {
-	return o.ApplyT(func(v ValidatorFlags) *bool { return v.FullRpcAPI }).(pulumi.BoolPtrOutput)
+func (o FlagsOutput) FullRpcAPI() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v Flags) *bool { return v.FullRpcAPI }).(pulumi.BoolPtrOutput)
 }
 
-func (o ValidatorFlagsOutput) FullSnapshotIntervalSlots() pulumi.IntOutput {
-	return o.ApplyT(func(v ValidatorFlags) int { return v.FullSnapshotIntervalSlots }).(pulumi.IntOutput)
+func (o FlagsOutput) FullSnapshotIntervalSlots() pulumi.IntOutput {
+	return o.ApplyT(func(v Flags) int { return v.FullSnapshotIntervalSlots }).(pulumi.IntOutput)
 }
 
-func (o ValidatorFlagsOutput) GossipPort() pulumi.IntOutput {
-	return o.ApplyT(func(v ValidatorFlags) int { return v.GossipPort }).(pulumi.IntOutput)
+func (o FlagsOutput) GossipPort() pulumi.IntOutput {
+	return o.ApplyT(func(v Flags) int { return v.GossipPort }).(pulumi.IntOutput)
 }
 
-func (o ValidatorFlagsOutput) KnownValidator() pulumi.StringArrayOutput {
-	return o.ApplyT(func(v ValidatorFlags) []string { return v.KnownValidator }).(pulumi.StringArrayOutput)
+func (o FlagsOutput) KnownValidator() pulumi.StringArrayOutput {
+	return o.ApplyT(func(v Flags) []string { return v.KnownValidator }).(pulumi.StringArrayOutput)
 }
 
-func (o ValidatorFlagsOutput) LimitLedgerSize() pulumi.IntOutput {
-	return o.ApplyT(func(v ValidatorFlags) int { return v.LimitLedgerSize }).(pulumi.IntOutput)
+func (o FlagsOutput) LimitLedgerSize() pulumi.IntOutput {
+	return o.ApplyT(func(v Flags) int { return v.LimitLedgerSize }).(pulumi.IntOutput)
 }
 
-func (o ValidatorFlagsOutput) NoVoting() pulumi.BoolPtrOutput {
-	return o.ApplyT(func(v ValidatorFlags) *bool { return v.NoVoting }).(pulumi.BoolPtrOutput)
+func (o FlagsOutput) NoVoting() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v Flags) *bool { return v.NoVoting }).(pulumi.BoolPtrOutput)
 }
 
-func (o ValidatorFlagsOutput) NoWaitForVoteToStartLeader() pulumi.BoolOutput {
-	return o.ApplyT(func(v ValidatorFlags) bool { return v.NoWaitForVoteToStartLeader }).(pulumi.BoolOutput)
+func (o FlagsOutput) NoWaitForVoteToStartLeader() pulumi.BoolOutput {
+	return o.ApplyT(func(v Flags) bool { return v.NoWaitForVoteToStartLeader }).(pulumi.BoolOutput)
 }
 
-func (o ValidatorFlagsOutput) OnlyKnownRPC() pulumi.BoolOutput {
-	return o.ApplyT(func(v ValidatorFlags) bool { return v.OnlyKnownRPC }).(pulumi.BoolOutput)
+func (o FlagsOutput) OnlyKnownRPC() pulumi.BoolOutput {
+	return o.ApplyT(func(v Flags) bool { return v.OnlyKnownRPC }).(pulumi.BoolOutput)
 }
 
-func (o ValidatorFlagsOutput) Paths() ValidatorPathsOutput {
-	return o.ApplyT(func(v ValidatorFlags) ValidatorPaths { return v.Paths }).(ValidatorPathsOutput)
+func (o FlagsOutput) PrivateRPC() pulumi.BoolOutput {
+	return o.ApplyT(func(v Flags) bool { return v.PrivateRPC }).(pulumi.BoolOutput)
 }
 
-func (o ValidatorFlagsOutput) PrivateRPC() pulumi.BoolOutput {
-	return o.ApplyT(func(v ValidatorFlags) bool { return v.PrivateRPC }).(pulumi.BoolOutput)
+func (o FlagsOutput) RpcBindAddress() pulumi.StringOutput {
+	return o.ApplyT(func(v Flags) string { return v.RpcBindAddress }).(pulumi.StringOutput)
 }
 
-func (o ValidatorFlagsOutput) RpcBindAddress() pulumi.StringOutput {
-	return o.ApplyT(func(v ValidatorFlags) string { return v.RpcBindAddress }).(pulumi.StringOutput)
+func (o FlagsOutput) RpcPort() pulumi.IntOutput {
+	return o.ApplyT(func(v Flags) int { return v.RpcPort }).(pulumi.IntOutput)
 }
 
-func (o ValidatorFlagsOutput) RpcPort() pulumi.IntOutput {
-	return o.ApplyT(func(v ValidatorFlags) int { return v.RpcPort }).(pulumi.IntOutput)
+func (o FlagsOutput) TvuReceiveThreads() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v Flags) *int { return v.TvuReceiveThreads }).(pulumi.IntPtrOutput)
 }
 
-func (o ValidatorFlagsOutput) TvuReceiveThreads() pulumi.IntPtrOutput {
-	return o.ApplyT(func(v ValidatorFlags) *int { return v.TvuReceiveThreads }).(pulumi.IntPtrOutput)
+func (o FlagsOutput) UseSnapshotArchivesAtStartup() pulumi.StringOutput {
+	return o.ApplyT(func(v Flags) string { return v.UseSnapshotArchivesAtStartup }).(pulumi.StringOutput)
 }
 
-func (o ValidatorFlagsOutput) UseSnapshotArchivesAtStartup() pulumi.StringOutput {
-	return o.ApplyT(func(v ValidatorFlags) string { return v.UseSnapshotArchivesAtStartup }).(pulumi.StringOutput)
+func (o FlagsOutput) WalRecoveryMode() pulumi.StringOutput {
+	return o.ApplyT(func(v Flags) string { return v.WalRecoveryMode }).(pulumi.StringOutput)
 }
 
-func (o ValidatorFlagsOutput) WalRecoveryMode() pulumi.StringOutput {
-	return o.ApplyT(func(v ValidatorFlags) string { return v.WalRecoveryMode }).(pulumi.StringOutput)
-}
-
-type ValidatorKeyPairs struct {
+type KeyPairs struct {
 	Identity    string `pulumi:"identity"`
 	VoteAccount string `pulumi:"voteAccount"`
 }
 
-// ValidatorKeyPairsInput is an input type that accepts ValidatorKeyPairsArgs and ValidatorKeyPairsOutput values.
-// You can construct a concrete instance of `ValidatorKeyPairsInput` via:
+// KeyPairsInput is an input type that accepts KeyPairsArgs and KeyPairsOutput values.
+// You can construct a concrete instance of `KeyPairsInput` via:
 //
-//	ValidatorKeyPairsArgs{...}
-type ValidatorKeyPairsInput interface {
+//	KeyPairsArgs{...}
+type KeyPairsInput interface {
 	pulumi.Input
 
-	ToValidatorKeyPairsOutput() ValidatorKeyPairsOutput
-	ToValidatorKeyPairsOutputWithContext(context.Context) ValidatorKeyPairsOutput
+	ToKeyPairsOutput() KeyPairsOutput
+	ToKeyPairsOutputWithContext(context.Context) KeyPairsOutput
 }
 
-type ValidatorKeyPairsArgs struct {
+type KeyPairsArgs struct {
 	Identity    pulumi.StringInput `pulumi:"identity"`
 	VoteAccount pulumi.StringInput `pulumi:"voteAccount"`
 }
 
-func (ValidatorKeyPairsArgs) ElementType() reflect.Type {
-	return reflect.TypeOf((*ValidatorKeyPairs)(nil)).Elem()
+func (KeyPairsArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*KeyPairs)(nil)).Elem()
 }
 
-func (i ValidatorKeyPairsArgs) ToValidatorKeyPairsOutput() ValidatorKeyPairsOutput {
-	return i.ToValidatorKeyPairsOutputWithContext(context.Background())
+func (i KeyPairsArgs) ToKeyPairsOutput() KeyPairsOutput {
+	return i.ToKeyPairsOutputWithContext(context.Background())
 }
 
-func (i ValidatorKeyPairsArgs) ToValidatorKeyPairsOutputWithContext(ctx context.Context) ValidatorKeyPairsOutput {
-	return pulumi.ToOutputWithContext(ctx, i).(ValidatorKeyPairsOutput)
+func (i KeyPairsArgs) ToKeyPairsOutputWithContext(ctx context.Context) KeyPairsOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(KeyPairsOutput)
 }
 
-type ValidatorKeyPairsOutput struct{ *pulumi.OutputState }
+type KeyPairsOutput struct{ *pulumi.OutputState }
 
-func (ValidatorKeyPairsOutput) ElementType() reflect.Type {
-	return reflect.TypeOf((*ValidatorKeyPairs)(nil)).Elem()
+func (KeyPairsOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*KeyPairs)(nil)).Elem()
 }
 
-func (o ValidatorKeyPairsOutput) ToValidatorKeyPairsOutput() ValidatorKeyPairsOutput {
+func (o KeyPairsOutput) ToKeyPairsOutput() KeyPairsOutput {
 	return o
 }
 
-func (o ValidatorKeyPairsOutput) ToValidatorKeyPairsOutputWithContext(ctx context.Context) ValidatorKeyPairsOutput {
+func (o KeyPairsOutput) ToKeyPairsOutputWithContext(ctx context.Context) KeyPairsOutput {
 	return o
 }
 
-func (o ValidatorKeyPairsOutput) Identity() pulumi.StringOutput {
-	return o.ApplyT(func(v ValidatorKeyPairs) string { return v.Identity }).(pulumi.StringOutput)
+func (o KeyPairsOutput) Identity() pulumi.StringOutput {
+	return o.ApplyT(func(v KeyPairs) string { return v.Identity }).(pulumi.StringOutput)
 }
 
-func (o ValidatorKeyPairsOutput) VoteAccount() pulumi.StringOutput {
-	return o.ApplyT(func(v ValidatorKeyPairs) string { return v.VoteAccount }).(pulumi.StringOutput)
-}
-
-type ValidatorPaths struct {
-	Accounts string `pulumi:"accounts"`
-	Ledger   string `pulumi:"ledger"`
-	Log      string `pulumi:"log"`
-}
-
-// ValidatorPathsInput is an input type that accepts ValidatorPathsArgs and ValidatorPathsOutput values.
-// You can construct a concrete instance of `ValidatorPathsInput` via:
-//
-//	ValidatorPathsArgs{...}
-type ValidatorPathsInput interface {
-	pulumi.Input
-
-	ToValidatorPathsOutput() ValidatorPathsOutput
-	ToValidatorPathsOutputWithContext(context.Context) ValidatorPathsOutput
-}
-
-type ValidatorPathsArgs struct {
-	Accounts pulumi.StringInput `pulumi:"accounts"`
-	Ledger   pulumi.StringInput `pulumi:"ledger"`
-	Log      pulumi.StringInput `pulumi:"log"`
-}
-
-func (ValidatorPathsArgs) ElementType() reflect.Type {
-	return reflect.TypeOf((*ValidatorPaths)(nil)).Elem()
-}
-
-func (i ValidatorPathsArgs) ToValidatorPathsOutput() ValidatorPathsOutput {
-	return i.ToValidatorPathsOutputWithContext(context.Background())
-}
-
-func (i ValidatorPathsArgs) ToValidatorPathsOutputWithContext(ctx context.Context) ValidatorPathsOutput {
-	return pulumi.ToOutputWithContext(ctx, i).(ValidatorPathsOutput)
-}
-
-type ValidatorPathsOutput struct{ *pulumi.OutputState }
-
-func (ValidatorPathsOutput) ElementType() reflect.Type {
-	return reflect.TypeOf((*ValidatorPaths)(nil)).Elem()
-}
-
-func (o ValidatorPathsOutput) ToValidatorPathsOutput() ValidatorPathsOutput {
-	return o
-}
-
-func (o ValidatorPathsOutput) ToValidatorPathsOutputWithContext(ctx context.Context) ValidatorPathsOutput {
-	return o
-}
-
-func (o ValidatorPathsOutput) Accounts() pulumi.StringOutput {
-	return o.ApplyT(func(v ValidatorPaths) string { return v.Accounts }).(pulumi.StringOutput)
-}
-
-func (o ValidatorPathsOutput) Ledger() pulumi.StringOutput {
-	return o.ApplyT(func(v ValidatorPaths) string { return v.Ledger }).(pulumi.StringOutput)
-}
-
-func (o ValidatorPathsOutput) Log() pulumi.StringOutput {
-	return o.ApplyT(func(v ValidatorPaths) string { return v.Log }).(pulumi.StringOutput)
+func (o KeyPairsOutput) VoteAccount() pulumi.StringOutput {
+	return o.ApplyT(func(v KeyPairs) string { return v.VoteAccount }).(pulumi.StringOutput)
 }
 
 func init() {
-	pulumi.RegisterInputType(reflect.TypeOf((*ValidatorFlagsInput)(nil)).Elem(), ValidatorFlagsArgs{})
-	pulumi.RegisterInputType(reflect.TypeOf((*ValidatorKeyPairsInput)(nil)).Elem(), ValidatorKeyPairsArgs{})
-	pulumi.RegisterInputType(reflect.TypeOf((*ValidatorPathsInput)(nil)).Elem(), ValidatorPathsArgs{})
-	pulumi.RegisterOutputType(ValidatorFlagsOutput{})
-	pulumi.RegisterOutputType(ValidatorKeyPairsOutput{})
-	pulumi.RegisterOutputType(ValidatorPathsOutput{})
+	pulumi.RegisterInputType(reflect.TypeOf((*FlagsInput)(nil)).Elem(), FlagsArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*KeyPairsInput)(nil)).Elem(), KeyPairsArgs{})
+	pulumi.RegisterOutputType(FlagsOutput{})
+	pulumi.RegisterOutputType(KeyPairsOutput{})
 }

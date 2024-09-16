@@ -1,5 +1,5 @@
 {
-  "name": "provider-svm-native",
+  "name": "aws-agave-validator",
   "devDependencies": {
     "@types/node": "^14"
   },

@@ -7,28 +7,51 @@ import typing
 # Export this package's modules as members:
 from .key_pair import *
 from .provider import *
-from .validator import *
 
 # Make subpackages available:
 if typing.TYPE_CHECKING:
     import pulumi_svm.agave as __agave
     agave = __agave
+    import pulumi_svm.genesis as __genesis
+    genesis = __genesis
+    import pulumi_svm.solana as __solana
+    solana = __solana
     import pulumi_svm.ssh as __ssh
     ssh = __ssh
+    import pulumi_svm.validator as __validator
+    validator = __validator
 else:
     agave = _utilities.lazy_import('pulumi_svm.agave')
+    genesis = _utilities.lazy_import('pulumi_svm.genesis')
+    solana = _utilities.lazy_import('pulumi_svm.solana')
     ssh = _utilities.lazy_import('pulumi_svm.ssh')
+    validator = _utilities.lazy_import('pulumi_svm.validator')
 
 _utilities.register(
     resource_modules="""
 [
  {
   "pkg": "svm",
+  "mod": "genesis",
+  "fqn": "pulumi_svm.genesis",
+  "classes": {
+   "svm:genesis:Solana": "Solana"
+  }
+ },
+ {
+  "pkg": "svm",
   "mod": "index",
   "fqn": "pulumi_svm",
   "classes": {
-   "svm:index:KeyPair": "KeyPair",
-   "svm:index:Validator": "Validator"
+   "svm:index:KeyPair": "KeyPair"
+  }
+ },
+ {
+  "pkg": "svm",
+  "mod": "validator",
+  "fqn": "pulumi_svm.validator",
+  "classes": {
+   "svm:validator:Agave": "Agave"
   }
  }
 ]

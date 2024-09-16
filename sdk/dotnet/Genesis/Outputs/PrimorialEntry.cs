@@ -7,23 +7,23 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Pulumi.Serialization;
 
-namespace Pulumi.Svm.Agave.Outputs
+namespace Pulumi.Svm.Genesis.Outputs
 {
 
     [OutputType]
-    public sealed class ValidatorKeyPairs
+    public sealed class PrimorialEntry
     {
-        public readonly string Identity;
-        public readonly string VoteAccount;
+        public readonly string Lamports;
+        public readonly string Pubkey;
 
         [OutputConstructor]
-        private ValidatorKeyPairs(
-            string identity,
+        private PrimorialEntry(
+            string lamports,
 
-            string voteAccount)
+            string pubkey)
         {
-            Identity = identity;
-            VoteAccount = voteAccount;
+            Lamports = lamports;
+            Pubkey = pubkey;
         }
     }
 }

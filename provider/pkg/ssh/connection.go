@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	dialErrorDefault   = 10
+	dialErrorDefault   = 1000
 	dialErrorUnlimited = -1
 )
 
@@ -26,7 +26,7 @@ type Connection struct {
 	PrivateKey         *string  `pulumi:"privateKey,optional"`         // The private key for the SSH connection.
 	PrivateKeyPassword *string  `pulumi:"privateKeyPassword,optional"` // The password for the private key if it is encrypted.
 	AgentSocketPath    *string  `pulumi:"agentSocketPath,optional"`    // The SSH agent socket path.
-	DialErrorLimit     *int     `pulumi:"dialErrorLimit,optional"`     // The maximum number of dial errors allowed. -1 for unlimited. Defaults to 10.
+	DialErrorLimit     *int     `pulumi:"dialErrorLimit,optional"`     // The maximum number of dial errors allowed. -1 for unlimited. Defaults to 1000.
 	PerDialTimeout     *int     `pulumi:"perDialTimeout,optional"`     // The timeout for each dial attempt in seconds. Defaults to 15 seconds.
 }
 
@@ -42,7 +42,7 @@ func (c *Connection) Annotate(a infer.Annotator) {
 	a.Describe(&c.PrivateKey, "The contents of an SSH key to use for the connection. This takes preference over the password if provided.")
 	a.Describe(&c.PrivateKeyPassword, "The password to use in case the private key is encrypted.")
 	a.Describe(&c.AgentSocketPath, "SSH Agent socket path. Default to environment variable SSH_AUTH_SOCK if present.")
-	a.Describe(&c.DialErrorLimit, "Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 10.")
+	a.Describe(&c.DialErrorLimit, "Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 1000.")
 	a.SetDefault(&c.DialErrorLimit, dialErrorDefault)
 	a.Describe(&c.PerDialTimeout, "Max number of seconds for each dial attempt. 0 implies no maximum. Default value is 15 seconds.")
 	a.SetDefault(&c.PerDialTimeout, 15)

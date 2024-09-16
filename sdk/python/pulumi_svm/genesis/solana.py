@@ -7,27 +7,26 @@ import warnings
 import pulumi
 import pulumi.runtime
 from typing import Any, Mapping, Optional, Sequence, Union, overload
-from . import _utilities
-from . import agave as _agave
-from . import ssh as _ssh
+from .. import _utilities
+from . import outputs
+from .. import solana as _solana
+from .. import ssh as _ssh
+from ._inputs import *
 
-__all__ = ['ValidatorArgs', 'Validator']
+__all__ = ['SolanaArgs', 'Solana']
 
 @pulumi.input_type
-class ValidatorArgs:
+class SolanaArgs:
     def __init__(__self__, *,
                  connection: pulumi.Input['_ssh.ConnectionArgs'],
-                 flags: pulumi.Input['_agave.ValidatorFlagsArgs'],
-                 key_pairs: pulumi.Input['_agave.ValidatorKeyPairsArgs'],
-                 variant: Optional[pulumi.Input[str]] = None):
+                 flags: pulumi.Input['_solana.GenesisFlagsArgs'],
+                 primordial: pulumi.Input[Sequence[pulumi.Input['PrimorialEntryArgs']]]):
         """
-        The set of arguments for constructing a Validator resource.
+        The set of arguments for constructing a Solana resource.
         """
         pulumi.set(__self__, "connection", connection)
         pulumi.set(__self__, "flags", flags)
-        pulumi.set(__self__, "key_pairs", key_pairs)
-        if variant is not None:
-            pulumi.set(__self__, "variant", variant)
+        pulumi.set(__self__, "primordial", primordial)
 
     @property
     @pulumi.getter
@@ -40,44 +39,34 @@ class ValidatorArgs:
 
     @property
     @pulumi.getter
-    def flags(self) -> pulumi.Input['_agave.ValidatorFlagsArgs']:
+    def flags(self) -> pulumi.Input['_solana.GenesisFlagsArgs']:
         return pulumi.get(self, "flags")
 
     @flags.setter
-    def flags(self, value: pulumi.Input['_agave.ValidatorFlagsArgs']):
+    def flags(self, value: pulumi.Input['_solana.GenesisFlagsArgs']):
         pulumi.set(self, "flags", value)
 
     @property
-    @pulumi.getter(name="keyPairs")
-    def key_pairs(self) -> pulumi.Input['_agave.ValidatorKeyPairsArgs']:
-        return pulumi.get(self, "key_pairs")
-
-    @key_pairs.setter
-    def key_pairs(self, value: pulumi.Input['_agave.ValidatorKeyPairsArgs']):
-        pulumi.set(self, "key_pairs", value)
-
-    @property
     @pulumi.getter
-    def variant(self) -> Optional[pulumi.Input[str]]:
-        return pulumi.get(self, "variant")
+    def primordial(self) -> pulumi.Input[Sequence[pulumi.Input['PrimorialEntryArgs']]]:
+        return pulumi.get(self, "primordial")
 
-    @variant.setter
-    def variant(self, value: Optional[pulumi.Input[str]]):
-        pulumi.set(self, "variant", value)
+    @primordial.setter
+    def primordial(self, value: pulumi.Input[Sequence[pulumi.Input['PrimorialEntryArgs']]]):
+        pulumi.set(self, "primordial", value)
 
 
-class Validator(pulumi.CustomResource):
+class Solana(pulumi.CustomResource):
     @overload
     def __init__(__self__,
                  resource_name: str,
                  opts: Optional[pulumi.ResourceOptions] = None,
                  connection: Optional[pulumi.Input[pulumi.InputType['_ssh.ConnectionArgs']]] = None,
-                 flags: Optional[pulumi.Input[pulumi.InputType['_agave.ValidatorFlagsArgs']]] = None,
-                 key_pairs: Optional[pulumi.Input[pulumi.InputType['_agave.ValidatorKeyPairsArgs']]] = None,
-                 variant: Optional[pulumi.Input[str]] = None,
+                 flags: Optional[pulumi.Input[pulumi.InputType['_solana.GenesisFlagsArgs']]] = None,
+                 primordial: Optional[pulumi.Input[Sequence[pulumi.Input[pulumi.InputType['PrimorialEntryArgs']]]]] = None,
                  __props__=None):
         """
-        Create a Validator resource with the given unique name, props, and options.
+        Create a Solana resource with the given unique name, props, and options.
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
         """
@@ -85,17 +74,17 @@ class Validator(pulumi.CustomResource):
     @overload
     def __init__(__self__,
                  resource_name: str,
-                 args: ValidatorArgs,
+                 args: SolanaArgs,
                  opts: Optional[pulumi.ResourceOptions] = None):
         """
-        Create a Validator resource with the given unique name, props, and options.
+        Create a Solana resource with the given unique name, props, and options.
         :param str resource_name: The name of the resource.
-        :param ValidatorArgs args: The arguments to use to populate this resource's properties.
+        :param SolanaArgs args: The arguments to use to populate this resource's properties.
         :param pulumi.ResourceOptions opts: Options for the resource.
         """
         ...
     def __init__(__self__, resource_name: str, *args, **kwargs):
-        resource_args, opts = _utilities.get_resource_args_opts(ValidatorArgs, pulumi.ResourceOptions, *args, **kwargs)
+        resource_args, opts = _utilities.get_resource_args_opts(SolanaArgs, pulumi.ResourceOptions, *args, **kwargs)
         if resource_args is not None:
             __self__._internal_init(resource_name, opts, **resource_args.__dict__)
         else:
@@ -105,9 +94,8 @@ class Validator(pulumi.CustomResource):
                  resource_name: str,
                  opts: Optional[pulumi.ResourceOptions] = None,
                  connection: Optional[pulumi.Input[pulumi.InputType['_ssh.ConnectionArgs']]] = None,
-                 flags: Optional[pulumi.Input[pulumi.InputType['_agave.ValidatorFlagsArgs']]] = None,
-                 key_pairs: Optional[pulumi.Input[pulumi.InputType['_agave.ValidatorKeyPairsArgs']]] = None,
-                 variant: Optional[pulumi.Input[str]] = None,
+                 flags: Optional[pulumi.Input[pulumi.InputType['_solana.GenesisFlagsArgs']]] = None,
+                 primordial: Optional[pulumi.Input[Sequence[pulumi.Input[pulumi.InputType['PrimorialEntryArgs']]]]] = None,
                  __props__=None):
         opts = pulumi.ResourceOptions.merge(_utilities.get_resource_opts_defaults(), opts)
         if not isinstance(opts, pulumi.ResourceOptions):
@@ -115,7 +103,7 @@ class Validator(pulumi.CustomResource):
         if opts.id is None:
             if __props__ is not None:
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
-            __props__ = ValidatorArgs.__new__(ValidatorArgs)
+            __props__ = SolanaArgs.__new__(SolanaArgs)
 
             if connection is None and not opts.urn:
                 raise TypeError("Missing required property 'connection'")
@@ -123,14 +111,12 @@ class Validator(pulumi.CustomResource):
             if flags is None and not opts.urn:
                 raise TypeError("Missing required property 'flags'")
             __props__.__dict__["flags"] = flags
-            if key_pairs is None and not opts.urn:
-                raise TypeError("Missing required property 'key_pairs'")
-            __props__.__dict__["key_pairs"] = None if key_pairs is None else pulumi.Output.secret(key_pairs)
-            __props__.__dict__["variant"] = variant
-        secret_opts = pulumi.ResourceOptions(additional_secret_outputs=["keyPairs"])
-        opts = pulumi.ResourceOptions.merge(opts, secret_opts)
-        super(Validator, __self__).__init__(
-            'svm:index:Validator',
+            if primordial is None and not opts.urn:
+                raise TypeError("Missing required property 'primordial'")
+            __props__.__dict__["primordial"] = primordial
+            __props__.__dict__["genesis_hash"] = None
+        super(Solana, __self__).__init__(
+            'svm:genesis:Solana',
             resource_name,
             __props__,
             opts)
@@ -138,9 +124,9 @@ class Validator(pulumi.CustomResource):
     @staticmethod
     def get(resource_name: str,
             id: pulumi.Input[str],
-            opts: Optional[pulumi.ResourceOptions] = None) -> 'Validator':
+            opts: Optional[pulumi.ResourceOptions] = None) -> 'Solana':
         """
-        Get an existing Validator resource's state with the given name, id, and optional extra
+        Get an existing Solana resource's state with the given name, id, and optional extra
         properties used to qualify the lookup.
 
         :param str resource_name: The unique name of the resulting resource.
@@ -149,13 +135,13 @@ class Validator(pulumi.CustomResource):
         """
         opts = pulumi.ResourceOptions.merge(opts, pulumi.ResourceOptions(id=id))
 
-        __props__ = ValidatorArgs.__new__(ValidatorArgs)
+        __props__ = SolanaArgs.__new__(SolanaArgs)
 
         __props__.__dict__["connection"] = None
         __props__.__dict__["flags"] = None
-        __props__.__dict__["key_pairs"] = None
-        __props__.__dict__["variant"] = None
-        return Validator(resource_name, opts=opts, __props__=__props__)
+        __props__.__dict__["genesis_hash"] = None
+        __props__.__dict__["primordial"] = None
+        return Solana(resource_name, opts=opts, __props__=__props__)
 
     @property
     @pulumi.getter
@@ -164,16 +150,16 @@ class Validator(pulumi.CustomResource):
 
     @property
     @pulumi.getter
-    def flags(self) -> pulumi.Output['_agave.outputs.ValidatorFlags']:
+    def flags(self) -> pulumi.Output['_solana.outputs.GenesisFlags']:
         return pulumi.get(self, "flags")
 
     @property
-    @pulumi.getter(name="keyPairs")
-    def key_pairs(self) -> pulumi.Output['_agave.outputs.ValidatorKeyPairs']:
-        return pulumi.get(self, "key_pairs")
+    @pulumi.getter(name="genesisHash")
+    def genesis_hash(self) -> pulumi.Output[str]:
+        return pulumi.get(self, "genesis_hash")
 
     @property
     @pulumi.getter
-    def variant(self) -> pulumi.Output[Optional[str]]:
-        return pulumi.get(self, "variant")
+    def primordial(self) -> pulumi.Output[Sequence['outputs.PrimorialEntry']]:
+        return pulumi.get(self, "primordial")
 

@@ -10,13 +10,12 @@ from typing import Any, Mapping, Optional, Sequence, Union, overload
 from .. import _utilities
 
 __all__ = [
-    'ValidatorFlagsArgs',
-    'ValidatorKeyPairsArgs',
-    'ValidatorPathsArgs',
+    'FlagsArgs',
+    'KeyPairsArgs',
 ]
 
 @pulumi.input_type
-class ValidatorFlagsArgs:
+class FlagsArgs:
     def __init__(__self__, *,
                  block_production_method: pulumi.Input[str],
                  dynamic_port_range: pulumi.Input[str],
@@ -25,7 +24,6 @@ class ValidatorFlagsArgs:
                  limit_ledger_size: pulumi.Input[int],
                  no_wait_for_vote_to_start_leader: pulumi.Input[bool],
                  only_known_rpc: pulumi.Input[bool],
-                 paths: pulumi.Input['ValidatorPathsArgs'],
                  private_rpc: pulumi.Input[bool],
                  rpc_bind_address: pulumi.Input[str],
                  rpc_port: pulumi.Input[int],
@@ -44,7 +42,6 @@ class ValidatorFlagsArgs:
         pulumi.set(__self__, "limit_ledger_size", limit_ledger_size)
         pulumi.set(__self__, "no_wait_for_vote_to_start_leader", no_wait_for_vote_to_start_leader)
         pulumi.set(__self__, "only_known_rpc", only_known_rpc)
-        pulumi.set(__self__, "paths", paths)
         pulumi.set(__self__, "private_rpc", private_rpc)
         pulumi.set(__self__, "rpc_bind_address", rpc_bind_address)
         pulumi.set(__self__, "rpc_port", rpc_port)
@@ -125,15 +122,6 @@ class ValidatorFlagsArgs:
     @only_known_rpc.setter
     def only_known_rpc(self, value: pulumi.Input[bool]):
         pulumi.set(self, "only_known_rpc", value)
-
-    @property
-    @pulumi.getter
-    def paths(self) -> pulumi.Input['ValidatorPathsArgs']:
-        return pulumi.get(self, "paths")
-
-    @paths.setter
-    def paths(self, value: pulumi.Input['ValidatorPathsArgs']):
-        pulumi.set(self, "paths", value)
 
     @property
     @pulumi.getter(name="privateRPC")
@@ -236,7 +224,7 @@ class ValidatorFlagsArgs:
 
 
 @pulumi.input_type
-class ValidatorKeyPairsArgs:
+class KeyPairsArgs:
     def __init__(__self__, *,
                  identity: pulumi.Input[str],
                  vote_account: pulumi.Input[str]):
@@ -260,43 +248,5 @@ class ValidatorKeyPairsArgs:
     @vote_account.setter
     def vote_account(self, value: pulumi.Input[str]):
         pulumi.set(self, "vote_account", value)
-
-
-@pulumi.input_type
-class ValidatorPathsArgs:
-    def __init__(__self__, *,
-                 accounts: pulumi.Input[str],
-                 ledger: pulumi.Input[str],
-                 log: pulumi.Input[str]):
-        pulumi.set(__self__, "accounts", accounts)
-        pulumi.set(__self__, "ledger", ledger)
-        pulumi.set(__self__, "log", log)
-
-    @property
-    @pulumi.getter
-    def accounts(self) -> pulumi.Input[str]:
-        return pulumi.get(self, "accounts")
-
-    @accounts.setter
-    def accounts(self, value: pulumi.Input[str]):
-        pulumi.set(self, "accounts", value)
-
-    @property
-    @pulumi.getter
-    def ledger(self) -> pulumi.Input[str]:
-        return pulumi.get(self, "ledger")
-
-    @ledger.setter
-    def ledger(self, value: pulumi.Input[str]):
-        pulumi.set(self, "ledger", value)
-
-    @property
-    @pulumi.getter
-    def log(self) -> pulumi.Input[str]:
-        return pulumi.get(self, "log")
-
-    @log.setter
-    def log(self, value: pulumi.Input[str]):
-        pulumi.set(self, "log", value)
 
 

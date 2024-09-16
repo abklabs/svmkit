@@ -22,7 +22,7 @@ namespace Pulumi.Svm.Ssh.Inputs
         public Input<string>? AgentSocketPath { get; set; }
 
         /// <summary>
-        /// Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 10.
+        /// Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 1000.
         /// </summary>
         [Input("dialErrorLimit")]
         public Input<int>? DialErrorLimit { get; set; }
@@ -71,7 +71,7 @@ namespace Pulumi.Svm.Ssh.Inputs
 
         public ConnectionArgs()
         {
-            DialErrorLimit = 10;
+            DialErrorLimit = 1000;
             PerDialTimeout = 15;
             Port = 22;
             User = "root";

@@ -16,7 +16,7 @@ func Ready(ctx context.Context, client *ssh.Client) error {
 		case <-ctx.Done():
 			return fmt.Errorf("context deadline exceeded: %w", ctx.Err())
 		default:
-			err := Exec(ctx, client, "echo 'ping'")
+			_, _, err := Exec(ctx, client, "echo 'ping'")
 			if err == nil {
 				return nil
 			}

@@ -8,6 +8,7 @@ import (
 
 	"github.com/abklabs/pulumi-svm/provider/pkg/agave"
 	"github.com/abklabs/pulumi-svm/provider/pkg/runner"
+	"github.com/abklabs/pulumi-svm/provider/pkg/svm"
 )
 
 // Agave represents a Pulumi resource for managing an Agave validator.
@@ -15,7 +16,7 @@ type Agave struct{}
 
 // AgaveArgs represents the input arguments required to create an Agave resource.
 type AgaveArgs struct {
-	ValidatorArgs
+	svm.ValidatorArgs
 	// Flags contains the configuration flags for the Agave validator.
 	Flags    agave.Flags    `pulumi:"flags"`
 	KeyPairs agave.KeyPairs `pulumi:"keyPairs" provider:"secret"`

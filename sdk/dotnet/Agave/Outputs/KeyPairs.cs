@@ -11,23 +11,19 @@ namespace Pulumi.Svm.Agave.Outputs
 {
 
     [OutputType]
-    public sealed class ValidatorPaths
+    public sealed class KeyPairs
     {
-        public readonly string Accounts;
-        public readonly string Ledger;
-        public readonly string Log;
+        public readonly string Identity;
+        public readonly string VoteAccount;
 
         [OutputConstructor]
-        private ValidatorPaths(
-            string accounts,
+        private KeyPairs(
+            string identity,
 
-            string ledger,
-
-            string log)
+            string voteAccount)
         {
-            Accounts = accounts;
-            Ledger = ledger;
-            Log = log;
+            Identity = identity;
+            VoteAccount = voteAccount;
         }
     }
 }

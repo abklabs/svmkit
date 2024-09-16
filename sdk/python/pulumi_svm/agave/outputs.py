@@ -8,16 +8,14 @@ import pulumi
 import pulumi.runtime
 from typing import Any, Mapping, Optional, Sequence, Union, overload
 from .. import _utilities
-from . import outputs
 
 __all__ = [
-    'ValidatorFlags',
-    'ValidatorKeyPairs',
-    'ValidatorPaths',
+    'Flags',
+    'KeyPairs',
 ]
 
 @pulumi.output_type
-class ValidatorFlags(dict):
+class Flags(dict):
     @staticmethod
     def __key_warning(key: str):
         suggest = None
@@ -59,14 +57,14 @@ class ValidatorFlags(dict):
             suggest = "tvu_receive_threads"
 
         if suggest:
-            pulumi.log.warn(f"Key '{key}' not found in ValidatorFlags. Access the value via the '{suggest}' property getter instead.")
+            pulumi.log.warn(f"Key '{key}' not found in Flags. Access the value via the '{suggest}' property getter instead.")
 
     def __getitem__(self, key: str) -> Any:
-        ValidatorFlags.__key_warning(key)
+        Flags.__key_warning(key)
         return super().__getitem__(key)
 
     def get(self, key: str, default = None) -> Any:
-        ValidatorFlags.__key_warning(key)
+        Flags.__key_warning(key)
         return super().get(key, default)
 
     def __init__(__self__, *,
@@ -77,7 +75,6 @@ class ValidatorFlags(dict):
                  limit_ledger_size: int,
                  no_wait_for_vote_to_start_leader: bool,
                  only_known_rpc: bool,
-                 paths: 'outputs.ValidatorPaths',
                  private_rpc: bool,
                  rpc_bind_address: str,
                  rpc_port: int,
@@ -96,7 +93,6 @@ class ValidatorFlags(dict):
         pulumi.set(__self__, "limit_ledger_size", limit_ledger_size)
         pulumi.set(__self__, "no_wait_for_vote_to_start_leader", no_wait_for_vote_to_start_leader)
         pulumi.set(__self__, "only_known_rpc", only_known_rpc)
-        pulumi.set(__self__, "paths", paths)
         pulumi.set(__self__, "private_rpc", private_rpc)
         pulumi.set(__self__, "rpc_bind_address", rpc_bind_address)
         pulumi.set(__self__, "rpc_port", rpc_port)
@@ -149,11 +145,6 @@ class ValidatorFlags(dict):
     @pulumi.getter(name="onlyKnownRPC")
     def only_known_rpc(self) -> bool:
         return pulumi.get(self, "only_known_rpc")
-
-    @property
-    @pulumi.getter
-    def paths(self) -> 'outputs.ValidatorPaths':
-        return pulumi.get(self, "paths")
 
     @property
     @pulumi.getter(name="privateRPC")
@@ -212,7 +203,7 @@ class ValidatorFlags(dict):
 
 
 @pulumi.output_type
-class ValidatorKeyPairs(dict):
+class KeyPairs(dict):
     @staticmethod
     def __key_warning(key: str):
         suggest = None
@@ -220,14 +211,14 @@ class ValidatorKeyPairs(dict):
             suggest = "vote_account"
 
         if suggest:
-            pulumi.log.warn(f"Key '{key}' not found in ValidatorKeyPairs. Access the value via the '{suggest}' property getter instead.")
+            pulumi.log.warn(f"Key '{key}' not found in KeyPairs. Access the value via the '{suggest}' property getter instead.")
 
     def __getitem__(self, key: str) -> Any:
-        ValidatorKeyPairs.__key_warning(key)
+        KeyPairs.__key_warning(key)
         return super().__getitem__(key)
 
     def get(self, key: str, default = None) -> Any:
-        ValidatorKeyPairs.__key_warning(key)
+        KeyPairs.__key_warning(key)
         return super().get(key, default)
 
     def __init__(__self__, *,
@@ -245,31 +236,5 @@ class ValidatorKeyPairs(dict):
     @pulumi.getter(name="voteAccount")
     def vote_account(self) -> str:
         return pulumi.get(self, "vote_account")
-
-
-@pulumi.output_type
-class ValidatorPaths(dict):
-    def __init__(__self__, *,
-                 accounts: str,
-                 ledger: str,
-                 log: str):
-        pulumi.set(__self__, "accounts", accounts)
-        pulumi.set(__self__, "ledger", ledger)
-        pulumi.set(__self__, "log", log)
-
-    @property
-    @pulumi.getter
-    def accounts(self) -> str:
-        return pulumi.get(self, "accounts")
-
-    @property
-    @pulumi.getter
-    def ledger(self) -> str:
-        return pulumi.get(self, "ledger")
-
-    @property
-    @pulumi.getter
-    def log(self) -> str:
-        return pulumi.get(self, "log")
 
 

@@ -10,7 +10,7 @@ using Pulumi.Serialization;
 namespace Pulumi.Svm.Agave.Inputs
 {
 
-    public sealed class ValidatorFlagsArgs : global::Pulumi.ResourceArgs
+    public sealed class FlagsArgs : global::Pulumi.ResourceArgs
     {
         [Input("blockProductionMethod", required: true)]
         public Input<string> BlockProductionMethod { get; set; } = null!;
@@ -58,9 +58,6 @@ namespace Pulumi.Svm.Agave.Inputs
         [Input("onlyKnownRPC", required: true)]
         public Input<bool> OnlyKnownRPC { get; set; } = null!;
 
-        [Input("paths", required: true)]
-        public Input<Inputs.ValidatorPathsArgs> Paths { get; set; } = null!;
-
         [Input("privateRPC", required: true)]
         public Input<bool> PrivateRPC { get; set; } = null!;
 
@@ -79,9 +76,9 @@ namespace Pulumi.Svm.Agave.Inputs
         [Input("walRecoveryMode", required: true)]
         public Input<string> WalRecoveryMode { get; set; } = null!;
 
-        public ValidatorFlagsArgs()
+        public FlagsArgs()
         {
         }
-        public static new ValidatorFlagsArgs Empty => new ValidatorFlagsArgs();
+        public static new FlagsArgs Empty => new FlagsArgs();
     }
 }

@@ -11,6 +11,12 @@ import (
 	"github.com/abklabs/pulumi-svm/provider/pkg/ssh"
 )
 
+// InstallCommandInterface is an interface for the InstallCommand struct.
+type Command interface {
+	Env() map[string]string
+	Script() string
+}
+
 // Runner represents the setup configuration for a machine.
 type Runner struct {
 	connection  ssh.Connection
@@ -63,7 +69,7 @@ func (r *Runner) Run(ctx context.Context) error {
 
 	// Create a temporary directory on the remote host
 	tempDir := fmt.Sprintf("/tmp/runner-%d", rand.Int())
-	err = ssh.Exec(ctx, connection, fmt.Sprintf("mkdir -p %s", tempDir))
+	_, _, err = ssh.Exec(ctx, connection, fmt.Sprintf("mkdir -p %s", tempDir))
 	if err != nil {
 		return fmt.Errorf("failed to create temporary directory: %w", err)
 	}
@@ -95,13 +101,13 @@ func (r *Runner) Run(ctx context.Context) error {
 	// change back to the original directory, and remove the temporary directory.
 	commands := fmt.Sprintf(`
 		chmod +x %s &&
-		cd %s &&
+		cd %s &&p
 		./run.sh &&
 		cd - &&
 		rm -rf %s
 	`, runPath, tempDir, tempDir)
 
-	err = ssh.Exec(ctx, connection, commands)
+	_, _, err = ssh.Exec(ctx, connection, commands)
 	if err != nil {
 		return fmt.Errorf("failed to execute script: %w", err)
 	}

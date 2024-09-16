@@ -17,10 +17,12 @@ utilities.lazyLoad(exports, ["Provider"], () => require("./provider"));
 
 
 // Export sub-modules:
+import * as genesis from "./genesis";
 import * as types from "./types";
 import * as validator from "./validator";
 
 export {
+    genesis,
     types,
     validator,
 };

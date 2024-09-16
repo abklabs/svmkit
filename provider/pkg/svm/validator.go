@@ -1,4 +1,4 @@
-package validator
+package svm
 
 import (
 	"github.com/abklabs/pulumi-svm/provider/pkg/ssh"

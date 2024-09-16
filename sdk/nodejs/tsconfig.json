@@ -13,6 +13,8 @@
         "strict": true
     },
     "files": [
+        "genesis/index.ts",
+        "genesis/solana.ts",
         "index.ts",
         "keyPair.ts",
         "provider.ts",

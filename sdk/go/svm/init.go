@@ -23,8 +23,6 @@ func (m *module) Construct(ctx *pulumi.Context, name, typ, urn string) (r pulumi
 	switch typ {
 	case "svm:index:KeyPair":
 		r = &KeyPair{}
-	case "svm:index:Validator":
-		r = &Validator{}
 	default:
 		return nil, fmt.Errorf("unknown resource type: %s", typ)
 	}

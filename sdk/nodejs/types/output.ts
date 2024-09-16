@@ -36,6 +36,31 @@ export namespace agave {
 
 }
 
+export namespace genesis {
+    export interface PrimorialEntry {
+        lamports: string;
+        pubkey: string;
+    }
+
+}
+
+export namespace solana {
+    export interface GenesisFlags {
+        clusterType?: string;
+        faucetLamports?: string;
+        faucetPubkey: string;
+        identityPubkey: string;
+        inflation?: string;
+        lamportsPerByteYear?: string;
+        ledgerPath: string;
+        slotPerEpoch?: string;
+        stakePubkey: string;
+        targetLamportsPerSignature?: string;
+        votePubkey: string;
+    }
+
+}
+
 export namespace ssh {
     /**
      * Instructions for how to connect to a remote endpoint.
@@ -46,7 +71,7 @@ export namespace ssh {
          */
         agentSocketPath?: string;
         /**
-         * Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 10.
+         * Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 1000.
          */
         dialErrorLimit?: number;
         /**
@@ -84,7 +109,7 @@ export namespace ssh {
     export function connectionProvideDefaults(val: Connection): Connection {
         return {
             ...val,
-            dialErrorLimit: (val.dialErrorLimit) ?? 10,
+            dialErrorLimit: (val.dialErrorLimit) ?? 1000,
             perDialTimeout: (val.perDialTimeout) ?? 15,
             port: (val.port) ?? 22,
             user: (val.user) ?? "root",
