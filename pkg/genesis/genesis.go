@@ -1,7 +1,7 @@
 package genesis
 
 import (
-	"github.com/abklabs/pulumi-svm/provider/pkg/runner"
+	"github.com/abklabs/svmkit/pkg/runner"
 )
 
 // Genesis is an interface for managing the blockchain validator.

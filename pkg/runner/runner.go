@@ -8,7 +8,7 @@ import (
 	"path"
 	"time"
 
-	"github.com/abklabs/pulumi-svm/provider/pkg/ssh"
+	"github.com/abklabs/svmkit/pkg/ssh"
 )
 
 // InstallCommandInterface is an interface for the InstallCommand struct.

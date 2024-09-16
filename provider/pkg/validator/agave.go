@@ -6,9 +6,9 @@ import (
 	_ "embed"
 	"fmt"
 
-	"github.com/abklabs/pulumi-svm/provider/pkg/agave"
-	"github.com/abklabs/pulumi-svm/provider/pkg/runner"
-	"github.com/abklabs/pulumi-svm/provider/pkg/svm"
+	"github.com/abklabs/svmkit/pkg/agave"
+	"github.com/abklabs/svmkit/pkg/runner"
+	"github.com/abklabs/svmkit/provider/pkg/svm"
 )
 
 // Agave represents a Pulumi resource for managing an Agave validator.

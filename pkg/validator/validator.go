@@ -1,6 +1,6 @@
 package validator
 
-import "github.com/abklabs/pulumi-svm/provider/pkg/runner"
+import "github.com/abklabs/svmkit/pkg/runner"
 
 // KeyPairs is a map of key pairs for the blockchain validator.
 type KeyPairs map[string]string

@@ -2,7 +2,7 @@ PROJECT_NAME := Pulumi svm Resource Provider
 
 PACK             := svm
 PACKDIR          := sdk
-PROJECT          := github.com/abklabs/pulumi-svm
+PROJECT          := github.com/abklabs/svmkit
 NODE_MODULE_NAME := @abklabs/svm
 NUGET_PKG_NAME   := abklabs.svm
 

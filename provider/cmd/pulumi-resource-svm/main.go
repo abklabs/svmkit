@@ -21,8 +21,8 @@ import (
 
 	p "github.com/pulumi/pulumi-go-provider"
 
-	svm "github.com/abklabs/pulumi-svm/provider"
-	"github.com/abklabs/pulumi-svm/provider/pkg/version"
+	svm "github.com/abklabs/svmkit/provider"
+	"github.com/abklabs/svmkit/provider/pkg/version"
 )
 
 // Serve the provider against Pulumi's Provider protocol.

@@ -3,8 +3,8 @@ package solana
 import (
 	"strings"
 
-	"github.com/abklabs/pulumi-svm/provider/pkg/genesis"
-	"github.com/abklabs/pulumi-svm/provider/pkg/runner"
+	"github.com/abklabs/svmkit/pkg/genesis"
+	"github.com/abklabs/svmkit/pkg/runner"
 )
 
 type CreateCommand struct {

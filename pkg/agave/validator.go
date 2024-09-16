@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/abklabs/pulumi-svm/provider/pkg/runner"
-	"github.com/abklabs/pulumi-svm/provider/pkg/validator"
+	"github.com/abklabs/svmkit/pkg/runner"
+	"github.com/abklabs/svmkit/pkg/validator"
 )
 
 const (
