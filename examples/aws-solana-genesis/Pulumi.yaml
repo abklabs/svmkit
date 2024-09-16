@@ -1,0 +1,6 @@
+name: provider-svm-native
+runtime: nodejs
+plugins:
+  providers:
+    - name: svmkit
+      path: ../../bin
