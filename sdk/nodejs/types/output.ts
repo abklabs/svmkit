@@ -5,38 +5,90 @@ import * as pulumi from "@pulumi/pulumi";
 import * as inputs from "../types/input";
 import * as outputs from "../types/output";
 
+import * as utilities from "../utilities";
+
 export namespace agave {
-    export interface ValidatorFlags {
+    export interface Flags {
         blockProductionMethod: string;
         dynamicPortRange: string;
-        entryPoint: string[];
-        expectedGenesisHash: string;
-        fullRpcAPI: boolean;
+        entryPoint?: string[];
+        expectedGenesisHash?: string;
+        fullRpcAPI?: boolean;
         fullSnapshotIntervalSlots: number;
         gossipPort: number;
-        knownValidator: string[];
+        knownValidator?: string[];
         limitLedgerSize: number;
-        noVoting: boolean;
+        noVoting?: boolean;
         noWaitForVoteToStartLeader: boolean;
         onlyKnownRPC: boolean;
-        paths: outputs.agave.ValidatorPaths;
         privateRPC: boolean;
         rpcBindAddress: string;
         rpcPort: number;
-        tvuReceiveThreads: number;
+        tvuReceiveThreads?: number;
         useSnapshotArchivesAtStartup: string;
         walRecoveryMode: string;
     }
 
-    export interface ValidatorKeyPairs {
+    export interface KeyPairs {
         identity: string;
         voteAccount: string;
     }
 
-    export interface ValidatorPaths {
-        accounts: string;
-        ledger: string;
-        log: string;
+}
+
+export namespace ssh {
+    /**
+     * Instructions for how to connect to a remote endpoint.
+     */
+    export interface Connection {
+        /**
+         * SSH Agent socket path. Default to environment variable SSH_AUTH_SOCK if present.
+         */
+        agentSocketPath?: string;
+        /**
+         * Max allowed errors on trying to dial the remote host. -1 set count to unlimited. Default value is 10.
+         */
+        dialErrorLimit?: number;
+        /**
+         * The address of the resource to connect to.
+         */
+        host: string;
+        /**
+         * The password we should use for the connection.
+         */
+        password?: string;
+        /**
+         * Max number of seconds for each dial attempt. 0 implies no maximum. Default value is 15 seconds.
+         */
+        perDialTimeout?: number;
+        /**
+         * The port to connect to. Defaults to 22.
+         */
+        port?: number;
+        /**
+         * The contents of an SSH key to use for the connection. This takes preference over the password if provided.
+         */
+        privateKey?: string;
+        /**
+         * The password to use in case the private key is encrypted.
+         */
+        privateKeyPassword?: string;
+        /**
+         * The user that we should use for the connection.
+         */
+        user?: string;
+    }
+    /**
+     * connectionProvideDefaults sets the appropriate defaults for Connection
+     */
+    export function connectionProvideDefaults(val: Connection): Connection {
+        return {
+            ...val,
+            dialErrorLimit: (val.dialErrorLimit) ?? 10,
+            perDialTimeout: (val.perDialTimeout) ?? 15,
+            port: (val.port) ?? 22,
+            user: (val.user) ?? "root",
+        };
     }
 
 }

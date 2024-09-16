@@ -1,6 +1,0 @@
-name: provider-svm-native
-runtime: python
-plugins:
-  providers:
-    - name: svm
-      path: ../../bin

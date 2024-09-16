@@ -25,22 +25,12 @@ class ValidatorFlags(dict):
             suggest = "block_production_method"
         elif key == "dynamicPortRange":
             suggest = "dynamic_port_range"
-        elif key == "entryPoint":
-            suggest = "entry_point"
-        elif key == "expectedGenesisHash":
-            suggest = "expected_genesis_hash"
-        elif key == "fullRpcAPI":
-            suggest = "full_rpc_api"
         elif key == "fullSnapshotIntervalSlots":
             suggest = "full_snapshot_interval_slots"
         elif key == "gossipPort":
             suggest = "gossip_port"
-        elif key == "knownValidator":
-            suggest = "known_validator"
         elif key == "limitLedgerSize":
             suggest = "limit_ledger_size"
-        elif key == "noVoting":
-            suggest = "no_voting"
         elif key == "noWaitForVoteToStartLeader":
             suggest = "no_wait_for_vote_to_start_leader"
         elif key == "onlyKnownRPC":
@@ -51,12 +41,22 @@ class ValidatorFlags(dict):
             suggest = "rpc_bind_address"
         elif key == "rpcPort":
             suggest = "rpc_port"
-        elif key == "tvuReceiveThreads":
-            suggest = "tvu_receive_threads"
         elif key == "useSnapshotArchivesAtStartup":
             suggest = "use_snapshot_archives_at_startup"
         elif key == "walRecoveryMode":
             suggest = "wal_recovery_mode"
+        elif key == "entryPoint":
+            suggest = "entry_point"
+        elif key == "expectedGenesisHash":
+            suggest = "expected_genesis_hash"
+        elif key == "fullRpcAPI":
+            suggest = "full_rpc_api"
+        elif key == "knownValidator":
+            suggest = "known_validator"
+        elif key == "noVoting":
+            suggest = "no_voting"
+        elif key == "tvuReceiveThreads":
+            suggest = "tvu_receive_threads"
 
         if suggest:
             pulumi.log.warn(f"Key '{key}' not found in ValidatorFlags. Access the value via the '{suggest}' property getter instead.")
@@ -72,42 +72,48 @@ class ValidatorFlags(dict):
     def __init__(__self__, *,
                  block_production_method: str,
                  dynamic_port_range: str,
-                 entry_point: Sequence[str],
-                 expected_genesis_hash: str,
-                 full_rpc_api: bool,
                  full_snapshot_interval_slots: int,
                  gossip_port: int,
-                 known_validator: Sequence[str],
                  limit_ledger_size: int,
-                 no_voting: bool,
                  no_wait_for_vote_to_start_leader: bool,
                  only_known_rpc: bool,
                  paths: 'outputs.ValidatorPaths',
                  private_rpc: bool,
                  rpc_bind_address: str,
                  rpc_port: int,
-                 tvu_receive_threads: int,
                  use_snapshot_archives_at_startup: str,
-                 wal_recovery_mode: str):
+                 wal_recovery_mode: str,
+                 entry_point: Optional[Sequence[str]] = None,
+                 expected_genesis_hash: Optional[str] = None,
+                 full_rpc_api: Optional[bool] = None,
+                 known_validator: Optional[Sequence[str]] = None,
+                 no_voting: Optional[bool] = None,
+                 tvu_receive_threads: Optional[int] = None):
         pulumi.set(__self__, "block_production_method", block_production_method)
         pulumi.set(__self__, "dynamic_port_range", dynamic_port_range)
-        pulumi.set(__self__, "entry_point", entry_point)
-        pulumi.set(__self__, "expected_genesis_hash", expected_genesis_hash)
-        pulumi.set(__self__, "full_rpc_api", full_rpc_api)
         pulumi.set(__self__, "full_snapshot_interval_slots", full_snapshot_interval_slots)
         pulumi.set(__self__, "gossip_port", gossip_port)
-        pulumi.set(__self__, "known_validator", known_validator)
         pulumi.set(__self__, "limit_ledger_size", limit_ledger_size)
-        pulumi.set(__self__, "no_voting", no_voting)
         pulumi.set(__self__, "no_wait_for_vote_to_start_leader", no_wait_for_vote_to_start_leader)
         pulumi.set(__self__, "only_known_rpc", only_known_rpc)
         pulumi.set(__self__, "paths", paths)
         pulumi.set(__self__, "private_rpc", private_rpc)
         pulumi.set(__self__, "rpc_bind_address", rpc_bind_address)
         pulumi.set(__self__, "rpc_port", rpc_port)
-        pulumi.set(__self__, "tvu_receive_threads", tvu_receive_threads)
         pulumi.set(__self__, "use_snapshot_archives_at_startup", use_snapshot_archives_at_startup)
         pulumi.set(__self__, "wal_recovery_mode", wal_recovery_mode)
+        if entry_point is not None:
+            pulumi.set(__self__, "entry_point", entry_point)
+        if expected_genesis_hash is not None:
+            pulumi.set(__self__, "expected_genesis_hash", expected_genesis_hash)
+        if full_rpc_api is not None:
+            pulumi.set(__self__, "full_rpc_api", full_rpc_api)
+        if known_validator is not None:
+            pulumi.set(__self__, "known_validator", known_validator)
+        if no_voting is not None:
+            pulumi.set(__self__, "no_voting", no_voting)
+        if tvu_receive_threads is not None:
+            pulumi.set(__self__, "tvu_receive_threads", tvu_receive_threads)
 
     @property
     @pulumi.getter(name="blockProductionMethod")
@@ -120,21 +126,6 @@ class ValidatorFlags(dict):
         return pulumi.get(self, "dynamic_port_range")
 
     @property
-    @pulumi.getter(name="entryPoint")
-    def entry_point(self) -> Sequence[str]:
-        return pulumi.get(self, "entry_point")
-
-    @property
-    @pulumi.getter(name="expectedGenesisHash")
-    def expected_genesis_hash(self) -> str:
-        return pulumi.get(self, "expected_genesis_hash")
-
-    @property
-    @pulumi.getter(name="fullRpcAPI")
-    def full_rpc_api(self) -> bool:
-        return pulumi.get(self, "full_rpc_api")
-
-    @property
     @pulumi.getter(name="fullSnapshotIntervalSlots")
     def full_snapshot_interval_slots(self) -> int:
         return pulumi.get(self, "full_snapshot_interval_slots")
@@ -145,19 +136,9 @@ class ValidatorFlags(dict):
         return pulumi.get(self, "gossip_port")
 
     @property
-    @pulumi.getter(name="knownValidator")
-    def known_validator(self) -> Sequence[str]:
-        return pulumi.get(self, "known_validator")
-
-    @property
     @pulumi.getter(name="limitLedgerSize")
     def limit_ledger_size(self) -> int:
         return pulumi.get(self, "limit_ledger_size")
-
-    @property
-    @pulumi.getter(name="noVoting")
-    def no_voting(self) -> bool:
-        return pulumi.get(self, "no_voting")
 
     @property
     @pulumi.getter(name="noWaitForVoteToStartLeader")
@@ -190,11 +171,6 @@ class ValidatorFlags(dict):
         return pulumi.get(self, "rpc_port")
 
     @property
-    @pulumi.getter(name="tvuReceiveThreads")
-    def tvu_receive_threads(self) -> int:
-        return pulumi.get(self, "tvu_receive_threads")
-
-    @property
     @pulumi.getter(name="useSnapshotArchivesAtStartup")
     def use_snapshot_archives_at_startup(self) -> str:
         return pulumi.get(self, "use_snapshot_archives_at_startup")
@@ -203,6 +179,36 @@ class ValidatorFlags(dict):
     @pulumi.getter(name="walRecoveryMode")
     def wal_recovery_mode(self) -> str:
         return pulumi.get(self, "wal_recovery_mode")
+
+    @property
+    @pulumi.getter(name="entryPoint")
+    def entry_point(self) -> Optional[Sequence[str]]:
+        return pulumi.get(self, "entry_point")
+
+    @property
+    @pulumi.getter(name="expectedGenesisHash")
+    def expected_genesis_hash(self) -> Optional[str]:
+        return pulumi.get(self, "expected_genesis_hash")
+
+    @property
+    @pulumi.getter(name="fullRpcAPI")
+    def full_rpc_api(self) -> Optional[bool]:
+        return pulumi.get(self, "full_rpc_api")
+
+    @property
+    @pulumi.getter(name="knownValidator")
+    def known_validator(self) -> Optional[Sequence[str]]:
+        return pulumi.get(self, "known_validator")
+
+    @property
+    @pulumi.getter(name="noVoting")
+    def no_voting(self) -> Optional[bool]:
+        return pulumi.get(self, "no_voting")
+
+    @property
+    @pulumi.getter(name="tvuReceiveThreads")
+    def tvu_receive_threads(self) -> Optional[int]:
+        return pulumi.get(self, "tvu_receive_threads")
 
 
 @pulumi.output_type

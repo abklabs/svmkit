@@ -17,20 +17,20 @@ type ValidatorFlags struct {
 	BlockProductionMethod        string         `pulumi:"blockProductionMethod"`
 	DynamicPortRange             string         `pulumi:"dynamicPortRange"`
 	EntryPoint                   []string       `pulumi:"entryPoint"`
-	ExpectedGenesisHash          string         `pulumi:"expectedGenesisHash"`
-	FullRpcAPI                   bool           `pulumi:"fullRpcAPI"`
+	ExpectedGenesisHash          *string        `pulumi:"expectedGenesisHash"`
+	FullRpcAPI                   *bool          `pulumi:"fullRpcAPI"`
 	FullSnapshotIntervalSlots    int            `pulumi:"fullSnapshotIntervalSlots"`
 	GossipPort                   int            `pulumi:"gossipPort"`
 	KnownValidator               []string       `pulumi:"knownValidator"`
 	LimitLedgerSize              int            `pulumi:"limitLedgerSize"`
-	NoVoting                     bool           `pulumi:"noVoting"`
+	NoVoting                     *bool          `pulumi:"noVoting"`
 	NoWaitForVoteToStartLeader   bool           `pulumi:"noWaitForVoteToStartLeader"`
 	OnlyKnownRPC                 bool           `pulumi:"onlyKnownRPC"`
 	Paths                        ValidatorPaths `pulumi:"paths"`
 	PrivateRPC                   bool           `pulumi:"privateRPC"`
 	RpcBindAddress               string         `pulumi:"rpcBindAddress"`
 	RpcPort                      int            `pulumi:"rpcPort"`
-	TvuReceiveThreads            int            `pulumi:"tvuReceiveThreads"`
+	TvuReceiveThreads            *int           `pulumi:"tvuReceiveThreads"`
 	UseSnapshotArchivesAtStartup string         `pulumi:"useSnapshotArchivesAtStartup"`
 	WalRecoveryMode              string         `pulumi:"walRecoveryMode"`
 }
@@ -50,20 +50,20 @@ type ValidatorFlagsArgs struct {
 	BlockProductionMethod        pulumi.StringInput      `pulumi:"blockProductionMethod"`
 	DynamicPortRange             pulumi.StringInput      `pulumi:"dynamicPortRange"`
 	EntryPoint                   pulumi.StringArrayInput `pulumi:"entryPoint"`
-	ExpectedGenesisHash          pulumi.StringInput      `pulumi:"expectedGenesisHash"`
-	FullRpcAPI                   pulumi.BoolInput        `pulumi:"fullRpcAPI"`
+	ExpectedGenesisHash          pulumi.StringPtrInput   `pulumi:"expectedGenesisHash"`
+	FullRpcAPI                   pulumi.BoolPtrInput     `pulumi:"fullRpcAPI"`
 	FullSnapshotIntervalSlots    pulumi.IntInput         `pulumi:"fullSnapshotIntervalSlots"`
 	GossipPort                   pulumi.IntInput         `pulumi:"gossipPort"`
 	KnownValidator               pulumi.StringArrayInput `pulumi:"knownValidator"`
 	LimitLedgerSize              pulumi.IntInput         `pulumi:"limitLedgerSize"`
-	NoVoting                     pulumi.BoolInput        `pulumi:"noVoting"`
+	NoVoting                     pulumi.BoolPtrInput     `pulumi:"noVoting"`
 	NoWaitForVoteToStartLeader   pulumi.BoolInput        `pulumi:"noWaitForVoteToStartLeader"`
 	OnlyKnownRPC                 pulumi.BoolInput        `pulumi:"onlyKnownRPC"`
 	Paths                        ValidatorPathsInput     `pulumi:"paths"`
 	PrivateRPC                   pulumi.BoolInput        `pulumi:"privateRPC"`
 	RpcBindAddress               pulumi.StringInput      `pulumi:"rpcBindAddress"`
 	RpcPort                      pulumi.IntInput         `pulumi:"rpcPort"`
-	TvuReceiveThreads            pulumi.IntInput         `pulumi:"tvuReceiveThreads"`
+	TvuReceiveThreads            pulumi.IntPtrInput      `pulumi:"tvuReceiveThreads"`
 	UseSnapshotArchivesAtStartup pulumi.StringInput      `pulumi:"useSnapshotArchivesAtStartup"`
 	WalRecoveryMode              pulumi.StringInput      `pulumi:"walRecoveryMode"`
 }
@@ -106,12 +106,12 @@ func (o ValidatorFlagsOutput) EntryPoint() pulumi.StringArrayOutput {
 	return o.ApplyT(func(v ValidatorFlags) []string { return v.EntryPoint }).(pulumi.StringArrayOutput)
 }
 
-func (o ValidatorFlagsOutput) ExpectedGenesisHash() pulumi.StringOutput {
-	return o.ApplyT(func(v ValidatorFlags) string { return v.ExpectedGenesisHash }).(pulumi.StringOutput)
+func (o ValidatorFlagsOutput) ExpectedGenesisHash() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v ValidatorFlags) *string { return v.ExpectedGenesisHash }).(pulumi.StringPtrOutput)
 }
 
-func (o ValidatorFlagsOutput) FullRpcAPI() pulumi.BoolOutput {
-	return o.ApplyT(func(v ValidatorFlags) bool { return v.FullRpcAPI }).(pulumi.BoolOutput)
+func (o ValidatorFlagsOutput) FullRpcAPI() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v ValidatorFlags) *bool { return v.FullRpcAPI }).(pulumi.BoolPtrOutput)
 }
 
 func (o ValidatorFlagsOutput) FullSnapshotIntervalSlots() pulumi.IntOutput {
@@ -130,8 +130,8 @@ func (o ValidatorFlagsOutput) LimitLedgerSize() pulumi.IntOutput {
 	return o.ApplyT(func(v ValidatorFlags) int { return v.LimitLedgerSize }).(pulumi.IntOutput)
 }
 
-func (o ValidatorFlagsOutput) NoVoting() pulumi.BoolOutput {
-	return o.ApplyT(func(v ValidatorFlags) bool { return v.NoVoting }).(pulumi.BoolOutput)
+func (o ValidatorFlagsOutput) NoVoting() pulumi.BoolPtrOutput {
+	return o.ApplyT(func(v ValidatorFlags) *bool { return v.NoVoting }).(pulumi.BoolPtrOutput)
 }
 
 func (o ValidatorFlagsOutput) NoWaitForVoteToStartLeader() pulumi.BoolOutput {
@@ -158,8 +158,8 @@ func (o ValidatorFlagsOutput) RpcPort() pulumi.IntOutput {
 	return o.ApplyT(func(v ValidatorFlags) int { return v.RpcPort }).(pulumi.IntOutput)
 }
 
-func (o ValidatorFlagsOutput) TvuReceiveThreads() pulumi.IntOutput {
-	return o.ApplyT(func(v ValidatorFlags) int { return v.TvuReceiveThreads }).(pulumi.IntOutput)
+func (o ValidatorFlagsOutput) TvuReceiveThreads() pulumi.IntPtrOutput {
+	return o.ApplyT(func(v ValidatorFlags) *int { return v.TvuReceiveThreads }).(pulumi.IntPtrOutput)
 }
 
 func (o ValidatorFlagsOutput) UseSnapshotArchivesAtStartup() pulumi.StringOutput {

@@ -16,20 +16,20 @@ namespace Pulumi.Svm.Agave.Outputs
         public readonly string BlockProductionMethod;
         public readonly string DynamicPortRange;
         public readonly ImmutableArray<string> EntryPoint;
-        public readonly string ExpectedGenesisHash;
-        public readonly bool FullRpcAPI;
+        public readonly string? ExpectedGenesisHash;
+        public readonly bool? FullRpcAPI;
         public readonly int FullSnapshotIntervalSlots;
         public readonly int GossipPort;
         public readonly ImmutableArray<string> KnownValidator;
         public readonly int LimitLedgerSize;
-        public readonly bool NoVoting;
+        public readonly bool? NoVoting;
         public readonly bool NoWaitForVoteToStartLeader;
         public readonly bool OnlyKnownRPC;
         public readonly Outputs.ValidatorPaths Paths;
         public readonly bool PrivateRPC;
         public readonly string RpcBindAddress;
         public readonly int RpcPort;
-        public readonly int TvuReceiveThreads;
+        public readonly int? TvuReceiveThreads;
         public readonly string UseSnapshotArchivesAtStartup;
         public readonly string WalRecoveryMode;
 
@@ -41,9 +41,9 @@ namespace Pulumi.Svm.Agave.Outputs
 
             ImmutableArray<string> entryPoint,
 
-            string expectedGenesisHash,
+            string? expectedGenesisHash,
 
-            bool fullRpcAPI,
+            bool? fullRpcAPI,
 
             int fullSnapshotIntervalSlots,
 
@@ -53,7 +53,7 @@ namespace Pulumi.Svm.Agave.Outputs
 
             int limitLedgerSize,
 
-            bool noVoting,
+            bool? noVoting,
 
             bool noWaitForVoteToStartLeader,
 
@@ -67,7 +67,7 @@ namespace Pulumi.Svm.Agave.Outputs
 
             int rpcPort,
 
-            int tvuReceiveThreads,
+            int? tvuReceiveThreads,
 
             string useSnapshotArchivesAtStartup,
 

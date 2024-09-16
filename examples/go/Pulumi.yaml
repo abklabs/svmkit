@@ -1,6 +1,0 @@
-name: provider-svm-native
-runtime: go
-plugins:
-  providers:
-    - name: svm
-      path: ../../bin

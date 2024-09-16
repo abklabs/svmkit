@@ -5,28 +5,30 @@
 from . import _utilities
 import typing
 # Export this package's modules as members:
+from .key_pair import *
 from .provider import *
+from .validator import *
 
 # Make subpackages available:
 if typing.TYPE_CHECKING:
     import pulumi_svm.agave as __agave
     agave = __agave
-    import pulumi_svm.svm as __svm
-    svm = __svm
+    import pulumi_svm.ssh as __ssh
+    ssh = __ssh
 else:
     agave = _utilities.lazy_import('pulumi_svm.agave')
-    svm = _utilities.lazy_import('pulumi_svm.svm')
+    ssh = _utilities.lazy_import('pulumi_svm.ssh')
 
 _utilities.register(
     resource_modules="""
 [
  {
   "pkg": "svm",
-  "mod": "svm",
-  "fqn": "pulumi_svm.svm",
+  "mod": "index",
+  "fqn": "pulumi_svm",
   "classes": {
-   "svm:svm:KeyPair": "KeyPair",
-   "svm:svm:Validator": "Validator"
+   "svm:index:KeyPair": "KeyPair",
+   "svm:index:Validator": "Validator"
   }
  }
 ]

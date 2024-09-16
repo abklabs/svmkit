@@ -1,6 +1,0 @@
-name: provider-svm-native
-runtime: dotnet
-plugins:
-  providers:
-    - name: svm
-      path: ../../bin

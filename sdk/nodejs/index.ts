@@ -5,6 +5,11 @@ import * as pulumi from "@pulumi/pulumi";
 import * as utilities from "./utilities";
 
 // Export members:
+export { KeyPairArgs } from "./keyPair";
+export type KeyPair = import("./keyPair").KeyPair;
+export const KeyPair: typeof import("./keyPair").KeyPair = null as any;
+utilities.lazyLoad(exports, ["KeyPair"], () => require("./keyPair"));
+
 export { ProviderArgs } from "./provider";
 export type Provider = import("./provider").Provider;
 export const Provider: typeof import("./provider").Provider = null as any;
@@ -12,13 +17,26 @@ utilities.lazyLoad(exports, ["Provider"], () => require("./provider"));
 
 
 // Export sub-modules:
-import * as svm from "./svm";
 import * as types from "./types";
+import * as validator from "./validator";
 
 export {
-    svm,
     types,
+    validator,
 };
+
+const _module = {
+    version: utilities.getVersion(),
+    construct: (name: string, type: string, urn: string): pulumi.Resource => {
+        switch (type) {
+            case "svm:index:KeyPair":
+                return new KeyPair(name, <any>undefined, { urn })
+            default:
+                throw new Error(`unknown resource type ${type}`);
+        }
+    },
+};
+pulumi.runtime.registerResourceModule("svm", "index", _module)
 pulumi.runtime.registerResourcePackage("svm", {
     version: utilities.getVersion(),
     constructProvider: (name: string, type: string, urn: string): pulumi.ProviderResource => {

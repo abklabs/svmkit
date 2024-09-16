@@ -4,7 +4,10 @@ go 1.21
 
 require (
 	github.com/gagliardetto/solana-go v1.11.0
+	github.com/pkg/sftp v1.13.6
 	github.com/pulumi/pulumi-go-provider v0.20.0
+	github.com/pulumi/pulumi/sdk/v3 v3.117.0
+	golang.org/x/crypto v0.23.0
 )
 
 require (
@@ -49,6 +52,7 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
+	github.com/kr/fs v0.1.0 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
@@ -77,7 +81,6 @@ require (
 	github.com/pulumi/appdash v0.0.0-20231130102222-75f619a67231 // indirect
 	github.com/pulumi/esc v0.6.2 // indirect
 	github.com/pulumi/pulumi/pkg/v3 v3.117.0 // indirect
-	github.com/pulumi/pulumi/sdk/v3 v3.117.0 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/sabhiram/go-gitignore v0.0.0-20210923224102-525f6e181f06 // indirect
@@ -99,7 +102,6 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.21.0 // indirect
-	golang.org/x/crypto v0.23.0 // indirect
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
 	golang.org/x/mod v0.14.0 // indirect
 	golang.org/x/net v0.25.0 // indirect

@@ -18,7 +18,7 @@ namespace Pulumi.Svm.Agave.Inputs
         [Input("dynamicPortRange", required: true)]
         public Input<string> DynamicPortRange { get; set; } = null!;
 
-        [Input("entryPoint", required: true)]
+        [Input("entryPoint")]
         private InputList<string>? _entryPoint;
         public InputList<string> EntryPoint
         {
@@ -26,11 +26,11 @@ namespace Pulumi.Svm.Agave.Inputs
             set => _entryPoint = value;
         }
 
-        [Input("expectedGenesisHash", required: true)]
-        public Input<string> ExpectedGenesisHash { get; set; } = null!;
+        [Input("expectedGenesisHash")]
+        public Input<string>? ExpectedGenesisHash { get; set; }
 
-        [Input("fullRpcAPI", required: true)]
-        public Input<bool> FullRpcAPI { get; set; } = null!;
+        [Input("fullRpcAPI")]
+        public Input<bool>? FullRpcAPI { get; set; }
 
         [Input("fullSnapshotIntervalSlots", required: true)]
         public Input<int> FullSnapshotIntervalSlots { get; set; } = null!;
@@ -38,7 +38,7 @@ namespace Pulumi.Svm.Agave.Inputs
         [Input("gossipPort", required: true)]
         public Input<int> GossipPort { get; set; } = null!;
 
-        [Input("knownValidator", required: true)]
+        [Input("knownValidator")]
         private InputList<string>? _knownValidator;
         public InputList<string> KnownValidator
         {
@@ -49,8 +49,8 @@ namespace Pulumi.Svm.Agave.Inputs
         [Input("limitLedgerSize", required: true)]
         public Input<int> LimitLedgerSize { get; set; } = null!;
 
-        [Input("noVoting", required: true)]
-        public Input<bool> NoVoting { get; set; } = null!;
+        [Input("noVoting")]
+        public Input<bool>? NoVoting { get; set; }
 
         [Input("noWaitForVoteToStartLeader", required: true)]
         public Input<bool> NoWaitForVoteToStartLeader { get; set; } = null!;
@@ -70,8 +70,8 @@ namespace Pulumi.Svm.Agave.Inputs
         [Input("rpcPort", required: true)]
         public Input<int> RpcPort { get; set; } = null!;
 
-        [Input("tvuReceiveThreads", required: true)]
-        public Input<int> TvuReceiveThreads { get; set; } = null!;
+        [Input("tvuReceiveThreads")]
+        public Input<int>? TvuReceiveThreads { get; set; }
 
         [Input("useSnapshotArchivesAtStartup", required: true)]
         public Input<string> UseSnapshotArchivesAtStartup { get; set; } = null!;
