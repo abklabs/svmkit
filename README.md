@@ -6,10 +6,6 @@ SVMKit is a comprehensive toolchain for deploying and managing Solana Virtual Ma
 
 Our mission for SVMKit is to empower developers and institutions alike to harness the power of Solana's blockchain technology with minimal friction. By providing a robust, user-friendly platform, we strive to drive widespread adoption and foster innovation within the SVM ecosystem.
 
-## Vision
-
-Our vision for SVMKit is to empower developers and institutions alike to harness the power of Solana's blockchain technology with minimal friction. By providing a robust, user-friendly platform, we strive to drive widespread adoption and foster innovation within the SVM ecosystem.
-
 ## Value
 
 SVMKit drastically reduces the technical expertise required to deploy and manage Solana nodes, making blockchain technology more accessible to a broader audience. By involving strategic partners and early customers, SVMKit leverages community feedback to continuously improve and adapt to real-world needs. It aims to be the go-to solution for installing and managing both permissioned and permissionless Solana clusters.
@@ -28,7 +24,7 @@ SVMKit drastically reduces the technical expertise required to deploy and manage
 
 - **Community-Driven Development:** By involving strategic partners and early customers, SVMKit leverages community feedback to continuously improve and adapt to real-world needs.
 
-- **Comprehensive Management Solution:** SVMKit aims to be the go-to solution for installing and managing both permissioned and permissionless Solana clusters, with built-in mechanisms for easy bridging between them.
+- **Comprehensive Management Solution:** SVMKit aims to be the go-to solution for installing and managing both permissioned and permissionless Solana clusters.
 
 ## Apt Repository
 
@@ -70,7 +66,7 @@ sudo apt-get update
 sudo apt-get install zuma-agave-validator zuma-solana-cli
 ```
 
-### Dependencies
+### Development
 
 You will need to ensure the following tools are installed and present in your `$PATH`:
 
