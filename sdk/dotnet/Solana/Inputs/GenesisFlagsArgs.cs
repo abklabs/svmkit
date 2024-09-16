@@ -7,7 +7,7 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Pulumi.Serialization;
 
-namespace Pulumi.Svm.Solana.Inputs
+namespace Pulumi.Svmkit.Solana.Inputs
 {
 
     public sealed class GenesisFlagsArgs : global::Pulumi.ResourceArgs

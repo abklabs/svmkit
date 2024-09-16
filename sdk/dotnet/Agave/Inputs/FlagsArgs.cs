@@ -7,7 +7,7 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Pulumi.Serialization;
 
-namespace Pulumi.Svm.Agave.Inputs
+namespace Pulumi.Svmkit.Agave.Inputs
 {
 
     public sealed class FlagsArgs : global::Pulumi.ResourceArgs

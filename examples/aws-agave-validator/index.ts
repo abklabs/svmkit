@@ -1,5 +1,5 @@
 import * as pulumi from "@pulumi/pulumi";
-import * as svm from "@pulumi/svm";
+import * as svmkit from "@pulumi/svmkit";
 import * as aws from "@pulumi/aws";
 import * as tls from "@pulumi/tls";
 
@@ -15,8 +15,8 @@ const keyPair = new aws.ec2.KeyPair("keypair", {
   publicKey: sshKey.publicKeyOpenssh,
 });
 
-const validatorKey = new svm.KeyPair("validator-key");
-const voteAccountKey = new svm.KeyPair("vote-account-key");
+const validatorKey = new svmkit.KeyPair("validator-key");
+const voteAccountKey = new svmkit.KeyPair("vote-account-key");
 
 const securityGroup = new aws.ec2.SecurityGroup("security-group", {
   description: "Allow SSH and specific inbound traffic",
@@ -93,7 +93,7 @@ const connection = {
   privateKey: sshKey.privateKeyOpenssh,
 };
 
-new svm.validator.Agave(
+new svmkit.validator.Agave(
   "validator",
   {
     connection,

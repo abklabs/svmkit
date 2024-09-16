@@ -14,17 +14,24 @@ def readme():
         with open('README.md', encoding='utf-8') as f:
             return f.read()
     except FileNotFoundError:
-        return "svm Pulumi Package - Development Version"
+        return "svmkit Pulumi Package - Development Version"
 
 
-setup(name='pulumi_svm',
+setup(name='pulumi_svmkit',
       python_requires='>=3.8',
       version=VERSION,
+      description="The Pulumi Command Provider enables you to execute commands and scripts either locally or remotely as part of the Pulumi resource model.",
       long_description=readme(),
       long_description_content_type='text/markdown',
+      keywords='pulumi svmkit solana blockchain',
+      url='https://abklabs.com',
+      project_urls={
+          'Repository': 'https://github.com/abklabs/svmkit'
+      },
+      license='Apache-3.0',
       packages=find_packages(),
       package_data={
-          'pulumi_svm': [
+          'pulumi_svmkit': [
               'py.typed',
               'pulumi-plugin.json',
           ]

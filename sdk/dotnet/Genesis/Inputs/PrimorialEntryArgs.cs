@@ -7,7 +7,7 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Pulumi.Serialization;
 
-namespace Pulumi.Svm.Genesis.Inputs
+namespace Pulumi.Svmkit.Genesis.Inputs
 {
 
     public sealed class PrimorialEntryArgs : global::Pulumi.ResourceArgs

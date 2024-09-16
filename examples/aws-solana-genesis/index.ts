@@ -1,5 +1,5 @@
 import * as pulumi from "@pulumi/pulumi";
-import * as svm from "@pulumi/svm";
+import * as svmkit from "@pulumi/svmkit";
 import * as aws from "@pulumi/aws";
 import * as tls from "@pulumi/tls";
 
@@ -16,15 +16,15 @@ const keyPair = new aws.ec2.KeyPair("keypair", {
 });
 
 // Faucet for receiving SOL
-const faucetKey = new svm.KeyPair("faucet-key");
+const faucetKey = new svmkit.KeyPair("faucet-key");
 
 // Treasury used to distribute stake
-const treasuryKey = new svm.KeyPair("treasury-key");
+const treasuryKey = new svmkit.KeyPair("treasury-key");
 
 // Bootstrap node
-const identityKey = new svm.KeyPair("identity-key");
-const voteAccountKey = new svm.KeyPair("vote-account-key");
-const stakeAccountKey = new svm.KeyPair("stake-account-key");
+const identityKey = new svmkit.KeyPair("identity-key");
+const voteAccountKey = new svmkit.KeyPair("vote-account-key");
+const stakeAccountKey = new svmkit.KeyPair("stake-account-key");
 
 const securityGroup = new aws.ec2.SecurityGroup("security-group", {
   description: "Allow SSH and specific inbound traffic",
@@ -111,7 +111,7 @@ const genesis = pulumi
         },
       ];
 
-      return new svm.genesis.Solana(
+      return new svmkit.genesis.Solana(
         "genesis",
         {
           connection,
@@ -129,7 +129,7 @@ const genesis = pulumi
     }
   );
 
-new svm.validator.Agave(
+new svmkit.validator.Agave(
   "validator",
   {
     connection,

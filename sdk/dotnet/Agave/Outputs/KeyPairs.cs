@@ -7,7 +7,7 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Pulumi.Serialization;
 
-namespace Pulumi.Svm.Agave.Outputs
+namespace Pulumi.Svmkit.Agave.Outputs
 {
 
     [OutputType]

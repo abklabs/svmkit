@@ -15,11 +15,11 @@ const _module = {
     version: utilities.getVersion(),
     construct: (name: string, type: string, urn: string): pulumi.Resource => {
         switch (type) {
-            case "svm:genesis:Solana":
+            case "svmkit:genesis:Solana":
                 return new Solana(name, <any>undefined, { urn })
             default:
                 throw new Error(`unknown resource type ${type}`);
         }
     },
 };
-pulumi.runtime.registerResourceModule("svm", "genesis", _module)
+pulumi.runtime.registerResourceModule("svmkit", "genesis", _module)

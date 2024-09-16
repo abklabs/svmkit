@@ -20,7 +20,7 @@ export class Agave extends pulumi.CustomResource {
     }
 
     /** @internal */
-    public static readonly __pulumiType = 'svm:validator:Agave';
+    public static readonly __pulumiType = 'svmkit:validator:Agave';
 
     /**
      * Returns true if the given object is an instance of Agave.  This is designed to work even

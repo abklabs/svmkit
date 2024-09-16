@@ -1,14 +1,18 @@
 # SVMKit
 
-SVMKit is an innovative Go package and Pulumi provider designed specifically for running Solana validator and RPC clients, including Anza and Firedancer. Tailored for flexibility, robustness, and ease of use, SVMKit targets various environments, including bare metal servers, virtual machines, and containerized platforms.
+SVMKit is a comprehensive toolchain for deploying and managing Solana Virtual Machine (SVM) validators and networks. It features a Go package with interfaces that enable developers to integrate support for their specific validator clients or networks. This allows for consistent and managed operation of SVM software by validator operators.
+
+## Mission
 
 Our mission for SVMKit is to empower developers and institutions alike to harness the power of Solana's blockchain technology with minimal friction. By providing a robust, user-friendly platform, we strive to drive widespread adoption and foster innovation within the SVM ecosystem.
 
-SVMKit drastically reduces the technical expertise required to deploy and manage Solana nodes, making blockchain technology more accessible to a broader audience. By involving strategic partners and early customers, SVMKit leverages community feedback to continuously improve and adapt to real-world needs. It aims to be the go-to solution for installing and managing both permissioned and permissionless Solana clusters, with built-in mechanisms for easy bridging between them.
+## Vision
 
-# SVMKit
+Our vision for SVMKit is to empower developers and institutions alike to harness the power of Solana's blockchain technology with minimal friction. By providing a robust, user-friendly platform, we strive to drive widespread adoption and foster innovation within the SVM ecosystem.
 
-SVMKit is an innovative, Debian-based OS distribution designed specifically for running Solana validator and RPC clients, including Anza and Firedancer. Tailored for flexibility, robustness, and ease of use, SVMKit targets various environments, including bare metal servers, virtual machines, and containerized platforms.
+## Value
+
+SVMKit drastically reduces the technical expertise required to deploy and manage Solana nodes, making blockchain technology more accessible to a broader audience. By involving strategic partners and early customers, SVMKit leverages community feedback to continuously improve and adapt to real-world needs. It aims to be the go-to solution for installing and managing both permissioned and permissionless Solana clusters.
 
 ## Features
 
@@ -18,10 +22,6 @@ SVMKit is an innovative, Debian-based OS distribution designed specifically for 
 
 - **Developer Tooling:** Accelerates application development on the Solana Virtual Machine (SVM). Offers a suite of tools to streamline the building, launching, and maintaining of SVM forks.
 
-- **On-Chain Permissions System:** Facilitates secure, scalable permission management for institutional customers. Ensures compliance and security in regulated environments.
-
-- **Seamless Bridge to Mainnet:** Provides easy access to Solana Mainnet liquidity. Ensures interoperability and smooth transitions between different Solana environments.
-
 ## Objectives
 
 - **Lowering Expertise Barriers:** SVMKit drastically reduces the technical expertise required to deploy and manage Solana nodes, making blockchain technology more accessible to a broader audience.
@@ -30,13 +30,9 @@ SVMKit is an innovative, Debian-based OS distribution designed specifically for 
 
 - **Comprehensive Management Solution:** SVMKit aims to be the go-to solution for installing and managing both permissioned and permissionless Solana clusters, with built-in mechanisms for easy bridging between them.
 
-## Vision
+## Apt Repository
 
-Our vision for SVMKit is to empower developers and institutions alike to harness the power of Solana's blockchain technology with minimal friction. By providing a robust, user-friendly platform, we strive to drive widespread adoption and foster innovation within the SVM ecosystem.
-
-## Installing
-
-Follow the steps below to install SVMKit on your system:
+Follow the steps below to install SVMKit apt repository on your system:
 
 1. Update your package lists:
 
@@ -68,28 +64,15 @@ curl -s https://apt.abklabs.com/keys/abklabs-archive-dev.asc | sudo apt-key add 
 sudo apt-get update
 ```
 
-6. Install SVMKit's build of the Agave validator:
+6. Install SVMKit's build of the Agave validator and solana cli:
 
 ```bash
-sudo apt-get install zuma-agave-validator
+sudo apt-get install zuma-agave-validator zuma-solana-cli
 ```
 
-=======
+### Dependencies
 
-# Pulumi Native Provider Boilerplate
-
-This repository is a boilerplate showing how to create and locally test a native Pulumi provider.
-
-## Authoring a Pulumi Native Provider
-
-This boilerplate creates a working Pulumi-owned provider named `svm`.
-It implements a random number generator that you can [build and test out for yourself](#test-against-the-example) and then replace the Random code with code specific to your provider.
-
-### Prerequisites
-
-Prerequisites for this repository are already satisfied by the [Pulumi Devcontainer](https://github.com/pulumi/devcontainer) if you are using Github Codespaces, or VSCode.
-
-If you are not using VSCode, you will need to ensure the following tools are installed and present in your `$PATH`:
+You will need to ensure the following tools are installed and present in your `$PATH`:
 
 - [`pulumictl`](https://github.com/pulumi/pulumictl#installation)
 - [Go 1.21](https://golang.org/dl/) or 1.latest
@@ -99,103 +82,30 @@ If you are not using VSCode, you will need to ensure the following tools are ins
 - [Python](https://www.python.org/downloads/) (called as `python3`). For recent versions of MacOS, the system-installed version is fine.
 - [.NET](https://dotnet.microsoft.com/download)
 
-### Build & test the boilerplate XYZ provider
-
-1. Create a new Github CodeSpaces environment using this repository.
-1. Open a terminal in the CodeSpaces environment.
-1. Run `make build install` to build and install the provider.
-1. Run `make gen_examples` to generate the example programs in `examples/` off of the source `examples/yaml` example program.
-1. Run `make up` to run the example program in `examples/yaml`.
-1. Run `make down` to tear down the example program.
-
-### Creating a new provider repository
-
-Pulumi offers this repository as a [GitHub template repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template) for convenience. From this repository:
-
-1. Click "Use this template".
-1. Set the following options:
-   - Owner: pulumi
-   - Repository name: pulumi-xyz-native (replace "xyz" with the name of your provider)
-   - Description: Pulumi provider for xyz
-   - # Repository type: Public
-   * Owner: pulumi
-   * Repository name: pulumi-svm-native (replace "svm" with the name of your provider)
-   * Description: Pulumi provider for svm
-   * Repository type: Public
-     > > > > > > > c183d24 (feat: Setup provider svm and port initial KeyPair component)
-1. Clone the generated repository.
-
-From the templated repository:
-
-1. Run the following command to update files to use the name of your provider (third-party: use your GitHub organization/username):
-
-   ```bash
-   make prepare NAME=foo REPOSITORY=github.com/pulumi/pulumi-foo ORG=myorg
-   ```
-
-   This will do the following:
-
-   - rename folders in `provider/cmd` to `pulumi-resource-{NAME}`
-   - replace dependencies in `provider/go.mod` to reflect your repository name
-   - find and replace all instances of the boilerplate `svm` with the `NAME` of your provider.
-   - find and replace all instances of the boilerplate `abklabs` with the `ORG` of your provider.
-   - replace all instances of the `github.com/abklabs/pulumi-svm` repository with the `REPOSITORY` location
-
-#### Build the provider and install the plugin
+#### Build the Pulumi provider and install the plugin
 
 ```bash
 $ make build install
 ```
 
-This will:
-
-1. Create the SDK codegen binary and place it in a `./bin` folder (gitignored)
-2. Create the provider binary and place it in the `./bin` folder (gitignored)
-3. Generate the dotnet, Go, Node, and Python SDKs and place them in the `./sdk` folder
-4. Install the provider on your machine.
-
-#### Test against the example
+#### Demo
 
 ```bash
-$ cd examples/simple
-$ yarn link @pulumi/svm
+$ cd examples/aws-agave-validator
+$ yarn link @pulumi/svmkit
 $ yarn install
-$ pulumi stack init test
+$ pulumi stack init demo
 $ pulumi up
 ```
 
-Now that you have completed all of the above steps, you have a working provider that generates a random string for you.
+#### Repository Overview
 
-#### A brief repository overview
+The repository includes the following:
 
-You now have:
-
-1. A `provider/` folder containing the building and implementation logic
-   1. `cmd/pulumi-resource-svm/main.go` - holds the provider's sample implementation logic.
-2. `deployment-templates` - a set of files to help you around deployment and publication
-3. `sdk` - holds the generated code libraries created by `pulumi-gen-svm/main.go`
-4. `examples` a folder of Pulumi programs to try locally and/or use in CI.
-5. A `Makefile` and this `README`.
-
-#### Additional Details
-
-This repository depends on the pulumi-go-provider library. For more details on building providers, please check
-the [Pulumi Go Provider docs](https://github.com/pulumi/pulumi-go-provider).
-
-### Build Examples
-
-Create an example program using the resources defined in your provider, and place it in the `examples/` folder.
-
-You can now repeat the steps for [build, install, and test](#test-against-the-example).
-
-## Configuring CI and releases
-
-1. Follow the instructions laid out in the [deployment templates](./deployment-templates/README-DEPLOYMENT.md).
-
-## References
-
-Other resources/examples for implementing providers:
-
-- [Pulumi Command provider](https://github.com/pulumi/pulumi-command/blob/master/provider/pkg/provider/provider.go)
-- [Pulumi Go Provider repository](https://github.com/pulumi/pulumi-go-provider)
-  > > > > > > > c9c5061 (Initial commit)
+- `provider/`: Contains the build and implementation logic for the Pulumi provider.
+- `cmd/pulumi-resource-svmkit/main.go`: Contains the sample implementation logic for the provider.
+- `pkg`: Contains the SVMKit Go packages.
+- `sdk`: Contains the generated code libraries created by `pulumi-gen-svm/main.go`.
+- `examples`: Contains Pulumi programs for local testing and CI usage.
+- `build`: Contains scripts for building and publishing to the AKB Labs apt repository.
+- `Makefile` and `README`: Standard project files for building and documentation.

@@ -1,6 +1,15 @@
 {
-    "name": "@pulumi/svm",
+    "name": "@pulumi/svmkit",
     "version": "${VERSION}",
+    "keywords": [
+        "pulumi",
+        "svmkit",
+        "solana",
+        "blockchain"
+    ],
+    "homepage": "https://abklabs.com",
+    "repository": "https://github.com/abklabs/svmkit",
+    "license": "Apache-3.0",
     "scripts": {
         "build": "tsc"
     },
@@ -13,6 +22,6 @@
     },
     "pulumi": {
         "resource": true,
-        "name": "svm"
+        "name": "svmkit"
     }
 }

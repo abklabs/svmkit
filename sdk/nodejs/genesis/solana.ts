@@ -20,7 +20,7 @@ export class Solana extends pulumi.CustomResource {
     }
 
     /** @internal */
-    public static readonly __pulumiType = 'svm:genesis:Solana';
+    public static readonly __pulumiType = 'svmkit:genesis:Solana';
 
     /**
      * Returns true if the given object is an instance of Solana.  This is designed to work even

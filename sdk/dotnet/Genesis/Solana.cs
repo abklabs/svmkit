@@ -7,16 +7,16 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Pulumi.Serialization;
 
-namespace Pulumi.Svm.Genesis
+namespace Pulumi.Svmkit.Genesis
 {
-    [SvmResourceType("svm:genesis:Solana")]
+    [SvmkitResourceType("svmkit:genesis:Solana")]
     public partial class Solana : global::Pulumi.CustomResource
     {
         [Output("connection")]
-        public Output<Pulumi.Svm.Ssh.Outputs.Connection> Connection { get; private set; } = null!;
+        public Output<Pulumi.Svmkit.Ssh.Outputs.Connection> Connection { get; private set; } = null!;
 
         [Output("flags")]
-        public Output<Pulumi.Svm.Solana.Outputs.GenesisFlags> Flags { get; private set; } = null!;
+        public Output<Pulumi.Svmkit.Solana.Outputs.GenesisFlags> Flags { get; private set; } = null!;
 
         [Output("genesisHash")]
         public Output<string> GenesisHash { get; private set; } = null!;
@@ -33,12 +33,12 @@ namespace Pulumi.Svm.Genesis
         /// <param name="args">The arguments used to populate this resource's properties</param>
         /// <param name="options">A bag of options that control this resource's behavior</param>
         public Solana(string name, SolanaArgs args, CustomResourceOptions? options = null)
-            : base("svm:genesis:Solana", name, args ?? new SolanaArgs(), MakeResourceOptions(options, ""))
+            : base("svmkit:genesis:Solana", name, args ?? new SolanaArgs(), MakeResourceOptions(options, ""))
         {
         }
 
         private Solana(string name, Input<string> id, CustomResourceOptions? options = null)
-            : base("svm:genesis:Solana", name, null, MakeResourceOptions(options, id))
+            : base("svmkit:genesis:Solana", name, null, MakeResourceOptions(options, id))
         {
         }
 
@@ -70,10 +70,10 @@ namespace Pulumi.Svm.Genesis
     public sealed class SolanaArgs : global::Pulumi.ResourceArgs
     {
         [Input("connection", required: true)]
-        public Input<Pulumi.Svm.Ssh.Inputs.ConnectionArgs> Connection { get; set; } = null!;
+        public Input<Pulumi.Svmkit.Ssh.Inputs.ConnectionArgs> Connection { get; set; } = null!;
 
         [Input("flags", required: true)]
-        public Input<Pulumi.Svm.Solana.Inputs.GenesisFlagsArgs> Flags { get; set; } = null!;
+        public Input<Pulumi.Svmkit.Solana.Inputs.GenesisFlagsArgs> Flags { get; set; } = null!;
 
         [Input("primordial", required: true)]
         private InputList<Inputs.PrimorialEntryArgs>? _primordial;

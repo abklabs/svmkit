@@ -7,7 +7,7 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Pulumi.Serialization;
 
-namespace Pulumi.Svm.Solana.Outputs
+namespace Pulumi.Svmkit.Solana.Outputs
 {
 
     [OutputType]

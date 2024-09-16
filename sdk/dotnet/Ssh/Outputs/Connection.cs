@@ -7,7 +7,7 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Pulumi.Serialization;
 
-namespace Pulumi.Svm.Ssh.Outputs
+namespace Pulumi.Svmkit.Ssh.Outputs
 {
 
     /// <summary>

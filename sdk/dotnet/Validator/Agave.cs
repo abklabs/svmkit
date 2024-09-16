@@ -7,19 +7,19 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Pulumi.Serialization;
 
-namespace Pulumi.Svm.Validator
+namespace Pulumi.Svmkit.Validator
 {
-    [SvmResourceType("svm:validator:Agave")]
+    [SvmkitResourceType("svmkit:validator:Agave")]
     public partial class Agave : global::Pulumi.CustomResource
     {
         [Output("connection")]
-        public Output<Pulumi.Svm.Ssh.Outputs.Connection> Connection { get; private set; } = null!;
+        public Output<Pulumi.Svmkit.Ssh.Outputs.Connection> Connection { get; private set; } = null!;
 
         [Output("flags")]
-        public Output<Pulumi.Svm.Agave.Outputs.Flags> Flags { get; private set; } = null!;
+        public Output<Pulumi.Svmkit.Agave.Outputs.Flags> Flags { get; private set; } = null!;
 
         [Output("keyPairs")]
-        public Output<Pulumi.Svm.Agave.Outputs.KeyPairs> KeyPairs { get; private set; } = null!;
+        public Output<Pulumi.Svmkit.Agave.Outputs.KeyPairs> KeyPairs { get; private set; } = null!;
 
 
         /// <summary>
@@ -30,12 +30,12 @@ namespace Pulumi.Svm.Validator
         /// <param name="args">The arguments used to populate this resource's properties</param>
         /// <param name="options">A bag of options that control this resource's behavior</param>
         public Agave(string name, AgaveArgs args, CustomResourceOptions? options = null)
-            : base("svm:validator:Agave", name, args ?? new AgaveArgs(), MakeResourceOptions(options, ""))
+            : base("svmkit:validator:Agave", name, args ?? new AgaveArgs(), MakeResourceOptions(options, ""))
         {
         }
 
         private Agave(string name, Input<string> id, CustomResourceOptions? options = null)
-            : base("svm:validator:Agave", name, null, MakeResourceOptions(options, id))
+            : base("svmkit:validator:Agave", name, null, MakeResourceOptions(options, id))
         {
         }
 
@@ -71,20 +71,20 @@ namespace Pulumi.Svm.Validator
     public sealed class AgaveArgs : global::Pulumi.ResourceArgs
     {
         [Input("connection", required: true)]
-        public Input<Pulumi.Svm.Ssh.Inputs.ConnectionArgs> Connection { get; set; } = null!;
+        public Input<Pulumi.Svmkit.Ssh.Inputs.ConnectionArgs> Connection { get; set; } = null!;
 
         [Input("flags", required: true)]
-        public Input<Pulumi.Svm.Agave.Inputs.FlagsArgs> Flags { get; set; } = null!;
+        public Input<Pulumi.Svmkit.Agave.Inputs.FlagsArgs> Flags { get; set; } = null!;
 
         [Input("keyPairs", required: true)]
-        private Input<Pulumi.Svm.Agave.Inputs.KeyPairsArgs>? _keyPairs;
-        public Input<Pulumi.Svm.Agave.Inputs.KeyPairsArgs>? KeyPairs
+        private Input<Pulumi.Svmkit.Agave.Inputs.KeyPairsArgs>? _keyPairs;
+        public Input<Pulumi.Svmkit.Agave.Inputs.KeyPairsArgs>? KeyPairs
         {
             get => _keyPairs;
             set
             {
                 var emptySecret = Output.CreateSecret(0);
-                _keyPairs = Output.Tuple<Input<Pulumi.Svm.Agave.Inputs.KeyPairsArgs>?, int>(value, emptySecret).Apply(t => t.Item1);
+                _keyPairs = Output.Tuple<Input<Pulumi.Svmkit.Agave.Inputs.KeyPairsArgs>?, int>(value, emptySecret).Apply(t => t.Item1);
             }
         }
 

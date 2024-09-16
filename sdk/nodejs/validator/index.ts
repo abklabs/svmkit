@@ -15,11 +15,11 @@ const _module = {
     version: utilities.getVersion(),
     construct: (name: string, type: string, urn: string): pulumi.Resource => {
         switch (type) {
-            case "svm:validator:Agave":
+            case "svmkit:validator:Agave":
                 return new Agave(name, <any>undefined, { urn })
             default:
                 throw new Error(`unknown resource type ${type}`);
         }
     },
 };
-pulumi.runtime.registerResourceModule("svm", "validator", _module)
+pulumi.runtime.registerResourceModule("svmkit", "validator", _module)
