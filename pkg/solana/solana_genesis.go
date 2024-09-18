@@ -3,15 +3,9 @@ package solana
 import (
 	"strings"
 
-	"github.com/abklabs/svmkit/pkg/genesis"
+	"github.com/abklabs/svmkit/pkg/module"
 	"github.com/abklabs/svmkit/pkg/runner"
 )
-
-type CreateCommand struct {
-	runner.Command
-	Flags      GenesisFlags
-	Primordial []genesis.PrimorialEntry
-}
 
 // GenesisFlags represents the configuration flags for the Solana genesis setup.
 type GenesisFlags struct {
@@ -26,6 +20,29 @@ type GenesisFlags struct {
 	LamportsPerByteYear        *string `pulumi:"lamportsPerByteYear,optional"`
 	SlotPerEpoch               *string `pulumi:"slotPerEpoch,optional"`
 	ClusterType                *string `pulumi:"clusterType,optional"`
+}
+
+type Genesis struct {
+	module.Genesis
+	Flags      GenesisFlags
+	Primordial []module.PrimorialEntry
+}
+
+func (g *Genesis) Create() runner.Command {
+	return &CreateCommand{
+		Flags:      g.Flags,
+		Primordial: g.Primordial,
+	}
+}
+
+type CreateCommand struct {
+	runner.Command
+	Flags      GenesisFlags
+	Primordial []module.PrimorialEntry
+}
+
+func (cmd *CreateCommand) Script() string {
+	return GenesisScript
 }
 
 func (cmd *CreateCommand) Env() map[string]string {
@@ -75,21 +92,4 @@ func (cmd *CreateCommand) Env() map[string]string {
 	env["PRIMORDIAL_LAMPORTS"] = primordialLamports
 
 	return env
-}
-
-func (cmd *CreateCommand) Script() string {
-	return GenesisScript
-}
-
-type Genesis struct {
-	genesis.Genesis
-	Flags      GenesisFlags
-	Primordial []genesis.PrimorialEntry
-}
-
-func (g *Genesis) Create() runner.Command {
-	return &CreateCommand{
-		Flags:      g.Flags,
-		Primordial: g.Primordial,
-	}
 }

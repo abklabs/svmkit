@@ -11,7 +11,7 @@ import (
 	"github.com/abklabs/svmkit/pkg/ssh"
 )
 
-// InstallCommandInterface is an interface for the InstallCommand struct.
+// CommandInterface is an interface for representing a script command to executed by the runner.
 type Command interface {
 	Env() map[string]string
 	Script() string
@@ -29,18 +29,19 @@ func Machine(conn ssh.Connection) *Runner {
 	return &Runner{connection: conn}
 }
 
-// Env sets the environment variables for the setup.
+// Env sets the environment variables for the script.
 func (r *Runner) Env(entries map[string]string) *Runner {
 	r.environment = entries
 	return r
 }
 
+// Script sets the script to be executed.
 func (r *Runner) Script(script string) *Runner {
 	r.script = script
 	return r
 }
 
-// Run executes the given validator Runner on the remote machine.
+// Run executes the given setup script on the remote machine.
 func (r *Runner) Run(ctx context.Context) error {
 	// Load the install script
 	scriptBuffer := bytes.NewBufferString(r.script)

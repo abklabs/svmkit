@@ -6,7 +6,7 @@ import (
 	_ "embed"
 	"fmt"
 
-	"github.com/abklabs/svmkit/pkg/genesis"
+	"github.com/abklabs/svmkit/pkg/module"
 	"github.com/abklabs/svmkit/pkg/runner"
 	"github.com/abklabs/svmkit/pkg/solana"
 	"github.com/abklabs/svmkit/pkg/ssh"
@@ -20,8 +20,8 @@ type Solana struct{}
 type SolanaArgs struct {
 	svm.GenesisArgs
 	// Flags contains the configuration flags for the Solana genesis setup.
-	Flags      solana.GenesisFlags      `pulumi:"flags"`
-	Primordial []genesis.PrimorialEntry `pulumi:"primordial"`
+	Flags      solana.GenesisFlags     `pulumi:"flags"`
+	Primordial []module.PrimorialEntry `pulumi:"primordial"`
 }
 
 // SolanaState represents the state of a Solana genesis resource.

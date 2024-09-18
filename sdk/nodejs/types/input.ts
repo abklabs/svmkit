@@ -35,7 +35,7 @@ export namespace agave {
     }
 }
 
-export namespace genesis {
+export namespace module {
     export interface PrimorialEntryArgs {
         lamports: pulumi.Input<string>;
         pubkey: pulumi.Input<string>;

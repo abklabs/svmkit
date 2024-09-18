@@ -1,6 +1,5 @@
 # -*- mode: shell-script -*-
 # shellcheck shell=bash
-source "./lib.bash"
 
 step::00::setup-abklabs-apt() {
   apt::abk

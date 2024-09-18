@@ -14,6 +14,8 @@ if typing.TYPE_CHECKING:
     agave = __agave
     import pulumi_svmkit.genesis as __genesis
     genesis = __genesis
+    import pulumi_svmkit.module as __module
+    module = __module
     import pulumi_svmkit.solana as __solana
     solana = __solana
     import pulumi_svmkit.ssh as __ssh
@@ -23,6 +25,7 @@ if typing.TYPE_CHECKING:
 else:
     agave = _utilities.lazy_import('pulumi_svmkit.agave')
     genesis = _utilities.lazy_import('pulumi_svmkit.genesis')
+    module = _utilities.lazy_import('pulumi_svmkit.module')
     solana = _utilities.lazy_import('pulumi_svmkit.solana')
     ssh = _utilities.lazy_import('pulumi_svmkit.ssh')
     validator = _utilities.lazy_import('pulumi_svmkit.validator')

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/abklabs/svmkit/pkg/module"
 	"github.com/abklabs/svmkit/pkg/runner"
-	"github.com/abklabs/svmkit/pkg/validator"
 )
 
 const (
@@ -45,7 +45,7 @@ type ValidatorPaths struct {
 }
 
 type Agave struct {
-	validator.Client
+	module.Validator
 	KeyPairs KeyPairs
 	Flags    Flags
 }
@@ -58,7 +58,7 @@ func (agave *Agave) Install() runner.Command {
 }
 
 type Flags struct {
-	validator.ClientFlags
+	module.ValidatorFlags
 	EntryPoint                   *[]string `pulumi:"entryPoint,optional"`
 	KnownValidator               *[]string `pulumi:"knownValidator,optional"`
 	UseSnapshotArchivesAtStartup string    `pulumi:"useSnapshotArchivesAtStartup"`

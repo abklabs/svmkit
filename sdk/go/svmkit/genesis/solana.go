@@ -9,6 +9,7 @@ import (
 
 	"errors"
 	"github.com/abklabs/svmkit/sdk/go/svmkit/internal"
+	"github.com/abklabs/svmkit/sdk/go/svmkit/module"
 	"github.com/abklabs/svmkit/sdk/go/svmkit/solana"
 	"github.com/abklabs/svmkit/sdk/go/svmkit/ssh"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -17,10 +18,10 @@ import (
 type Solana struct {
 	pulumi.CustomResourceState
 
-	Connection  ssh.ConnectionOutput      `pulumi:"connection"`
-	Flags       solana.GenesisFlagsOutput `pulumi:"flags"`
-	GenesisHash pulumi.StringOutput       `pulumi:"genesisHash"`
-	Primordial  PrimorialEntryArrayOutput `pulumi:"primordial"`
+	Connection  ssh.ConnectionOutput             `pulumi:"connection"`
+	Flags       solana.GenesisFlagsOutput        `pulumi:"flags"`
+	GenesisHash pulumi.StringOutput              `pulumi:"genesisHash"`
+	Primordial  module.PrimorialEntryArrayOutput `pulumi:"primordial"`
 }
 
 // NewSolana registers a new resource with the given unique name, arguments, and options.
@@ -73,16 +74,16 @@ func (SolanaState) ElementType() reflect.Type {
 }
 
 type solanaArgs struct {
-	Connection ssh.Connection      `pulumi:"connection"`
-	Flags      solana.GenesisFlags `pulumi:"flags"`
-	Primordial []PrimorialEntry    `pulumi:"primordial"`
+	Connection ssh.Connection          `pulumi:"connection"`
+	Flags      solana.GenesisFlags     `pulumi:"flags"`
+	Primordial []module.PrimorialEntry `pulumi:"primordial"`
 }
 
 // The set of arguments for constructing a Solana resource.
 type SolanaArgs struct {
 	Connection ssh.ConnectionInput
 	Flags      solana.GenesisFlagsInput
-	Primordial PrimorialEntryArrayInput
+	Primordial module.PrimorialEntryArrayInput
 }
 
 func (SolanaArgs) ElementType() reflect.Type {
@@ -134,8 +135,8 @@ func (o SolanaOutput) GenesisHash() pulumi.StringOutput {
 	return o.ApplyT(func(v *Solana) pulumi.StringOutput { return v.GenesisHash }).(pulumi.StringOutput)
 }
 
-func (o SolanaOutput) Primordial() PrimorialEntryArrayOutput {
-	return o.ApplyT(func(v *Solana) PrimorialEntryArrayOutput { return v.Primordial }).(PrimorialEntryArrayOutput)
+func (o SolanaOutput) Primordial() module.PrimorialEntryArrayOutput {
+	return o.ApplyT(func(v *Solana) module.PrimorialEntryArrayOutput { return v.Primordial }).(module.PrimorialEntryArrayOutput)
 }
 
 func init() {

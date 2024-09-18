@@ -22,7 +22,7 @@ namespace Pulumi.Svmkit.Genesis
         public Output<string> GenesisHash { get; private set; } = null!;
 
         [Output("primordial")]
-        public Output<ImmutableArray<Outputs.PrimorialEntry>> Primordial { get; private set; } = null!;
+        public Output<ImmutableArray<Pulumi.Svmkit.Module.Outputs.PrimorialEntry>> Primordial { get; private set; } = null!;
 
 
         /// <summary>
@@ -76,10 +76,10 @@ namespace Pulumi.Svmkit.Genesis
         public Input<Pulumi.Svmkit.Solana.Inputs.GenesisFlagsArgs> Flags { get; set; } = null!;
 
         [Input("primordial", required: true)]
-        private InputList<Inputs.PrimorialEntryArgs>? _primordial;
-        public InputList<Inputs.PrimorialEntryArgs> Primordial
+        private InputList<Pulumi.Svmkit.Module.Inputs.PrimorialEntryArgs>? _primordial;
+        public InputList<Pulumi.Svmkit.Module.Inputs.PrimorialEntryArgs> Primordial
         {
-            get => _primordial ?? (_primordial = new InputList<Inputs.PrimorialEntryArgs>());
+            get => _primordial ?? (_primordial = new InputList<Pulumi.Svmkit.Module.Inputs.PrimorialEntryArgs>());
             set => _primordial = value;
         }
 

@@ -36,7 +36,7 @@ export namespace agave {
 
 }
 
-export namespace genesis {
+export namespace module {
     export interface PrimorialEntry {
         lamports: string;
         pubkey: string;

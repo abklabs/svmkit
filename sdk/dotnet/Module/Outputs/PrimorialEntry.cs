@@ -7,7 +7,7 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Pulumi.Serialization;
 
-namespace Pulumi.Svmkit.Genesis.Outputs
+namespace Pulumi.Svmkit.Module.Outputs
 {
 
     [OutputType]
