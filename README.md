@@ -1,40 +1,6 @@
 # SVMKit
 
-SVMKit is a comprehensive toolkit designed for deploying and managing various modules of the Solana Virtual Machine (SVM), such as consensus, genesis, and RPC. It offers operators a consistent administrative experience and provides SVM developers with clear methods for integrating their modules into SVMKit.
-
-## Mission
-
-Our mission for SVMKit is to empower developers and institutions alike to harness the power of Solana's blockchain technology with minimal friction. By providing a robust, user-friendly platform, we strive to drive widespread adoption and foster innovation within the SVM ecosystem.
-
-## Value
-
-For software operators, SVMKit allows the ability to manage all SVM software module variants using a single operations toolkit. This drastically reduces the technical expertise required to deploy and manage Solana nodes, making blockchain technology more accessible to a broader audience.
-
-For SVM developers, SVMKit lets them quickly and correctly represent their software so it can be leveraged by operators using a toolkit they are already familiar with.
-
-By involving strategic partners and early customers, SVMKit leverages community feedback to continuously improve and adapt to real-world needs.
-
-## Disclaimer
-
-This project is still in development and we recommend it is not used for mainnet. However, we encourage its use in devnet and testnet environments.
-
-## Goals
-
-- **Simplify Software Operations:** Provide simplified creation and management for all modules of the Solana Virtual Machine (SVM) with community-tested configuration setups for seamless deployment and management.
-
-- **Scalable Cluster Management:** Enable scalable, low-effort management of large validator and RPC clusters, supporting both permissioned and permissionless Solana clusters to cater to diverse user needs.
-
-- **Easy Onboarding:** Provide a framework for representing SVM modules, enabling SVM developers the ability to integrate their solutions into SVMKit. This streamlines the process of building, launching, and maintaining SVM operators by operators.
-
-- **Lower Expertise Barriers:** Drastically reduce the technical expertise required to deploy and manage Solana nodes, making blockchain technology more accessible to a broader audience.
-
-- **Community-Driven Improvement:** Leverage community feedback by involving strategic partners and early customers to continuously improve and adapt SVMKit to real-world needs.
-
-- **Comprehensive Management Solution:** SVMKit manages all components of SVM by structuring the requirements of different modular SVM components and providing clear playbooks for representing those components.
-
-# SVMKit
-
-SVMKit is a comprehensive toolkit designed for deploying and managing Solana Virtual Machine (SVM) components and networks. It provides a Go package with interfaces that enable developers to integrate support for their specific validator clients or networks, ensuring consistent and managed operation of SVM software by network operators.
+SVMKit is a comprehensive toolkit designed for deploying and managing various modules of the Solana Virtual Machine (SVM), such as consensus, genesis, and RPC. It offers operators a consistent administrative experience and provides SVM developers with clear methods for integrating their flavor of SVM module into SVMKit.
 
 ## Mission
 
@@ -50,22 +16,23 @@ SVMKit offers significant value to both software operators and SVM developers:
 
 ## Goals
 
-- **Simplify Node Operations:** Provide a Validator Appliance that simplifies the operation and version control of Solana nodes with community-tested configuration setups for seamless deployment and management.
+- **Simplify Software Operations:** Provide simplified creation and management for all modules of the Solana Virtual Machine (SVM) with community-tested configuration setups for seamless deployment and management.
 
-- **Scalable Cluster Management:** Enable scalable, low-effort management of large validator and RPC clusters, supporting both permissioned and permissionless Solana clusters.
+- **Scalable Cluster Management:** Enable scalable, low-effort management of large validator and RPC clusters, supporting both permissioned and permissionless Solana clusters to cater to diverse user needs.
 
-- **Easy Onboarding:** Offer a framework for representing SVM components, streamlining the integration process for validator client developers.
-- **Lower Expertise Barriers:** Reduce the technical expertise required to deploy and manage Solana nodes.
+- **Easy Onboarding:** Provide a framework for representing SVM modules, enabling SVM developers the ability to integrate their solutions into SVMKit. This streamlines the process of building, launching, and maintaining SVM operators by operators.
 
-- **Community-Driven Improvement:** Leverage community feedback to continuously improve and adapt SVMKit.
+- **Lower Expertise Barriers:** Drastically reduce the technical expertise required to deploy and manage Solana nodes, making blockchain technology more accessible to a broader audience.
 
-- **Comprehensive Management Solution:** Manage all components of SVM by structuring the requirements of different modular SVM components and providing clear playbooks for representing the modules withing SVMkit.
+- **Community-Driven Improvement:** Leverage community feedback by involving strategic partners and early customers to continuously improve and adapt SVMKit to real-world needs.
+
+- **Comprehensive Management Solution:** SVMKit manages all components of SVM by structuring the requirements of different modular SVM components and providing clear playbooks for representing those components.
 
 ## Offerings
 
 ### Apt Repository
 
-ABK Labs provides a build and release service for SVM software at `apt.abklabs.com`, designed for deployment in Linux-based environments. More details can be found in the [build](/build) directory.
+ABK Labs provides a build and release service for SVM software at `apt.abklabs.com`, which allows operators to install various SVM modules through apt. More details can be found in the [build](/build) directory.
 
 Follow these steps to install the SVMKit apt repository on your system:
 
@@ -107,11 +74,11 @@ sudo apt-get install zuma-agave-validator zuma-solana-cli
 
 ## GoLang Library
 
-The SVMKit GoLang library, located in the [`pkg`](/pkg) directory, provides essential functionalities for managing Solana nodes programmatically. It includes tools for creating and configuring Solana genesis ledgers, validators, and other components.
+The SVMKit GoLang library, available in the [`pkg`](/pkg) directory, delivers essential tools for managing SVM modules. It includes utilities for setting up Solana genesis ledgers, configuring validators, and handling other components through SSH connections.
 
 ## Pulumi Provider
 
-The SVMKit Pulumi provider, found in the [`provider`](/provider/) directory, enables infrastructure as code (IaC) management of Solana nodes and related resources. Users can define, deploy, and manage their Solana infrastructure using Pulumi.
+The SVMKit Pulumi provider, located in the [`provider`](/provider/) directory, facilitates infrastructure as code (IaC) for managing Solana nodes and related resources. With this provider, users can easily define, deploy, and manage their Solana infrastructure using Pulumi.
 
 ## Development
 
