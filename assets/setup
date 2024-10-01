@@ -1,0 +1,123 @@
+# -*- mode: shell-script -*-
+# shellcheck shell=bash
+source "$SCRIPTDIR/env"
+
+: ${VALIDATOR_VARIANT:=agave}
+
+setup::000::setup-abklabs-apt () {
+    $APT update
+    $APT install curl gnupg
+    curl -s https://apt.abklabs.com/keys/abklabs-archive-dev.asc | sudo apt-key add -
+    echo "deb https://apt.abklabs.com/zuma dev main" | $SUDO tee /etc/apt/sources.list.d/zuma.list
+    sudo apt-get update
+}
+
+setup::010::install-base-software () {
+    $APT install logrotate ufw
+}
+
+setup::100::create-sol-user () {
+    id sol > /dev/null 2>&1 || $SUDO adduser --disabled-password --gecos "" sol
+}
+
+setup::110::copy-validator-keys () {
+    local name
+    for name in validator-keypair vote-account-keypair ; do
+	$SUDO rm -f "/home/sol/$name.json"
+	$SUDO cp "$SCRIPTDIR/$name.json" /home/sol/.
+	$SUDO chown sol:sol "/home/sol/$name.json"
+    done
+}
+
+setup::115::configure-sysctl() {
+    cat <<EOF | $SUDO tee /etc/sysctl.d/21-solana-validator.conf > /dev/null
+# Increase UDP buffer sizes
+net.core.rmem_default = 134217728
+net.core.rmem_max = 134217728
+net.core.wmem_default = 134217728
+net.core.wmem_max = 134217728
+# Increase memory mapped files limit
+vm.max_map_count = 1000000
+# Increase number of allowed open file descriptors
+fs.nr_open = 1000000
+vm.swappiness=1
+EOF
+
+    $SUDO sysctl -p /etc/sysctl.d/21-solana-validator.conf
+}
+
+setup::130::configure-firewall () {
+    $SUDO ufw allow 53
+    $SUDO ufw allow ssh
+    $SUDO ufw allow 8000:8020/tcp
+    $SUDO ufw allow 8000:8020/udp
+    $SUDO ufw deny 8899
+    $SUDO ufw --force enable
+}
+
+setup::135::setup-logrotate () {
+    cat <<EOF | $SUDO tee /etc/logrotate.d/solana >/dev/null
+/home/sol/solana-validator.log {
+su sol sol
+daily
+rotate 1
+missingok
+postrotate
+    systemctl kill -s USR1 sol.service
+endscript
+}
+EOF
+
+    $SUDO systemctl restart logrotate
+}
+
+setup::140::install-validator () {
+    $APT install zuma-${VALIDATOR_VARIANT}-validator
+}
+
+setup::150::setup-validator-startup () {
+    local cmd
+
+    # Check if we already have a validator service running and stop it.
+    # XXX - It would be great if we only restarted the validator in
+    # cases where we knew we had to.
+    if systemctl list-unit-files zuma-validator.service > /dev/null ; then
+	$SUDO systemctl stop zuma-validator.service || true
+    fi
+
+    # Note: This MUST match the commands names used in the packages in
+    # apt.  solana-build is has a unified list of all of the different
+    # names.
+    case "$VALIDATOR_VARIANT" in
+	agave|jito)
+	    cmd=agave-validator
+	    ;;
+	*)
+	    cmd=solana-validator
+	    ;;
+    esac
+
+    cat<<EOF | $SUDO tee /home/sol/run-validator > /dev/null
+#!/usr/bin/env bash
+exec $cmd $VALIDATOR_FLAGS
+EOF
+    $SUDO chmod 755 /home/sol/run-validator
+    $SUDO chown sol:sol /home/sol/run-validator
+
+    cat <<EOF | $SUDO tee /etc/systemd/system/zuma-validator.service > /dev/null
+[Unit]
+Description=Zuma Solana Validator
+
+[Service]
+User=sol
+Group=sol
+ExecStart=/home/sol/run-validator
+LimitNOFILE=1000000
+
+[Install]
+WantedBy=default.target
+EOF
+    $SUDO systemctl daemon-reload
+    $SUDO systemctl enable zuma-validator.service
+    $SUDO systemctl start zuma-validator.service
+}

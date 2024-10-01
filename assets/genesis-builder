@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+SCRIPTDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+. "$SCRIPTDIR/lib.bash"
+
+ARCHIVE_FNAME=$1 ; shift
+
+env::kv \
+    LEDGER_PATH \
+    IDENTITY_PUBKEY \
+    VOTE_PUBKEY \
+    STAKE_PUBKEY \
+    FAUCET_PUBKEY \
+    FAUCET_LAMPORTS \
+    TARGET_LAMPORTS_PER_SIGNATURE \
+    INFLATION \
+    LAMPORTS_PER_BYTE_YEAR \
+    SLOT_PER_EPOCH \
+    CLUSTER_TYPE > "env"
+
+(cd "$SCRIPTDIR/.." && tar cvzf "$ARCHIVE_FNAME" $(basename "$SCRIPTDIR"))
