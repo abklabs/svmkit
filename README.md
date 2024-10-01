@@ -1,67 +1,117 @@
 # SVMKit
 
-SVMKit is an innovative, Debian-based OS distribution designed specifically for running Solana validator and RPC clients, including Anza and Firedancer. Tailored for flexibility, robustness, and ease of use, SVMKit targets various environments, including bare metal servers, virtual machines, and containerized platforms.
+SVMKit is a comprehensive toolkit designed for deploying and managing various modules of the Solana Virtual Machine (SVM), such as consensus, genesis, and RPC. It offers operators a consistent administrative experience and provides SVM developers with clear methods for integrating their flavor of SVM module into SVMKit.
 
-## Features
+## Mission
 
-- **Validator Appliance:** Simplifies the operation and version control of Solana nodes. Provides community-tested configuration setups for seamless deployment and management.
+Our mission is to empower developers and institutions to harness the power of Solana's blockchain technology with minimal friction. By offering a robust, user-friendly platform, we aim to drive widespread adoption and foster innovation within the SVM ecosystem.
 
-- **Cluster Management:** Enables scalable, low-effort management of large validator and RPC clusters. Supports both permissioned and permissionless Solana clusters, catering to diverse user needs.
+## Value
 
-- **Developer Tooling:** Accelerates application development on the Solana Virtual Machine (SVM). Offers a suite of tools to streamline the building, launching, and maintaining of SVM forks.
+SVMKit offers significant value to both software operators and SVM developers:
 
-- **On-Chain Permissions System:** Facilitates secure, scalable permission management for institutional customers. Ensures compliance and security in regulated environments.
+- **For Software Operators:** SVMKit simplifies the management of all SVM software components and variants using a single operations toolkit. This reduces the technical expertise required to deploy and manage Solana nodes, making blockchain technology more accessible to a broader audience.
 
-- **Seamless Bridge to Mainnet:** Provides easy access to Solana Mainnet liquidity. Ensures interoperability and smooth transitions between different Solana environments.
+- **For SVM Developers:** SVMKit allows developers to quickly and accurately represent their software, enabling operators to leverage it using a familiar toolkit. By involving strategic partners and early customers, SVMKit continuously improves and adapts to real-world needs through community feedback.
 
-## Objectives
+## Goals
 
-- **Lowering Expertise Barriers:** SVMKit drastically reduces the technical expertise required to deploy and manage Solana nodes, making blockchain technology more accessible to a broader audience.
+- **Simplify Software Operations:** Provide simplified creation and management for all modules of the Solana Virtual Machine (SVM) with community-tested configuration setups for seamless deployment and management.
 
-- **Community-Driven Development:** By involving strategic partners and early customers, SVMKit leverages community feedback to continuously improve and adapt to real-world needs.
+- **Scalable Cluster Management:** Enable scalable, low-effort management of large validator and RPC clusters, supporting both permissioned and permissionless Solana clusters to cater to diverse user needs.
 
-- **Comprehensive Management Solution:** SVMKit aims to be the go-to solution for installing and managing both permissioned and permissionless Solana clusters, with built-in mechanisms for easy bridging between them.
+- **Easy Onboarding:** Provide a framework for representing SVM modules, enabling SVM developers the ability to integrate their solutions into SVMKit. This streamlines the process of building, launching, and maintaining SVM operators by operators.
 
-## Vision
+- **Lower Expertise Barriers:** Drastically reduce the technical expertise required to deploy and manage Solana nodes, making blockchain technology more accessible to a broader audience.
 
-Our vision for SVMKit is to empower developers and institutions alike to harness the power of Solana's blockchain technology with minimal friction. By providing a robust, user-friendly platform, we strive to drive widespread adoption and foster innovation within the SVM ecosystem.
+- **Community-Driven Improvement:** Leverage community feedback by involving strategic partners and early customers to continuously improve and adapt SVMKit to real-world needs.
 
-## Installing
+- **Comprehensive Management Solution:** SVMKit manages all components of SVM by structuring the requirements of different modular SVM components and providing clear playbooks for representing those components.
 
-Follow the steps below to install SVMKit on your system:
+## Offerings
 
-1. Update your package lists:
+### Apt Repository
 
-```bash
-sudo apt-get update
-```
+ABK Labs provides a build and release service for SVM software at `apt.abklabs.com`, which allows operators to install various SVM modules through apt. More details can be found in the [build](/build) directory.
 
-2. Install the necessary prerequisites:
+For detailed setup instructions to install the SVMKit apt repository on your system, please refer to the [APT-SETUP.md](APT-SETUP.md) file.
 
 ```bash
-sudo apt-get install -y curl gnupg
+sudo apt-get install zuma-agave-validator zuma-solana-cli
 ```
 
-3. Add the SVMKit repository to your system's software repository list:
+## GoLang Library
+
+The SVMKit GoLang library, available in the [`pkg`](/pkg) directory, delivers essential tools for managing SVM modules. It includes utilities for setting up Solana genesis ledgers, configuring validators, and handling other components through SSH connections.
 
 ```bash
-echo "deb https://apt.abklabs.com/zuma dev main" | sudo tee /etc/apt/sources.list.d/zuma.list
+go get github.com/abklabs/svmkit/pkg
 ```
 
-4. Import the repository's GPG key:
+## Pulumi Provider
 
-```bash
-curl -s https://apt.abklabs.com/keys/abklabs-archive-dev.asc | sudo apt-key add -
+The SVMKit Pulumi provider facilitates infrastructure as code (IaC) for managing Solana nodes and related resources. For more details and usage instructions, please see the [Pulumi SVMKit repository](https://github.com/abklabs/pulumi-svmkit).
+
+```typescript
+import * as svmkit from "@pulumi/svmkit";
+
+new svmkit.validator.Agave(
+  "validator",
+  {
+    connection,
+    keyPairs: {
+      identity: validatorKey.json,
+      voteAccount: voteAccountKey.json,
+    },
+    flags: {
+      entryPoint: [
+        "entrypoint.testnet.solana.com:8001",
+        "entrypoint2.testnet.solana.com:8001",
+        "entrypoint3.testnet.solana.com:8001",
+      ],
+      knownValidator: [
+        "5D1fNXzvv5NjV1ysLjirC4WY92RNsVH18vjmcszZd8on",
+        "7XSY3MrYnK8vq693Rju17bbPkCN3Z7KvvfvJx4kdrsSY",
+        "Ft5fbkqNa76vnsjYNwjDZUXoTWpP7VYm3mtsaQckQADN",
+        "9QxCLckBiJc783jnMvXZubK4wH86Eqqvashtrwvcsgkv",
+      ],
+      expectedGenesisHash: "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY",
+      useSnapshotArchivesAtStartup: "when-newest",
+      rpcPort: 8899,
+      privateRPC: true,
+      onlyKnownRPC: true,
+      dynamicPortRange: "8002-8020",
+      gossipPort: 8001,
+      rpcBindAddress: "0.0.0.0",
+      walRecoveryMode: "skip_any_corrupted_record",
+      limitLedgerSize: 50000000,
+      blockProductionMethod: "central-scheduler",
+      fullSnapshotIntervalSlots: 1000,
+      noWaitForVoteToStartLeader: true,
+    },
+  },
+  {
+    dependsOn: [instance],
+  }
+);
 ```
 
-5. Update your package lists again:
+## Development
 
-```bash
-sudo apt-get update
-```
+This section provides all the necessary information to start contributing to or building SVMKit. It is divided into several subsections for clarity.
 
-6. Install SVMKit's build of the Agave validator:
+#### Requirement
 
-```bash
-sudo apt-get install zuma-agave-validator
-```
+Ensure the following tools are installed and available in your `$PATH`:
+
+- [Go 1.22](https://golang.org/dl/) or 1.latest
+
+#### Structure
+
+The repository includes the following:
+
+| Directory/File | Description                                                   |
+| -------------- | ------------------------------------------------------------- |
+| `pkg`          | SVMKit Go packages.                                           |
+| `build`        | Scripts for building validators and distributing through APT. |
+| `README`       | Standard project files for building and documentation.        |
