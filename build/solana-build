@@ -111,19 +111,6 @@ EOF
     git checkout -f master
 }
 
-for remote in solana-labs anza-xyz PowerLedger jito-foundation pyth-network ; do
-    fetch-remote $remote
-done
-
-build-ref zuma-solana-validator solana-labs/master solana-validator
-
-for tag in v1.18.24 v2.0.10 ; do
-    build-ref zuma-agave-validator "$(lookup-remote-tag anza-xyz $tag)" agave-validator anza-build-extra
-done
-
-build-ref zuma-powerledger-validator PowerLedger/upgrade_to_v1.16.28 solana-validator
-build-ref zuma-jito-validator jito-foundation/master agave-validator
-
 build-with-other-clang () {
     local tmpdir llvmroot
 
@@ -150,5 +137,18 @@ EOF
     PATH=$tmpdir:$PATH LLVM_CONFIG_PATH=$llvmroot/bin/llvm-config LIBCLANG_PATH=$llvmroot/lib/libclang.so.1 default-build
     rm -rf "$tmpdir"
 }
+
+for remote in solana-labs anza-xyz PowerLedger jito-foundation pyth-network ; do
+    fetch-remote $remote
+done
+
+build-ref zuma-solana-validator solana-labs/master solana-validator
+
+for tag in v1.18.24 v2.0.10 ; do
+    build-ref zuma-agave-validator "$(lookup-remote-tag anza-xyz $tag)" agave-validator anza-build-extra
+done
+
+build-ref zuma-powerledger-validator PowerLedger/upgrade_to_v1.16.28 solana-validator
+build-ref zuma-jito-validator jito-foundation/master agave-validator
 
 build-ref zuma-pyth-validator pyth-network/pyth-v1.14.17 solana-validator build-with-other-clang
