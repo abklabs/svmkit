@@ -61,7 +61,7 @@ EOF
 }
 
 build-ref () {
-    local ref branch target
+    local ref target
     buildfunc=default-build
     package_name=$1 ; shift
     ref=$1 ; shift
@@ -71,11 +71,10 @@ build-ref () {
 	buildfunc=$1 ; shift
     fi
 
-    branch="build-$ref-$$"
-    log::info "building $ref -> $target inside $branch..."
+    log::info "building $ref -> $target..."
     mkdir -p "../build/$ref"
     git clean -f -d -x
-    git checkout -f -b "$branch" "$ref"
+    git checkout -f "$ref"
     git submodule update --init
     cat <<EOF >> validator/Cargo.toml
 [package.metadata.deb]
@@ -87,7 +86,6 @@ EOF
     $buildfunc
     git submodule deinit --all
     git checkout -f master
-    git branch -d "$branch"
 }
 
 for remote in solana-labs anza-xyz PowerLedger jito-foundation pyth-network ; do
