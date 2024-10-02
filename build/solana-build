@@ -19,6 +19,7 @@ log::fatal () {
 }
 
 fetch-remote () {
+    local remote
     remote=$1 ; shift
     log::info "git fetching remote $remote..."
     git fetch "$remote"
