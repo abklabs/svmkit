@@ -116,7 +116,6 @@ for remote in solana-labs anza-xyz PowerLedger jito-foundation pyth-network ; do
 done
 
 build-ref zuma-solana-validator solana-labs/master solana-validator
-build-ref zuma-agave-validator anza-xyz/master agave-validator anza-build-extra
 
 for tag in v1.18.24 v2.0.10 ; do
     build-ref zuma-agave-validator "$(lookup-remote-tag anza-xyz $tag)" agave-validator anza-build-extra
