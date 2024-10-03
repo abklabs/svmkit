@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+setup::mac() {
+  brew install golangci-lint
+}
+
+setup::linux() {
+  sudo snap install --classic golangci-lint
+}
+
+if [ "$(uname)" = "Darwin" ]; then
+  setup::mac
+else
+  setup::linux
+fi
