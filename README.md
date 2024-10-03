@@ -105,6 +105,7 @@ This section provides all the necessary information to start contributing to or 
 Ensure the following tools are installed and available in your `$PATH`:
 
 - [Go 1.22](https://golang.org/dl/) or 1.latest
+- [`golangci-lint`](https://golangci-lint.run/install)
 
 #### Structure
 
@@ -115,3 +116,4 @@ The repository includes the following:
 | `pkg`          | SVMKit Go packages.                                           |
 | `build`        | Scripts for building validators and distributing through APT. |
 | `README`       | Standard project files for building and documentation.        |
+| `Makefile`     | Contains commands for testing and building Go packages.       |
