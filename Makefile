@@ -1,7 +1,10 @@
-.PHONY: lint test vet
+.PHONY: lint test vet setup
 
 test:
 	go test ./pkg/...
+
+setup: 
+	./setup
 
 lint:
 	golangci-lint run ./pkg/...
