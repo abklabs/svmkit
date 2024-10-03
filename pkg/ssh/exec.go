@@ -32,12 +32,16 @@ func Exec(ctx context.Context, client *ssh.Client, command string) (string, stri
 	stderrDone := make(chan struct{})
 
 	go func() {
-		io.Copy(&stdoutBuf, stdoutPipe)
+		if _, err := io.Copy(&stdoutBuf, stdoutPipe); err != nil {
+			fmt.Printf("error copying stdout: %v\n", err)
+		}
 		close(stdoutDone)
 	}()
 
 	go func() {
-		io.Copy(&stderrBuf, stderrPipe)
+		if _, err := io.Copy(&stderrBuf, stderrPipe); err != nil {
+			fmt.Printf("error copying stderr: %v\n", err)
+		}
 		close(stderrDone)
 	}()
 
