@@ -9,6 +9,8 @@ type KeyPairs map[string]string
 type Client interface {
 	// Install returns a Command to install the blockchain validator.
 	Install() runner.Command
+	// Update returns a Command to update the blockchain validator.
+	Update() runner.Command
 }
 
 // ClientFlags is an interface for client flags for the validator.

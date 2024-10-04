@@ -38,6 +38,21 @@ func (cmd *InstallCommand) Script() string {
 	return InstallScript
 }
 
+type UpdateCommand struct {
+	runner.Command
+	Flags Flags
+}
+
+func (cmd *UpdateCommand) Env() map[string]string {
+	return map[string]string{
+		"VALIDATOR_FLAGS": strings.Join(cmd.Flags.toArgs(), " "),
+	}
+}
+
+func (cmd *UpdateCommand) Script() string {
+	return UpdateScript
+}
+
 type ValidatorPaths struct {
 	Accounts string `pulumi:"accounts"`
 	Ledger   string `pulumi:"ledger"`
@@ -54,6 +69,12 @@ func (agave *Agave) Install() runner.Command {
 	return &InstallCommand{
 		Flags:    agave.Flags,
 		KeyPairs: agave.KeyPairs,
+	}
+}
+
+func (agave *Agave) Update() runner.Command {
+	return &UpdateCommand{
+		Flags: agave.Flags,
 	}
 }
 
