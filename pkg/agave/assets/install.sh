@@ -66,7 +66,11 @@ EOF
 }
 
 step::70::install-validator() {
-  $APT install zuma-agave-validator zuma-solana-cli
+  if [[ -v VALIDATOR_VERSION ]]; then
+    $APT install "zuma-agave-validator=$VALIDATOR_VERSION" "zuma-solana-cli=$VALIDATOR_VERSION"
+  else
+    $APT install "zuma-agave-validator" "zuma-solana-cli"
+  fi
 }
 
 step::80::setup-validator-startup() {
