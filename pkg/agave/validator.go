@@ -24,14 +24,21 @@ type InstallCommand struct {
 	runner.Command
 	Flags    Flags
 	KeyPairs KeyPairs
+	Version  validator.Version
 }
 
 func (cmd *InstallCommand) Env() map[string]string {
-	return map[string]string{
+	env := map[string]string{
 		"VALIDATOR_FLAGS":      strings.Join(cmd.Flags.toArgs(), " "),
 		"IDENTITY_KEYPAIR":     cmd.KeyPairs.Identity,
 		"VOTE_ACCOUNT_KEYPAIR": cmd.KeyPairs.VoteAccount,
 	}
+
+	if cmd.Version != nil {
+		env["VALIDATOR_VERSION"] = *cmd.Version
+	}
+
+	return env
 }
 
 func (cmd *InstallCommand) Script() string {
@@ -46,14 +53,16 @@ type ValidatorPaths struct {
 
 type Agave struct {
 	validator.Client
-	KeyPairs KeyPairs
-	Flags    Flags
+	Version  validator.Version `pulumi:"version,optional"`
+	KeyPairs KeyPairs          `pulumi:"keyPairs" provider:"secret"`
+	Flags    Flags             `pulumi:"flags"`
 }
 
 func (agave *Agave) Install() runner.Command {
 	return &InstallCommand{
 		Flags:    agave.Flags,
 		KeyPairs: agave.KeyPairs,
+		Version:  agave.Version,
 	}
 }
 

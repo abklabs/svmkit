@@ -5,6 +5,9 @@ import "github.com/abklabs/svmkit/pkg/runner"
 // KeyPairs is a map of key pairs for the blockchain validator.
 type KeyPairs map[string]string
 
+// Version is the semantic version (semver) of the blockchain validator apt package.
+type Version *string
+
 // Client is an interface for managing the blockchain validator.
 type Client interface {
 	// Install returns a Command to install the blockchain validator.
