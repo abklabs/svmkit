@@ -20,18 +20,78 @@ type KeyPairs struct {
 	VoteAccount string `pulumi:"voteAccount" provider:"secret"`
 }
 
+type Metrics struct {
+	URL      string `pulumi:"url"`
+	Database string `pulumi:"database"`
+	User     string `pulumi:"user"`
+	Password string `pulumi:"password"`
+}
+
+// ValidatorEnv represents the runtime environment specifically for the validator
+type ValidatorEnv struct {
+	Metrics *Metrics
+}
+
+func (env *ValidatorEnv) ToString() string {
+	var envStrings []string
+
+	if env.Metrics != nil {
+		metricsEnv, err := env.Metrics.ToEnv()
+		if err == nil {
+			envStrings = append(envStrings, metricsEnv)
+		} else {
+			fmt.Printf("Warning: Invalid metrics URL: %v\n", err)
+		}
+	}
+
+	return strings.Join(envStrings, " ")
+}
+
+// ToEnv constructs the Solana metrics configuration string from the separate fields
+// and returns it as an environment variable string.
+func (m *Metrics) ToEnv() (string, error) {
+	if m.URL == "" {
+		return "", fmt.Errorf("metrics URL cannot be empty")
+	}
+
+	if m.Database == "" {
+		return "", fmt.Errorf("metrics database cannot be empty")
+	}
+
+	if m.User == "" {
+		return "", fmt.Errorf("metrics user cannot be empty")
+	}
+
+	// Note: We allow empty password as it might be a valid case in some scenarios
+	configParts := []string{
+		fmt.Sprintf("host=%s", m.URL),
+		fmt.Sprintf("db=%s", m.Database),
+		fmt.Sprintf("u=%s", m.User),
+		fmt.Sprintf("p=%s", m.Password),
+	}
+
+	metricsConfig := strings.Join(configParts, ",")
+	return fmt.Sprintf("SOLANA_METRICS_CONFIG=%s", metricsConfig), nil
+}
+
 type InstallCommand struct {
 	runner.Command
 	Flags    Flags
 	KeyPairs KeyPairs
 	Version  validator.Version
+	Metrics  *Metrics
 }
 
 func (cmd *InstallCommand) Env() map[string]string {
+	validatorEnv := ValidatorEnv{
+		Metrics: cmd.Metrics,
+	}
+
 	env := map[string]string{
 		"VALIDATOR_FLAGS":      strings.Join(cmd.Flags.toArgs(), " "),
 		"IDENTITY_KEYPAIR":     cmd.KeyPairs.Identity,
 		"VOTE_ACCOUNT_KEYPAIR": cmd.KeyPairs.VoteAccount,
+		"VALIDATOR_ENV":        validatorEnv.ToString(),
 	}
 
 	if cmd.Version != nil {
@@ -56,6 +116,7 @@ type Agave struct {
 	Version  validator.Version `pulumi:"version,optional"`
 	KeyPairs KeyPairs          `pulumi:"keyPairs" provider:"secret"`
 	Flags    Flags             `pulumi:"flags"`
+	Metrics  *Metrics          `pulumi:"metrics,optional"`
 }
 
 func (agave *Agave) Install() runner.Command {
@@ -63,6 +124,7 @@ func (agave *Agave) Install() runner.Command {
 		Flags:    agave.Flags,
 		KeyPairs: agave.KeyPairs,
 		Version:  agave.Version,
+		Metrics:  agave.Metrics,
 	}
 }
 
