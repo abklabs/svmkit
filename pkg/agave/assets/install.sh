@@ -80,8 +80,10 @@ step::80::setup-validator-startup() {
 
   cat <<EOF | $SUDO tee /home/sol/run-validator >/dev/null
 #!/usr/bin/env bash
-exec agave-validator $VALIDATOR_FLAGS
+
+$VALIDATOR_ENV exec agave-validator $VALIDATOR_FLAGS
 EOF
+
   $SUDO chmod 755 /home/sol/run-validator
   $SUDO chown sol:sol /home/sol/run-validator
 
