@@ -20,6 +20,49 @@ type KeyPairs struct {
 	VoteAccount string `pulumi:"voteAccount" provider:"secret"`
 }
 
+type Metrics struct {
+	URL      string `pulumi:"url"`
+	Database string `pulumi:"database"`
+	User     string `pulumi:"user"`
+	Password string `pulumi:"password"`
+}
+
+// ToEnv constructs the Solana metrics configuration string from the separate fields
+// and returns it as an environment variable string.
+func (m *Metrics) ToEnv() (string, error) {
+	if m.URL == "" {
+		return "", fmt.Errorf("metrics URL cannot be empty")
+	}
+
+	if m.Database == "" {
+		return "", fmt.Errorf("metrics database cannot be empty")
+	}
+
+	if m.User == "" {
+		return "", fmt.Errorf("metrics user cannot be empty")
+	}
+
+	// Note: We allow empty password as it might be a valid case in some scenarios
+	configParts := []string{
+		fmt.Sprintf("host=%s", m.URL),
+		fmt.Sprintf("db=%s", m.Database),
+		fmt.Sprintf("u=%s", m.User),
+		fmt.Sprintf("p=%s", m.Password),
+	}
+
+	metricsConfig := strings.Join(configParts, ",")
+	return fmt.Sprintf("SOLANA_METRICS_CONFIG=%s", metricsConfig), nil
+}
+
+func (agave *Agave) Install() runner.Command {
+	return &InstallCommand{
+		Flags:    agave.Flags,
+		KeyPairs: agave.KeyPairs,
+		Version:  agave.Version,
+		Metrics:  agave.Metrics,
+	}
+}
+
 type InstallCommand struct {
 	runner.Command
 	Flags    Flags
@@ -38,7 +81,27 @@ func (cmd *InstallCommand) Env() map[string]string {
 		env["VALIDATOR_VERSION"] = *cmd.Version
 	}
 
+	additionalEnv := cmd.getValidatorEnv()
+	if len(additionalEnv) > 0 {
+		env["VALIDATOR_ENV"] = strings.Join(additionalEnv, " ")
+	}
+
 	return env
+}
+
+func (cmd *InstallCommand) getValidatorEnv() []string {
+	var validatorEnv []string
+
+	if cmd.Metrics != nil {
+		metricsEnv, err := cmd.Metrics.ToEnv()
+		if err != nil {
+			fmt.Printf("Warning: Invalid metrics URL: %v\n", err)
+		} else {
+			validatorEnv = append(validatorEnv, metricsEnv)
+		}
+	}
+
+	return validatorEnv
 }
 
 func (cmd *InstallCommand) Script() string {
