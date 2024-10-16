@@ -71,7 +71,8 @@ func (m *Metrics) ToEnv() (string, error) {
 	}
 
 	metricsConfig := strings.Join(configParts, ",")
-	return fmt.Sprintf("SOLANA_METRICS_CONFIG=%s", metricsConfig), nil
+	// XXX - We should quote things more appropriately.
+	return fmt.Sprintf(`SOLANA_METRICS_CONFIG="%s"`, metricsConfig), nil
 }
 
 type InstallCommand struct {
