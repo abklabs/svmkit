@@ -13,8 +13,7 @@ step::10::install-base-software() {
 step::20::create-sol-user() {
   id sol >/dev/null 2>&1 || $SUDO adduser --disabled-password --gecos "" sol
   $SUDO mkdir -p "/home/sol"
-  $SUDO chown -R sol:sol "/home/sol"
-  $SUDO chmod -R 755 "/home/sol"
+  $SUDO chown -f -R sol:sol "/home/sol"
 }
 
 step::30::copy-validator-keys() {
