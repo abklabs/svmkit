@@ -102,7 +102,7 @@ func (r *Runner) Run(ctx context.Context) error {
 	// change back to the original directory, and remove the temporary directory.
 	commands := fmt.Sprintf(`
 		chmod +x %s &&
-		cd %s &&p
+		cd %s &&
 		./run.sh &&
 		cd - &&
 		rm -rf %s
