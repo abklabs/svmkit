@@ -109,21 +109,6 @@ func (cmd *InstallCommand) Env() map[string]string {
 	return manifest
 }
 
-func (cmd *InstallCommand) getValidatorEnv() []string {
-	var validatorEnv []string
-
-	if cmd.Metrics != nil {
-		metricsEnv, err := cmd.Metrics.ToEnv()
-		if err != nil {
-			fmt.Printf("Warning: Invalid metrics URL: %v\n", err)
-		} else {
-			validatorEnv = append(validatorEnv, metricsEnv)
-		}
-	}
-
-	return validatorEnv
-}
-
 func (cmd *InstallCommand) Script() string {
 	return InstallScript
 }
