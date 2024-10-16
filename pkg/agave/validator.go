@@ -74,20 +74,12 @@ func (m *Metrics) ToEnv() (string, error) {
 	return fmt.Sprintf("SOLANA_METRICS_CONFIG=%s", metricsConfig), nil
 }
 
-func (agave *Agave) Install() runner.Command {
-	return &InstallCommand{
-		Flags:    agave.Flags,
-		KeyPairs: agave.KeyPairs,
-		Version:  agave.Version,
-		Metrics:  agave.Metrics,
-	}
-}
-
 type InstallCommand struct {
 	runner.Command
 	Flags    Flags
 	KeyPairs KeyPairs
 	Version  validator.Version
+	Metrics  *Metrics
 }
 
 func (cmd *InstallCommand) Env() map[string]string {
@@ -119,10 +111,6 @@ type ValidatorPaths struct {
 	Log      string `pulumi:"log"`
 }
 
-type Metrics struct {
-	SolanaMetricsURL string `pulumi:"solanaMetricsURL,optional"`
-}
-
 type Agave struct {
 	validator.Client
 	Version  validator.Version `pulumi:"version,optional"`
@@ -138,31 +126,6 @@ func (agave *Agave) Install() runner.Command {
 		Version:  agave.Version,
 		Metrics:  agave.Metrics,
 	}
-}
-
-type InstallCommand struct {
-	runner.Command
-	Flags    Flags
-	KeyPairs KeyPairs
-	Metrics  *Metrics
-}
-
-func (cmd *InstallCommand) Env() map[string]string {
-	env := map[string]string{
-		"VALIDATOR_FLAGS":      strings.Join(cmd.Flags.toArgs(), " "),
-		"IDENTITY_KEYPAIR":     cmd.KeyPairs.Identity,
-		"VOTE_ACCOUNT_KEYPAIR": cmd.KeyPairs.VoteAccount,
-	}
-
-	if cmd.Metrics != nil && cmd.Metrics.SolanaMetricsURL != "" {
-		env["SOLANA_METRICS_CONFIG"] = cmd.Metrics.SolanaMetricsURL
-	}
-
-	return env
-}
-
-func (cmd *InstallCommand) Script() string {
-	return InstallScript
 }
 
 type Flags struct {
