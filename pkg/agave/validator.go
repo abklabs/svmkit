@@ -27,6 +27,26 @@ type Metrics struct {
 	Password string `pulumi:"password"`
 }
 
+// ValidatorEnv represents the runtime environment specifically for the validator
+type ValidatorEnv struct {
+	Metrics *Metrics
+}
+
+func (env *ValidatorEnv) ToString() string {
+	var envStrings []string
+
+	if env.Metrics != nil {
+		metricsEnv, err := env.Metrics.ToEnv()
+		if err == nil {
+			envStrings = append(envStrings, metricsEnv)
+		} else {
+			fmt.Printf("Warning: Invalid metrics URL: %v\n", err)
+		}
+	}
+
+	return strings.Join(envStrings, " ")
+}
+
 // ToEnv constructs the Solana metrics configuration string from the separate fields
 // and returns it as an environment variable string.
 func (m *Metrics) ToEnv() (string, error) {
@@ -71,22 +91,22 @@ type InstallCommand struct {
 }
 
 func (cmd *InstallCommand) Env() map[string]string {
-	env := map[string]string{
+	validatorEnv := ValidatorEnv{
+		Metrics: cmd.Metrics,
+	}
+
+	manifest := map[string]string{
 		"VALIDATOR_FLAGS":      strings.Join(cmd.Flags.toArgs(), " "),
 		"IDENTITY_KEYPAIR":     cmd.KeyPairs.Identity,
 		"VOTE_ACCOUNT_KEYPAIR": cmd.KeyPairs.VoteAccount,
+		"VALIDATOR_ENV":        validatorEnv.ToString(),
 	}
 
 	if cmd.Version != nil {
-		env["VALIDATOR_VERSION"] = *cmd.Version
+		manifest["VALIDATOR_VERSION"] = *cmd.Version
 	}
 
-	additionalEnv := cmd.getValidatorEnv()
-	if len(additionalEnv) > 0 {
-		env["VALIDATOR_ENV"] = strings.Join(additionalEnv, " ")
-	}
-
-	return env
+	return manifest
 }
 
 func (cmd *InstallCommand) getValidatorEnv() []string {
