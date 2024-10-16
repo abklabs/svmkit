@@ -128,7 +128,7 @@ type Agave struct {
 	Version  validator.Version `pulumi:"version,optional"`
 	KeyPairs KeyPairs          `pulumi:"keyPairs" provider:"secret"`
 	Flags    Flags             `pulumi:"flags"`
-	Metrics  *Metrics `pulumi:"metrics,optional"`
+	Metrics  *Metrics          `pulumi:"metrics,optional"`
 }
 
 func (agave *Agave) Install() runner.Command {
@@ -153,11 +153,11 @@ func (cmd *InstallCommand) Env() map[string]string {
 		"IDENTITY_KEYPAIR":     cmd.KeyPairs.Identity,
 		"VOTE_ACCOUNT_KEYPAIR": cmd.KeyPairs.VoteAccount,
 	}
-	
+
 	if cmd.Metrics != nil && cmd.Metrics.SolanaMetricsURL != "" {
 		env["SOLANA_METRICS_CONFIG"] = cmd.Metrics.SolanaMetricsURL
 	}
-	
+
 	return env
 }
 
