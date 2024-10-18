@@ -180,6 +180,6 @@ apt::abk() {
   if ! grep -q "^deb .*/zuma dev main" /etc/apt/sources.list /etc/apt/sources.list.d/*; then
     curl -s https://apt.abklabs.com/keys/abklabs-archive-dev.asc | $SUDO apt-key add -
     echo "deb https://apt.abklabs.com/zuma dev main" | $SUDO tee /etc/apt/sources.list.d/zuma.list >/dev/null
-    $SUDO apt-get update
+    $APT update
   fi
 }
