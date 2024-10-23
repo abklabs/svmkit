@@ -30,8 +30,8 @@ log_info() {
 solana config set --url $RPC_URL
 
 # Create two wallets if they don't already exist
-solana-keygen new --outfile $PAYER_WALLET --no-passphrase --force > /dev/null 2>&1
-solana-keygen new --outfile $RECEIVER_WALLET --no-passphrase --force > /dev/null 2>&1
+solana-keygen new --outfile $PAYER_WALLET --no-passphrase --force >/dev/null 2>&1
+solana-keygen new --outfile $RECEIVER_WALLET --no-passphrase --force >/dev/null 2>&1
 
 payer_pubkey=$(solana-keygen pubkey $PAYER_WALLET)
 receiver_pubkey=$(solana-keygen pubkey $RECEIVER_WALLET)
@@ -56,23 +56,23 @@ print_tx_link $payer_ata_signature
 log_info "Created receiver associated token account with transaction:"
 print_tx_link $receiver_ata_signature
 
-payer_ata_address=$(spl-token address --token $mint --owner $payer_pubkey --verbose --output json-compact | jq -r '.associatedTokenAddress') 
-receiver_ata_address=$(spl-token address --token $mint --owner $receiver_pubkey --verbose --output json-compact | jq -r '.associatedTokenAddress') 
+payer_ata_address=$(spl-token address --token $mint --owner $payer_pubkey --verbose --output json-compact | jq -r '.associatedTokenAddress')
+receiver_ata_address=$(spl-token address --token $mint --owner $receiver_pubkey --verbose --output json-compact | jq -r '.associatedTokenAddress')
 
 log_info "Payer associated token account address:"
 print_address_link $payer_ata_address
-log_info "Receiver associated token account address:" 
+log_info "Receiver associated token account address:"
 print_address_link $receiver_ata_address
 
 # Mint 100 tokens to payer
 mint_to_payer_signature=$(spl-token mint --fee-payer $PAYER_WALLET --mint-authority $PAYER_WALLET --output json-compact $mint $MINT_AMOUNT -- $payer_ata_address | jq -r '.signature')
 
-log_info "Minted 100 tokens to payer with transaction:" 
+log_info "Minted 100 tokens to payer with transaction:"
 print_tx_link $mint_to_payer_signature
 
 # Check balance of payer
 log_info "Balance of payer:"
-spl-token balance --owner $payer_pubkey $mint 
+spl-token balance --owner $payer_pubkey $mint
 
 # Transfer 50 tokens from payer to receiver
 payer_to_receiver_signature=$(spl-token transfer --fee-payer $PAYER_WALLET --owner $PAYER_WALLET --output json-compact $mint $TRANSFER_AMOUNT $receiver_ata_address | jq -r '.signature')
@@ -82,7 +82,7 @@ print_tx_link $payer_to_receiver_signature
 
 # Check balances of payer and receiver
 log_info "Balance of payer:"
-spl-token balance --owner $payer_pubkey $mint 
+spl-token balance --owner $payer_pubkey $mint
 
 log_info "Balance of receiver:"
-spl-token balance --owner $receiver_pubkey $mint 
+spl-token balance --owner $receiver_pubkey $mint
