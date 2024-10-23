@@ -46,7 +46,11 @@ step::000::create-sol-user() {
 
 step::010::install-dependencies() {
     apt::abk
-    $APT install bzip2 zuma-solana-genesis zuma-solana-cli
+    if [[ -v PACKAGE_VERSION ]]; then
+        $APT install bzip2 "zuma-solana-genesis=$PACKAGE_VERSION" "zuma-solana-cli=$PACKAGE_VERSION"
+    else
+        $APT install bzip2 zuma-solana-genesis zuma-solana-cli
+    fi
 }
 
 step::020::fetch-all-programs() {
