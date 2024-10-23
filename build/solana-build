@@ -70,6 +70,11 @@ EOF
 name = "zuma-solana-cli"
 EOF
 
+    cat <<EOF >> ledger-tool/Cargo.toml
+[package.metadata.deb]
+name = "zuma-agave-ledger-tool"
+EOF
+
     # shellcheck disable=SC2154,SC1091
     (
         set +u
@@ -78,6 +83,7 @@ EOF
         cargo +"$rust_stable" deb -p solana-genesis
         cargo +"$rust_stable" deb -p solana-faucet
         cargo +"$rust_stable" deb -p solana-cli
+        cargo +"$rust_stable" deb -p agave-ledger-tool
     )
 
     default-build
