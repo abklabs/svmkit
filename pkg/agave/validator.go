@@ -138,6 +138,7 @@ type Flags struct {
 	PrivateRPC                   bool      `pulumi:"privateRPC"`
 	OnlyKnownRPC                 bool      `pulumi:"onlyKnownRPC"`
 	DynamicPortRange             string    `pulumi:"dynamicPortRange"`
+	GossipHost                   *string   `pulumi:"gossipHost,optional"`
 	GossipPort                   int       `pulumi:"gossipPort"`
 	RpcBindAddress               string    `pulumi:"rpcBindAddress"`
 	WalRecoveryMode              string    `pulumi:"walRecoveryMode"`
@@ -177,6 +178,11 @@ func (f Flags) toArgs() []string {
 	l = append(l, f.S("use-snapshot-archives-at-startup", f.UseSnapshotArchivesAtStartup))
 	l = append(l, f.S("rpc-port", f.RpcPort))
 	l = append(l, f.S("dynamic-port-range", f.DynamicPortRange))
+
+	if f.GossipHost != nil {
+		l = append(l, f.S("gossip-host", *f.GossipHost))
+	}
+
 	l = append(l, f.S("gossip-port", f.GossipPort))
 	l = append(l, f.S("rpc-bind-address", f.RpcBindAddress))
 	l = append(l, f.S("wal-recovery-mode", f.WalRecoveryMode))
