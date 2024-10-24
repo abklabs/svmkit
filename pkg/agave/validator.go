@@ -149,6 +149,7 @@ type Flags struct {
 	ExpectedGenesisHash          *string   `pulumi:"expectedGenesisHash,optional"`
 	FullRpcAPI                   *bool     `pulumi:"fullRpcAPI,optional"`
 	NoVoting                     *bool     `pulumi:"noVoting,optional"`
+	ExtraFlags                   *[]string `pulumi:"extraFlags,optional"`
 }
 
 func (f Flags) toArgs() []string {
@@ -198,6 +199,10 @@ func (f Flags) toArgs() []string {
 
 	if f.NoVoting != nil {
 		l = append(l, f.B("no-voting", *f.NoVoting))
+	}
+
+	if f.ExtraFlags != nil {
+		l = append(l, *f.ExtraFlags...)
 	}
 
 	return l
