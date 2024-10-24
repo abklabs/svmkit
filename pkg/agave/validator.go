@@ -193,7 +193,7 @@ func (f Flags) toArgs() []string {
 	l = append(l, f.S("limit-ledger-size", f.LimitLedgerSize))
 	l = append(l, f.S("block-production-method", f.BlockProductionMethod))
 	if f.TvuReceiveThreads != nil {
-		l = append(l, f.S("tvu-receive-threads", f.TvuReceiveThreads))
+		l = append(l, f.S("tvu-receive-threads", *f.TvuReceiveThreads))
 	}
 	l = append(l, f.S("full-snapshot-interval-slots", f.FullSnapshotIntervalSlots))
 	l = append(l, f.B("no-wait-for-vote-to-start-leader", f.NoWaitForVoteToStartLeader))
