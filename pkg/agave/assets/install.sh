@@ -45,6 +45,8 @@ step::50::configure-firewall() {
     # TODO: Only open for RPC nodes
     $SUDO ufw allow 8899/tcp
     $SUDO ufw allow 8899/udp
+    $SUDO ufw allow 8900/tcp
+
     $SUDO ufw --force enable
 }
 
