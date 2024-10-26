@@ -39,7 +39,13 @@ fetch-program() {
     fi
 }
 
-step::000::create-sol-user() {
+step::000::wait-for-a-stable-environment() {
+    if command -v cloud-init > /dev/null 2>&1 ; then
+	cloud-init status --wait
+    fi
+}
+
+step::005::create-sol-user() {
     id sol >/dev/null 2>&1 || $SUDO adduser --disabled-password --gecos "" sol
     $SUDO chown -f -R sol:sol /home/sol
 }
