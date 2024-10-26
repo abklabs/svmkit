@@ -107,3 +107,7 @@ step::040::execute-solana-genesis() {
         --primordial-accounts-file /home/sol/primordial.yaml \
         "${genesis_args[@]}"
 }
+
+step::050::create-initial-snapshot() {
+    $SUDO -u sol -i agave-ledger-tool create-snapshot --ignore-ulimit-nofile-error ROOT
+}
