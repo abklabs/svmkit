@@ -40,7 +40,7 @@ For detailed setup instructions to install the SVMKit apt repository on your sys
 sudo apt-get install svmkit-agave-validator svmkit-solana-cli
 ```
 
-## GoLang Library
+## golang Library
 
 The SVMKit GoLang library, available in the [`pkg`](/pkg) directory, delivers essential tools for managing SVM modules. It includes utilities for setting up Solana genesis ledgers, configuring validators, and handling other components through SSH connections.
 
@@ -53,7 +53,7 @@ go get github.com/abklabs/svmkit/pkg
 The SVMKit Pulumi provider facilitates infrastructure as code (IaC) for managing Solana nodes and related resources. For more details and usage instructions, please see the [Pulumi SVMKit repository](https://github.com/abklabs/pulumi-svmkit).
 
 ```typescript
-import * as svmkit from "@pulumi/svmkit";
+import * as svmkit from "@svmkit/pulumi-svmkit";
 
 new svmkit.validator.Agave(
   "validator",
@@ -100,11 +100,11 @@ new svmkit.validator.Agave(
 
 This section provides all the necessary information to start contributing to or building SVMKit. It is divided into several subsections for clarity.
 
-#### Requirement
+#### Requirements
 
 Ensure the following tools are installed and available in your `$PATH`:
 
-- [Go 1.22](https://golang.org/dl/) or 1.latest
+- [golang 1.22](https://golang.org/dl/)
 - [`golangci-lint`](https://golangci-lint.run/install)
 
 #### Structure
