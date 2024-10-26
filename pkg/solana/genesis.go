@@ -11,6 +11,7 @@ type CreateCommand struct {
 	runner.Command
 	Flags      GenesisFlags
 	Primordial []genesis.PrimorialEntry
+	Version    genesis.Version
 }
 
 // GenesisFlags represents the configuration flags for the Solana genesis setup.
@@ -74,6 +75,10 @@ func (cmd *CreateCommand) Env() map[string]string {
 	env["PRIMORDIAL_PUBKEYS"] = primordialPubkeys
 	env["PRIMORDIAL_LAMPORTS"] = primordialLamports
 
+	if cmd.Version != nil {
+		env["PACKAGE_VERSION"] = *cmd.Version
+	}
+
 	return env
 }
 
@@ -85,11 +90,13 @@ type Genesis struct {
 	genesis.Genesis
 	Flags      GenesisFlags
 	Primordial []genesis.PrimorialEntry
+	Version    genesis.Version
 }
 
 func (g *Genesis) Create() runner.Command {
 	return &CreateCommand{
 		Flags:      g.Flags,
 		Primordial: g.Primordial,
+		Version:    g.Version,
 	}
 }
