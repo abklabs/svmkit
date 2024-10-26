@@ -75,6 +75,8 @@ func (r *Runner) Run(ctx context.Context) error {
 		return fmt.Errorf("failed to create temporary directory: %w", err)
 	}
 
+	logPath := fmt.Sprintf("%s.log", tempDir)
+
 	// Upload the script and environment variables to the remote host
 	libPath := path.Join(tempDir, "lib.bash")
 	runPath := path.Join(tempDir, "run.sh")
@@ -101,12 +103,12 @@ func (r *Runner) Run(ctx context.Context) error {
 	// Make the run.sh script executable, change directory to the temporary directory, execute the script,
 	// change back to the original directory, and remove the temporary directory.
 	commands := fmt.Sprintf(`
-		chmod +x %s &&
+		( chmod +x %s &&
 		cd %s &&
 		./run.sh &&
 		cd - &&
-		rm -rf %s
-	`, runPath, tempDir, tempDir)
+		rm -rf %s ) > %s 2>&1 && rm -f %s
+	`, runPath, tempDir, tempDir, logPath, logPath)
 
 	_, _, err = ssh.Exec(ctx, connection, commands)
 	if err != nil {
