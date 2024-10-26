@@ -177,9 +177,9 @@ keypairs::write() {
 apt::abk() {
     $APT update
     $APT install curl gnupg
-    if ! grep -q "^deb .*/zuma dev main" /etc/apt/sources.list /etc/apt/sources.list.d/*; then
+    if ! grep -q "^deb .*/svmkit dev main" /etc/apt/sources.list /etc/apt/sources.list.d/*; then
         curl -s https://apt.abklabs.com/keys/abklabs-archive-dev.asc | $SUDO apt-key add -
-        echo "deb https://apt.abklabs.com/zuma dev main" | $SUDO tee /etc/apt/sources.list.d/zuma.list >/dev/null
+        echo "deb https://apt.abklabs.com/svmkit dev main" | $SUDO tee /etc/apt/sources.list.d/svmkit.list >/dev/null
         $APT update
     fi
 }

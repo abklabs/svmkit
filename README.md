@@ -37,7 +37,7 @@ ABK Labs provides a build and release service for SVM software at `apt.abklabs.c
 For detailed setup instructions to install the SVMKit apt repository on your system, please refer to the [APT-SETUP.md](APT-SETUP.md) file.
 
 ```bash
-sudo apt-get install zuma-agave-validator zuma-solana-cli
+sudo apt-get install svmkit-agave-validator svmkit-solana-cli
 ```
 
 ## GoLang Library

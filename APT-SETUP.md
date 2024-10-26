@@ -19,7 +19,7 @@ sudo apt-get install -y curl gnupg
 3. Add the SVMKit repository to your system's software repository list:
 
 ```bash
-echo "deb https://apt.abklabs.com/zuma dev main" | sudo tee /etc/apt/sources.list.d/zuma.list
+echo "deb https://apt.abklabs.com/svmkit dev main" | sudo tee /etc/apt/sources.list.d/svmkit.list
 ```
 
 4. Import the repository's GPG key:
@@ -37,5 +37,5 @@ sudo apt-get update
 6. Install SVMKit's build of the Agave validator and solana cli:
 
 ```bash
-sudo apt-get install zuma-agave-validator zuma-solana-cli
+sudo apt-get install svmkit-agave-validator svmkit-solana-cli
 ```
