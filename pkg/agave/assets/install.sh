@@ -1,7 +1,13 @@
 # -*- mode: shell-script -*-
 # shellcheck shell=bash
 
-step::00::setup-abklabs-apt() {
+step::00::wait-for-a-stable-environment() {
+    if command -v cloud-init > /dev/null 2>&1 ; then
+	cloud-init status --wait
+    fi
+}
+
+step::05::setup-abklabs-apt() {
     apt::abk
 }
 
