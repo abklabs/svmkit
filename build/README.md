@@ -51,9 +51,9 @@ Which will produce several packages in `../build` e.g.:
 
 ```
 $ find ../build  -type f
-../build/solana-labs/master/zuma-solana-validator_2.0.0-1_amd64.deb
-../build/jito-foundation/master/zuma-jito-validator_2.1.0-1_amd64.deb
-../build/anza-xyz/master/zuma-agave-validator_2.1.0-1_amd64.deb
-../build/pyth-network/pyth-v1.14.17/zuma-pyth-validator_1.14.177-1_amd64.deb
-../build/PowerLedger/upgrade_to_v1.16.28/zuma-powerledger-validator_1.16.28-1_amd64.deb
+../build/solana-labs/master/svmkit-solana-validator_2.0.0-1_amd64.deb
+../build/jito-foundation/master/svmkit-jito-validator_2.1.0-1_amd64.deb
+../build/anza-xyz/master/svmkit-agave-validator_2.1.0-1_amd64.deb
+../build/pyth-network/pyth-v1.14.17/svmkit-pyth-validator_1.14.177-1_amd64.deb
+../build/PowerLedger/upgrade_to_v1.16.28/svmkit-powerledger-validator_1.16.28-1_amd64.deb
 ```

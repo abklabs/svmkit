@@ -57,22 +57,22 @@ default-build () {
 anza-build-extra () {
     cat <<EOF >> genesis/Cargo.toml
 [package.metadata.deb]
-name = "zuma-solana-genesis"
+name = "svmkit-solana-genesis"
 EOF
 
     cat <<EOF >> faucet/Cargo.toml
 [package.metadata.deb]
-name = "zuma-solana-faucet"
+name = "svmkit-solana-faucet"
 EOF
 
     cat <<EOF >> cli/Cargo.toml
 [package.metadata.deb]
-name = "zuma-solana-cli"
+name = "svmkit-solana-cli"
 EOF
 
     cat <<EOF >> ledger-tool/Cargo.toml
 [package.metadata.deb]
-name = "zuma-agave-ledger-tool"
+name = "svmkit-agave-ledger-tool"
 EOF
 
     # shellcheck disable=SC2154,SC1091
@@ -108,9 +108,9 @@ build-ref () {
     cat <<EOF >> validator/Cargo.toml
 [package.metadata.deb]
 name = "$package_name"
-provides = "zuma-validator"
-conflicts = "zuma-validator"
-replaces = "zuma-validator"
+provides = "svmkit-validator"
+conflicts = "svmkit-validator"
+replaces = "svmkit-validator"
 EOF
     $buildfunc
     git submodule deinit --all
@@ -148,15 +148,15 @@ for remote in solana-labs anza-xyz PowerLedger jito-foundation pyth-network mant
     fetch-remote $remote
 done
 
-build-ref zuma-solana-validator solana-labs/master solana-validator
+build-ref svmkit-solana-validator solana-labs/master solana-validator
 
 for tag in v1.18.24 v1.18.25 v1.18.26 v2.0.10 v2.0.13 v2.0.14 ; do
-    build-ref zuma-agave-validator "$(lookup-remote-tag anza-xyz $tag)" agave-validator anza-build-extra
+    build-ref svmkit-agave-validator "$(lookup-remote-tag anza-xyz $tag)" agave-validator anza-build-extra
 done
 
-build-ref zuma-powerledger-validator PowerLedger/upgrade_to_v1.16.28 solana-validator
-build-ref zuma-jito-validator jito-foundation/master agave-validator
+build-ref svmkit-powerledger-validator PowerLedger/upgrade_to_v1.16.28 solana-validator
+build-ref svmkit-jito-validator jito-foundation/master agave-validator
 
-build-ref zuma-pyth-validator pyth-network/pyth-v1.14.17 solana-validator build-with-other-clang
+build-ref svmkit-pyth-validator pyth-network/pyth-v1.14.17 solana-validator build-with-other-clang
 
-build-ref zuma-mantis-validator mantis/mantis/diet-validator-rpc solana-validator
+build-ref svmkit-mantis-validator mantis/mantis/diet-validator-rpc solana-validator

@@ -47,9 +47,9 @@ step::000::create-sol-user() {
 step::010::install-dependencies() {
     apt::abk
     if [[ -v PACKAGE_VERSION ]]; then
-        $APT install bzip2 "zuma-solana-genesis=$PACKAGE_VERSION" "zuma-solana-cli=$PACKAGE_VERSION" "zuma-agave-ledger-tool=$PACKAGE_VERSION"
+        $APT install bzip2 "svmkit-solana-genesis=$PACKAGE_VERSION" "svmkit-solana-cli=$PACKAGE_VERSION" "svmkit-agave-ledger-tool=$PACKAGE_VERSION"
     else
-        $APT install bzip2 zuma-solana-genesis zuma-solana-cli zuma-agave-ledger-tool
+        $APT install bzip2 svmkit-solana-genesis svmkit-solana-cli svmkit-agave-ledger-tool
     fi
 }
 

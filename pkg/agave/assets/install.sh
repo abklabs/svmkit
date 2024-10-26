@@ -68,9 +68,9 @@ EOF
 
 step::70::install-validator() {
     if [[ -v VALIDATOR_VERSION ]]; then
-        $APT --allow-downgrades install "zuma-agave-validator=$VALIDATOR_VERSION" "zuma-solana-cli=$VALIDATOR_VERSION"
+        $APT --allow-downgrades install "svmkit-agave-validator=$VALIDATOR_VERSION" "svmkit-solana-cli=$VALIDATOR_VERSION"
     else
-        $APT --allow-downgrades install "zuma-agave-validator" "zuma-solana-cli"
+        $APT --allow-downgrades install "svmkit-agave-validator" "svmkit-solana-cli"
     fi
 }
 
