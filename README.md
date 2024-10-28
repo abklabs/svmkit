@@ -18,6 +18,11 @@ All of these features are crafted to reduce time to market and let you focus on 
 
 If you have questions or want to contribute, join us in the SVM community chat on Telegram or make a pull request.
 
+## Next Steps:
+
+- [SVMKit Examples](https://github.com/abklabs/svmkit-examples) - A collection of examples on how to use SVMKit in your environment.
+- [Developer Information](DEV.md) - Interested in developing with SVMKit?  Take a look here.
+
 ---
 
 # About Us
