@@ -7,6 +7,7 @@ import (
 
 	"github.com/abklabs/svmkit/pkg/runner"
 	"github.com/abklabs/svmkit/pkg/validator"
+	"github.com/pulumi/pulumi-go-provider/infer"
 )
 
 const (
@@ -14,6 +15,52 @@ const (
 	ledgerPath   = "/home/sol/ledger"
 	logPath      = "/home/sol/log"
 )
+
+type Variant string
+
+const (
+	VariantSolana      Variant = "solana"
+	VariantAgave               = "agave"
+	VariantPowerledger         = "powerledger"
+	VariantJito                = "jito"
+	VariantPyth                = "pyth"
+	VariantMantis              = "mantis"
+)
+
+func (Variant) Values() []infer.EnumValue[Variant] {
+	return []infer.EnumValue[Variant]{
+		{
+			Name:        string(VariantSolana),
+			Value:       VariantSolana,
+			Description: "The Solana validator",
+		},
+		{
+			Name:        string(VariantAgave),
+			Value:       VariantAgave,
+			Description: "The Agave validator",
+		},
+		{
+			Name:        string(VariantPowerledger),
+			Value:       VariantPowerledger,
+			Description: "The Powerledger validator",
+		},
+		{
+			Name:        string(VariantJito),
+			Value:       VariantJito,
+			Description: "The Jito validator",
+		},
+		{
+			Name:        string(VariantPyth),
+			Value:       VariantPyth,
+			Description: "The Pyth validator",
+		},
+		{
+			Name:        string(VariantMantis),
+			Value:       VariantMantis,
+			Description: "The Mantis validator",
+		},
+	}
+}
 
 type KeyPairs struct {
 	Identity    string `pulumi:"identity" provider:"secret"`
@@ -80,6 +127,7 @@ type InstallCommand struct {
 	Flags    Flags
 	KeyPairs KeyPairs
 	Version  validator.Version
+	Variant  *Variant
 	Metrics  *Metrics
 }
 
@@ -99,6 +147,12 @@ func (cmd *InstallCommand) Env() map[string]string {
 		env["VALIDATOR_VERSION"] = *cmd.Version
 	}
 
+	if cmd.Variant != nil {
+		env["VALIDATOR_VARIANT"] = string(*cmd.Variant)
+	} else {
+		env["VALIDATOR_VARIANT"] = string(VariantAgave)
+	}
+
 	return env
 }
 
@@ -115,6 +169,7 @@ type ValidatorPaths struct {
 type Agave struct {
 	validator.Client
 	Version  validator.Version `pulumi:"version,optional"`
+	Variant  *Variant          `pulumi:"variant,optional"`
 	KeyPairs KeyPairs          `pulumi:"keyPairs" provider:"secret"`
 	Flags    Flags             `pulumi:"flags"`
 	Metrics  *Metrics          `pulumi:"metrics,optional"`
@@ -125,6 +180,7 @@ func (agave *Agave) Install() runner.Command {
 		Flags:    agave.Flags,
 		KeyPairs: agave.KeyPairs,
 		Version:  agave.Version,
+		Variant:  agave.Variant,
 		Metrics:  agave.Metrics,
 	}
 }

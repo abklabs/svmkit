@@ -1,6 +1,33 @@
 # -*- mode: shell-script -*-
 # shellcheck shell=bash
 
+VALIDATOR_PACKAGE=svmkit-${VALIDATOR_VARIANT}-validator
+VALIDATOR_SERVICE=${VALIDATOR_PACKAGE}.service
+
+case $VALIDATOR_VARIANT in
+    agave)
+	VALIDATOR_PROCESS=agave-validator
+	;;
+    jito)
+	VALIDATOR_PROCESS=agave-validator
+	;;
+    mantis)
+	VALIDATOR_PROCESS=solana-validator
+	;;
+    powerledger)
+	VALIDATOR_PROCESS=solana-validator
+	;;
+    pyth)
+	VALIDATOR_PROCESS=solana-validator
+	;;
+    solana)
+	VALIDATOR_PROCESS=solana-validator
+	;;
+    *)
+	log::fatal "unknown validator variant '$VALIDATOR_VARIANT'!"
+	;;
+esac
+
 step::00::wait-for-a-stable-environment() {
     if command -v cloud-init > /dev/null 2>&1 ; then
 	cloud-init status --wait
@@ -74,29 +101,29 @@ EOF
 
 step::70::install-validator() {
     if [[ -v VALIDATOR_VERSION ]]; then
-        $APT --allow-downgrades install "svmkit-agave-validator=$VALIDATOR_VERSION" "svmkit-solana-cli=$VALIDATOR_VERSION"
+        $APT --allow-downgrades install "${VALIDATOR_PACKAGE}=$VALIDATOR_VERSION" "svmkit-solana-cli=$VALIDATOR_VERSION"
     else
-        $APT --allow-downgrades install "svmkit-agave-validator" "svmkit-solana-cli"
+        $APT --allow-downgrades install "${VALIDATOR_PACKAGE}" "svmkit-solana-cli"
     fi
 }
 
 step::80::setup-validator-startup() {
-    if systemctl list-unit-files svmkit-agave-validator.service >/dev/null; then
-        $SUDO systemctl stop svmkit-agave-validator.service || true
+    if systemctl list-unit-files "${VALIDATOR_SERVICE}" >/dev/null; then
+        $SUDO systemctl stop "${VALIDATOR_SERVICE}" || true
     fi
 
     cat <<EOF | $SUDO tee /home/sol/run-validator >/dev/null
 #!/usr/bin/env bash
 
-$VALIDATOR_ENV exec agave-validator $VALIDATOR_FLAGS
+$VALIDATOR_ENV exec $VALIDATOR_PROCESS $VALIDATOR_FLAGS
 EOF
 
     $SUDO chmod 755 /home/sol/run-validator
     $SUDO chown sol:sol /home/sol/run-validator
 
-    cat <<EOF | $SUDO tee /etc/systemd/system/svmkit-agave-validator.service >/dev/null
+    cat <<EOF | $SUDO tee /etc/systemd/system/"${VALIDATOR_SERVICE}" >/dev/null
 [Unit]
-Description=SVMkit Agave validator
+Description=SVMkit $VALIDATOR_VARIANT validator
 
 [Service]
 User=sol
@@ -108,6 +135,6 @@ LimitNOFILE=1000000
 WantedBy=default.target
 EOF
     $SUDO systemctl daemon-reload
-    $SUDO systemctl enable svmkit-agave-validator.service
-    $SUDO systemctl start svmkit-agave-validator.service
+    $SUDO systemctl enable "${VALIDATOR_SERVICE}"
+    $SUDO systemctl start "${VALIDATOR_SERVICE}"
 }
