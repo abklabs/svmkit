@@ -20,11 +20,11 @@ type Variant string
 
 const (
 	VariantSolana      Variant = "solana"
-	VariantAgave               = "agave"
-	VariantPowerledger         = "powerledger"
-	VariantJito                = "jito"
-	VariantPyth                = "pyth"
-	VariantMantis              = "mantis"
+	VariantAgave       Variant = "agave"
+	VariantPowerledger Variant = "powerledger"
+	VariantJito        Variant = "jito"
+	VariantPyth        Variant = "pyth"
+	VariantMantis      Variant = "mantis"
 )
 
 func (Variant) Values() []infer.EnumValue[Variant] {
