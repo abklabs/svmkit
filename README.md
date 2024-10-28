@@ -1,119 +1,29 @@
-# SVMKit
+# SVMKit - ABK Labs
 
-SVMKit is a comprehensive toolkit designed for deploying and managing various modules of the Solana Virtual Machine (SVM), such as consensus, genesis, and RPC. It offers operators a consistent administrative experience and provides SVM developers with clear methods for integrating their flavor of SVM module into SVMKit.
+**Just build together** - ABK Labs believes that open-source software is the purest form of innovation. In our world, there are no competitors, only contributors.
 
-## Mission
+SVMKit is built with this ethos in mind. We encourage you to fork, customize, and contribute to everything you find useful in these repositories.
 
-Our mission is to empower developers and institutions to harness the power of Solana's blockchain technology with minimal friction. By offering a robust, user-friendly platform, we aim to drive widespread adoption and foster innovation within the SVM ecosystem.
+SVMKit is a suite of tools designed to make building, maintaining, and operating blockchains with the Solana Virtual Machine (SVM) more accessible. With SVMKit, you have a powerful foundation whether you're a chain builder or a node operator.
 
-## Value
+## Key Features:
 
-SVMKit offers significant value to both software operators and SVM developers:
+- **Rapid Setup for Chain Builders**: Go from genesis block to a multi-node cluster in under an hour, enabling fast deployment and network scalability.
+  
+- **Streamlined Operations for Node Operators**: Join any supported fork of the Solana Validator client in under two minutes, bringing ease and efficiency to node operation.
 
-- **For Software Operators:** SVMKit simplifies the management of all SVM software components and variants using a single operations toolkit. This reduces the technical expertise required to deploy and manage Solana nodes, making blockchain technology more accessible to a broader audience.
+- **Ecosystem Services**: Enjoy integrated RPC, Wallet Support, and main net contracts, giving you access to essential ecosystem services and the flexibility to work with main net providers without custom integrations.
 
-- **For SVM Developers:** SVMKit allows developers to quickly and accurately represent their software, enabling operators to leverage it using a familiar toolkit. By involving strategic partners and early customers, SVMKit continuously improves and adapts to real-world needs through community feedback.
+All of these features are crafted to reduce time to market and let you focus on your core products, rather than the complexity of maintaining and operating the network.
 
-## Goals
+If you have questions or want to contribute, join us in the SVM community chat on Telegram or make a pull request.
 
-- **Simplify Software Operations:** Provide simplified creation and management for all modules of the Solana Virtual Machine (SVM) with community-tested configuration setups for seamless deployment and management.
+---
 
-- **Scalable Cluster Management:** Enable scalable, low-effort management of large validator and RPC clusters, supporting both permissioned and permissionless Solana clusters to cater to diverse user needs.
+# About Us
 
-- **Easy Onboarding:** Provide a framework for representing SVM modules, enabling SVM developers the ability to integrate their solutions into SVMKit. This streamlines the process of building, launching, and maintaining SVM operators by operators.
+Founded on open-source principles, ABK Labs believes the future of the internet is permissionless, open, and driven by the convergence of AI, blockchain, and token economies. With roots in the early days of open-source software, our team has built software used by millions globally—and even on Mars.
 
-- **Lower Expertise Barriers:** Drastically reduce the technical expertise required to deploy and manage Solana nodes, making blockchain technology more accessible to a broader audience.
+Since our founding in June, we’ve grown from three to ten team members and scaled our community from 10 to over 240 builders, including teams backed by $250 million in venture funding. We’re profitable, supporting top companies in the space and reinvesting to advance open-source tools at the intersection of Solana and AI.
 
-- **Community-Driven Improvement:** Leverage community feedback by involving strategic partners and early customers to continuously improve and adapt SVMKit to real-world needs.
-
-- **Comprehensive Management Solution:** SVMKit manages all components of SVM by structuring the requirements of different modular SVM components and providing clear playbooks for representing those components.
-
-## Offerings
-
-### Apt Repository
-
-ABK Labs provides a build and release service for SVM software at `apt.abklabs.com`, which allows operators to install various SVM modules through apt. More details can be found in the [build](/build) directory.
-
-For detailed setup instructions to install the SVMKit apt repository on your system, please refer to the [APT-SETUP.md](APT-SETUP.md) file.
-
-```bash
-sudo apt-get install svmkit-agave-validator svmkit-solana-cli
-```
-
-## golang Library
-
-The SVMKit GoLang library, available in the [`pkg`](/pkg) directory, delivers essential tools for managing SVM modules. It includes utilities for setting up Solana genesis ledgers, configuring validators, and handling other components through SSH connections.
-
-```bash
-go get github.com/abklabs/svmkit/pkg
-```
-
-## Pulumi Provider
-
-The SVMKit Pulumi provider facilitates infrastructure as code (IaC) for managing Solana nodes and related resources. For more details and usage instructions, please see the [Pulumi SVMKit repository](https://github.com/abklabs/pulumi-svmkit).
-
-```typescript
-import * as svmkit from "@svmkit/pulumi-svmkit";
-
-new svmkit.validator.Agave(
-  "validator",
-  {
-    connection,
-    keyPairs: {
-      identity: validatorKey.json,
-      voteAccount: voteAccountKey.json,
-    },
-    flags: {
-      entryPoint: [
-        "entrypoint.testnet.solana.com:8001",
-        "entrypoint2.testnet.solana.com:8001",
-        "entrypoint3.testnet.solana.com:8001",
-      ],
-      knownValidator: [
-        "5D1fNXzvv5NjV1ysLjirC4WY92RNsVH18vjmcszZd8on",
-        "7XSY3MrYnK8vq693Rju17bbPkCN3Z7KvvfvJx4kdrsSY",
-        "Ft5fbkqNa76vnsjYNwjDZUXoTWpP7VYm3mtsaQckQADN",
-        "9QxCLckBiJc783jnMvXZubK4wH86Eqqvashtrwvcsgkv",
-      ],
-      expectedGenesisHash: "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY",
-      useSnapshotArchivesAtStartup: "when-newest",
-      rpcPort: 8899,
-      privateRPC: true,
-      onlyKnownRPC: true,
-      dynamicPortRange: "8002-8020",
-      gossipPort: 8001,
-      rpcBindAddress: "0.0.0.0",
-      walRecoveryMode: "skip_any_corrupted_record",
-      limitLedgerSize: 50000000,
-      blockProductionMethod: "central-scheduler",
-      fullSnapshotIntervalSlots: 1000,
-      noWaitForVoteToStartLeader: true,
-    },
-  },
-  {
-    dependsOn: [instance],
-  }
-);
-```
-
-## Development
-
-This section provides all the necessary information to start contributing to or building SVMKit. It is divided into several subsections for clarity.
-
-#### Requirements
-
-Ensure the following tools are installed and available in your `$PATH`:
-
-- [golang 1.22](https://golang.org/dl/)
-- [`golangci-lint`](https://golangci-lint.run/install)
-
-#### Structure
-
-The repository includes the following:
-
-| Directory/File | Description                                                   |
-| -------------- | ------------------------------------------------------------- |
-| `pkg`          | SVMKit Go packages.                                           |
-| `build`        | Scripts for building validators and distributing through APT. |
-| `README`       | Standard project files for building and documentation.        |
-| `Makefile`     | Contains commands for testing and building Go packages.       |
+Our flagship product, **SVMKit**, simplifies SVM network operation, while **Zuma**, our alternative validator, allows for modular customization without client forking. ABK Labs is driven by a community of builders, believers, and innovators committed to a decentralized future. If you share this vision, explore our repos or consider joining our team.
