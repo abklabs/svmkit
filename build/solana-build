@@ -54,25 +54,36 @@ default-build () {
     mv target/debian/*.deb "../build/$ref/."
 }
 
+generate-replacement-metadata () {
+    local name oldname
+    name=$1 ; shift
+    oldname=zuma-${name#svmkit-}
+cat <<EOF
+name = "$name"
+conflicts = "$oldname"
+replaces = "$oldname"
+EOF
+}
+
 anza-build-extra () {
     cat <<EOF >> genesis/Cargo.toml
 [package.metadata.deb]
-name = "svmkit-solana-genesis"
+$(generate-replacement-metadata svmkit-solana-genesis)
 EOF
 
     cat <<EOF >> faucet/Cargo.toml
 [package.metadata.deb]
-name = "svmkit-solana-faucet"
+$(generate-replacement-metadata svmkit-solana-faucet)
 EOF
 
     cat <<EOF >> cli/Cargo.toml
 [package.metadata.deb]
-name = "svmkit-solana-cli"
+$(generate-replacement-metadata svmkit-solana-cli)
 EOF
 
     cat <<EOF >> ledger-tool/Cargo.toml
 [package.metadata.deb]
-name = "svmkit-agave-ledger-tool"
+$(generate-replacement-metadata svmkit-agave-ledger-tool)
 EOF
 
     # shellcheck disable=SC2154,SC1091
@@ -95,6 +106,7 @@ build-ref () {
     package_name=$1 ; shift
     ref=$1 ; shift
     target=$1 ; shift
+    old_package_name="zuma-${package_name#svmkit-}"
 
     if [[ $# -gt 0 ]] ; then
 	buildfunc=$1 ; shift
@@ -109,8 +121,8 @@ build-ref () {
 [package.metadata.deb]
 name = "$package_name"
 provides = "svmkit-validator"
-conflicts = "svmkit-validator"
-replaces = "svmkit-validator"
+conflicts = "svmkit-validator,${old_package_name}"
+replaces = "svmkit-validator,${old_package_name}"
 EOF
     $buildfunc
     git submodule deinit --all
