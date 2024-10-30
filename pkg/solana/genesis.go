@@ -29,6 +29,13 @@ type GenesisFlags struct {
 	ClusterType                *string `pulumi:"clusterType,optional"`
 }
 
+func flagsField(env map[string]string, key string, value *string) {
+
+	if value != nil {
+		env[key] = *value
+	}
+}
+
 func (cmd *CreateCommand) Env() map[string]string {
 	env := map[string]string{
 		"LEDGER_PATH":                   cmd.Flags.LedgerPath,
@@ -44,24 +51,13 @@ func (cmd *CreateCommand) Env() map[string]string {
 		"CLUSTER_TYPE":                  "development",
 	}
 
-	if cmd.Flags.FaucetLamports != nil {
-		env["FAUCET_LAMPORTS"] = *cmd.Flags.FaucetLamports
-	}
-	if cmd.Flags.TargetLamportsPerSignature != nil {
-		env["TARGET_LAMPORTS_PER_SIGNATURE"] = *cmd.Flags.TargetLamportsPerSignature
-	}
-	if cmd.Flags.Inflation != nil {
-		env["INFLATION"] = *cmd.Flags.Inflation
-	}
-	if cmd.Flags.LamportsPerByteYear != nil {
-		env["LAMPORTS_PER_BYTE_YEAR"] = *cmd.Flags.LamportsPerByteYear
-	}
-	if cmd.Flags.SlotPerEpoch != nil {
-		env["SLOT_PER_EPOCH"] = *cmd.Flags.SlotPerEpoch
-	}
-	if cmd.Flags.ClusterType != nil {
-		env["CLUSTER_TYPE"] = *cmd.Flags.ClusterType
-	}
+	flagsField(env, "FAUCET_LAMOPORTS", cmd.Flags.FaucetLamports)
+	flagsField(env, "TARGET_LAMPORTS_PER_SIGNATURE", cmd.Flags.TargetLamportsPerSignature)
+	flagsField(env, "INFLATION", cmd.Flags.Inflation)
+	flagsField(env, "LAMPORTS_PER_BYTE_YEAR", cmd.Flags.LamportsPerByteYear)
+	flagsField(env, "SLOT_PER_EPOCH", cmd.Flags.SlotPerEpoch)
+	flagsField(env, "CLUSTER_TYPE", cmd.Flags.ClusterType)
+
 	var primordialPubkeys, primordialLamports string
 	if cmd.Primordial != nil {
 		var pubkeys, lamports []string
