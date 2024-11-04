@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/abklabs/svmkit/pkg/runner"
+	"github.com/abklabs/svmkit/pkg/utils"
 	"github.com/abklabs/svmkit/pkg/validator"
 	"github.com/pulumi/pulumi-go-provider/infer"
 )
@@ -208,77 +209,56 @@ type Flags struct {
 }
 
 func (f Flags) ToArgs() []string {
-	var l []string
+	b := utils.FlagBuilder{}
 
 	// Note: These locations are hard coded inside asset-builder.
-	l = append(l, f.S("identity", "/home/sol/validator-keypair.json"))
-	l = append(l, f.S("vote-account", "/home/sol/vote-account-keypair.json"))
+	b.Append("--identity", "/home/sol/validator-keypair.json")
+	b.Append("--vote-account", "/home/sol/vote-account-keypair.json")
 
 	if f.EntryPoint != nil {
 		for _, entrypoint := range *f.EntryPoint {
-			l = append(l, f.S("entrypoint", entrypoint))
+			b.S("entrypoint", &entrypoint)
 		}
 	}
 
 	if f.KnownValidator != nil {
 		for _, knownValidator := range *f.KnownValidator {
-			l = append(l, f.S("known-validator", knownValidator))
+			b.S("known-validator", &knownValidator)
 		}
 	}
 
-	if f.ExpectedGenesisHash != nil {
-		l = append(l, f.S("expected-genesis-hash", *f.ExpectedGenesisHash))
-	}
-	l = append(l, f.S("use-snapshot-archives-at-startup", f.UseSnapshotArchivesAtStartup))
-	l = append(l, f.S("rpc-port", f.RpcPort))
-	l = append(l, f.S("dynamic-port-range", f.DynamicPortRange))
+	b.S("expected-genesis-hash", f.ExpectedGenesisHash)
 
-	if f.GossipHost != nil {
-		l = append(l, f.S("gossip-host", *f.GossipHost))
-	}
+	b.S("use-snapshot-archives-at-startup", &f.UseSnapshotArchivesAtStartup)
+	b.I("rpc-port", &f.RpcPort)
+	b.S("dynamic-port-range", &f.DynamicPortRange)
 
-	l = append(l, f.S("gossip-port", f.GossipPort))
-	l = append(l, f.S("rpc-bind-address", f.RpcBindAddress))
-	l = append(l, f.S("wal-recovery-mode", f.WalRecoveryMode))
-	l = append(l, f.S("log", logPath))
-	l = append(l, f.S("accounts", accountsPath))
-	l = append(l, f.S("ledger", ledgerPath))
-	l = append(l, f.S("limit-ledger-size", f.LimitLedgerSize))
-	l = append(l, f.S("block-production-method", f.BlockProductionMethod))
-	if f.TvuReceiveThreads != nil {
-		l = append(l, f.S("tvu-receive-threads", *f.TvuReceiveThreads))
-	}
-	l = append(l, f.S("full-snapshot-interval-slots", f.FullSnapshotIntervalSlots))
-	l = append(l, f.B("no-wait-for-vote-to-start-leader", f.NoWaitForVoteToStartLeader))
-	l = append(l, f.B("only-known-rpc", f.OnlyKnownRPC))
-	l = append(l, f.B("private-rpc", f.PrivateRPC))
+	b.S("gossip-host", f.GossipHost)
 
-	if f.FullRpcAPI != nil {
-		l = append(l, f.B("full-rpc-api", *f.FullRpcAPI))
-	}
+	b.I("gossip-port", &f.GossipPort)
+	b.S("rpc-bind-address", &f.RpcBindAddress)
+	b.S("wal-recovery-mode", &f.WalRecoveryMode)
+	b.Append("--log", logPath)
+	b.Append("--accounts", accountsPath)
+	b.Append("--ledger", ledgerPath)
+	b.I("limit-ledger-size", &f.LimitLedgerSize)
+	b.S("block-production-method", &f.BlockProductionMethod)
 
-	if f.NoVoting != nil {
-		l = append(l, f.B("no-voting", *f.NoVoting))
-	}
+	b.I("tvu-receive-threads", f.TvuReceiveThreads)
 
-	if f.AllowPrivateAddr != nil {
-		l = append(l, f.B("allow-private-addr", *f.AllowPrivateAddr))
-	}
+	b.I("full-snapshot-interval-slots", &f.FullSnapshotIntervalSlots)
+	b.B("no-wait-for-vote-to-start-leader", &f.NoWaitForVoteToStartLeader)
+	b.B("only-known-rpc", &f.OnlyKnownRPC)
+	b.B("private-rpc", &f.PrivateRPC)
+
+	b.B("full-rpc-api", f.FullRpcAPI)
+
+	b.B("no-voting", f.NoVoting)
+	b.B("allow-private-addr", f.AllowPrivateAddr)
 
 	if f.ExtraFlags != nil {
-		l = append(l, *f.ExtraFlags...)
+		b.Append(*f.ExtraFlags...)
 	}
 
-	return l
-}
-
-func (Flags) S(k string, v interface{}) string {
-	return fmt.Sprintf("--%s %v", k, v)
-}
-
-func (Flags) B(k string, v bool) string {
-	if v {
-		return fmt.Sprintf("--%s", k)
-	}
-	return ""
+	return b.ToArgs()
 }
