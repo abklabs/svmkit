@@ -75,26 +75,6 @@ type Metrics struct {
 	Password string `pulumi:"password"`
 }
 
-// ValidatorEnv represents the runtime environment specifically for the validator
-type ValidatorEnv struct {
-	Metrics *Metrics
-}
-
-func (env *ValidatorEnv) ToString() string {
-	var envStrings []string
-
-	if env.Metrics != nil {
-		metricsEnv, err := env.Metrics.ToEnv()
-		if err == nil {
-			envStrings = append(envStrings, metricsEnv)
-		} else {
-			fmt.Printf("Warning: Invalid metrics URL: %v\n", err)
-		}
-	}
-
-	return strings.Join(envStrings, " ")
-}
-
 // ToEnv constructs the Solana metrics configuration string from the separate fields
 // and returns it as an environment variable string.
 func (m *Metrics) ToEnv() (string, error) {
@@ -121,6 +101,26 @@ func (m *Metrics) ToEnv() (string, error) {
 	metricsConfig := strings.Join(configParts, ",")
 	// XXX - We should quote things more appropriately.
 	return fmt.Sprintf(`SOLANA_METRICS_CONFIG="%s"`, metricsConfig), nil
+}
+
+// ValidatorEnv represents the runtime environment specifically for the validator
+type ValidatorEnv struct {
+	Metrics *Metrics
+}
+
+func (env *ValidatorEnv) ToString() string {
+	var envStrings []string
+
+	if env.Metrics != nil {
+		metricsEnv, err := env.Metrics.ToEnv()
+		if err == nil {
+			envStrings = append(envStrings, metricsEnv)
+		} else {
+			fmt.Printf("Warning: Invalid metrics URL: %v\n", err)
+		}
+	}
+
+	return strings.Join(envStrings, " ")
 }
 
 type InstallCommand struct {
