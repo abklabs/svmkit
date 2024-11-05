@@ -159,7 +159,7 @@ func (cmd *InstallCommand) Script() string {
 type Agave struct {
 	Version  validator.Version `pulumi:"version,optional"`
 	Variant  *Variant          `pulumi:"variant,optional"`
-	KeyPairs KeyPairs          `pulumi:"keyPairs" provider:"secret"`
+	KeyPairs KeyPairs          `pulumi:"keyPairs"`
 	Flags    Flags             `pulumi:"flags"`
 	Metrics  *Metrics          `pulumi:"metrics,optional"`
 }
