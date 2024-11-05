@@ -84,9 +84,9 @@ func (cmd *CreateCommand) Script() string {
 }
 
 type Genesis struct {
-	Flags      GenesisFlags
-	Primordial []genesis.PrimorialEntry
-	Version    genesis.Version
+	Flags      GenesisFlags             `pulumi:"flags"`
+	Primordial []genesis.PrimorialEntry `pulumi:"primordial"`
+	Version    genesis.Version          `pulumi:"version,optional"`
 }
 
 func (g *Genesis) Create() runner.Command {
