@@ -124,11 +124,7 @@ func (env *ValidatorEnv) ToString() string {
 }
 
 type InstallCommand struct {
-	Flags    Flags
-	KeyPairs KeyPairs
-	Version  validator.Version
-	Variant  *Variant
-	Metrics  *Metrics
+	Agave
 }
 
 func (cmd *InstallCommand) Env() map[string]string {
@@ -170,11 +166,7 @@ type Agave struct {
 
 func (agave *Agave) Install() runner.Command {
 	return &InstallCommand{
-		Flags:    agave.Flags,
-		KeyPairs: agave.KeyPairs,
-		Version:  agave.Version,
-		Variant:  agave.Variant,
-		Metrics:  agave.Metrics,
+		Agave: *agave,
 	}
 }
 
