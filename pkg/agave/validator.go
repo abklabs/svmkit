@@ -160,12 +160,6 @@ func (cmd *InstallCommand) Script() string {
 	return InstallScript
 }
 
-type ValidatorPaths struct {
-	Accounts string `pulumi:"accounts"`
-	Ledger   string `pulumi:"ledger"`
-	Log      string `pulumi:"log"`
-}
-
 type Agave struct {
 	Version  validator.Version `pulumi:"version,optional"`
 	Variant  *Variant          `pulumi:"variant,optional"`
