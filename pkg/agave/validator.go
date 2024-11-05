@@ -136,7 +136,7 @@ func (cmd *InstallCommand) Env() map[string]string {
 	}
 
 	env := map[string]string{
-		"VALIDATOR_FLAGS":      strings.Join(cmd.Flags.toArgs(), " "),
+		"VALIDATOR_FLAGS":      strings.Join(cmd.Flags.ToArgs(), " "),
 		"IDENTITY_KEYPAIR":     cmd.KeyPairs.Identity,
 		"VOTE_ACCOUNT_KEYPAIR": cmd.KeyPairs.VoteAccount,
 		"VALIDATOR_ENV":        validatorEnv.ToString(),
@@ -207,7 +207,7 @@ type Flags struct {
 	ExtraFlags                   *[]string `pulumi:"extraFlags,optional"`
 }
 
-func (f Flags) toArgs() []string {
+func (f Flags) ToArgs() []string {
 	var l []string
 
 	// Note: These locations are hard coded inside asset-builder.
