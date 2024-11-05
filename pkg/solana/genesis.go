@@ -1,11 +1,30 @@
 package solana
 
 import (
+	"log"
+	"os"
 	"strings"
 
 	"github.com/abklabs/svmkit/pkg/genesis"
 	"github.com/abklabs/svmkit/pkg/runner"
 )
+
+var (
+	WarningLogger *log.Logger
+	InfoLogger    *log.Logger
+	ErrorLogger   *log.Logger
+)
+
+func init() {
+	file, err := os.OpenFile("logs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	InfoLogger = log.New(file, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+	WarningLogger = log.New(file, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
+	ErrorLogger = log.New(file, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+}
 
 type CreateCommand struct {
 	runner.Command
@@ -29,11 +48,18 @@ type GenesisFlags struct {
 	ClusterType                *string `pulumi:"clusterType,optional"`
 }
 
+// takes a key and optional value and conditionnally add value to env map if present
 func flagsField(env map[string]string, key string, value *string) {
 
-	if value != nil {
-		env[key] = *value
+	if key == "" {
+		WarningLogger.Println("Warning: Missing key for environment variable")
+		return
 	}
+	if value == nil {
+		WarningLogger.Printf("Warning: Missung value for environment variable '%s'.", key)
+		return
+	}
+	env[key] = *value
 }
 
 func (cmd *CreateCommand) Env() map[string]string {
@@ -51,6 +77,7 @@ func (cmd *CreateCommand) Env() map[string]string {
 		"CLUSTER_TYPE":                  "development",
 	}
 
+	//
 	flagsField(env, "FAUCET_LAMOPORTS", cmd.Flags.FaucetLamports)
 	flagsField(env, "TARGET_LAMPORTS_PER_SIGNATURE", cmd.Flags.TargetLamportsPerSignature)
 	flagsField(env, "INFLATION", cmd.Flags.Inflation)
@@ -58,6 +85,7 @@ func (cmd *CreateCommand) Env() map[string]string {
 	flagsField(env, "SLOT_PER_EPOCH", cmd.Flags.SlotPerEpoch)
 	flagsField(env, "CLUSTER_TYPE", cmd.Flags.ClusterType)
 
+	//considering abstracting this logic if Primodial data would be needed elsewhere
 	var primordialPubkeys, primordialLamports string
 	if cmd.Primordial != nil {
 		var pubkeys, lamports []string
