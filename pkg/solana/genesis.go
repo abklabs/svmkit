@@ -23,9 +23,7 @@ type GenesisFlags struct {
 }
 
 type CreateCommand struct {
-	Flags      GenesisFlags
-	Primordial []genesis.PrimorialEntry
-	Version    genesis.Version
+	Genesis
 }
 
 func (cmd *CreateCommand) Env() map[string]string {
@@ -93,8 +91,6 @@ type Genesis struct {
 
 func (g *Genesis) Create() runner.Command {
 	return &CreateCommand{
-		Flags:      g.Flags,
-		Primordial: g.Primordial,
-		Version:    g.Version,
+		Genesis: *g,
 	}
 }
