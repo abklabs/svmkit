@@ -123,7 +123,6 @@ func (m *Metrics) ToEnv() (string, error) {
 }
 
 type InstallCommand struct {
-	runner.Command
 	Flags    Flags
 	KeyPairs KeyPairs
 	Version  validator.Version
@@ -167,7 +166,6 @@ type ValidatorPaths struct {
 }
 
 type Agave struct {
-	validator.Client
 	Version  validator.Version `pulumi:"version,optional"`
 	Variant  *Variant          `pulumi:"variant,optional"`
 	KeyPairs KeyPairs          `pulumi:"keyPairs" provider:"secret"`
@@ -186,7 +184,6 @@ func (agave *Agave) Install() runner.Command {
 }
 
 type Flags struct {
-	validator.ClientFlags
 	EntryPoint                   *[]string `pulumi:"entryPoint,optional"`
 	KnownValidator               *[]string `pulumi:"knownValidator,optional"`
 	UseSnapshotArchivesAtStartup string    `pulumi:"useSnapshotArchivesAtStartup"`

@@ -8,7 +8,6 @@ import (
 )
 
 type CreateCommand struct {
-	runner.Command
 	Flags      GenesisFlags
 	Primordial []genesis.PrimorialEntry
 	Version    genesis.Version
@@ -87,7 +86,6 @@ func (cmd *CreateCommand) Script() string {
 }
 
 type Genesis struct {
-	genesis.Genesis
 	Flags      GenesisFlags
 	Primordial []genesis.PrimorialEntry
 	Version    genesis.Version
