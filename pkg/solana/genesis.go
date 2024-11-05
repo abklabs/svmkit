@@ -7,12 +7,6 @@ import (
 	"github.com/abklabs/svmkit/pkg/runner"
 )
 
-type CreateCommand struct {
-	Flags      GenesisFlags
-	Primordial []genesis.PrimorialEntry
-	Version    genesis.Version
-}
-
 // GenesisFlags represents the configuration flags for the Solana genesis setup.
 type GenesisFlags struct {
 	LedgerPath                 string  `pulumi:"ledgerPath"`
@@ -26,6 +20,12 @@ type GenesisFlags struct {
 	LamportsPerByteYear        *string `pulumi:"lamportsPerByteYear,optional"`
 	SlotPerEpoch               *string `pulumi:"slotPerEpoch,optional"`
 	ClusterType                *string `pulumi:"clusterType,optional"`
+}
+
+type CreateCommand struct {
+	Flags      GenesisFlags
+	Primordial []genesis.PrimorialEntry
+	Version    genesis.Version
 }
 
 func (cmd *CreateCommand) Env() map[string]string {
