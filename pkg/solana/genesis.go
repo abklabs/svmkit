@@ -15,6 +15,7 @@ var (
 	ErrorLogger   *log.Logger
 )
 
+// centralized logger setup
 func init() {
 	file, err := os.OpenFile("logs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
@@ -48,18 +49,24 @@ type GenesisFlags struct {
 	ClusterType                *string `pulumi:"clusterType,optional"`
 }
 
-// takes a key and optional value and conditionnally add value to env map if present
-func flagsField(env map[string]string, key string, value *string) {
+func setEnvFlags(env map[string]string, flags GenesisFlags) {
+	flagsMappings := map[string]*string{
+		"FAUCET_LAMPORTS":               flags.FaucetLamports,
+		"TARGET_LAMPORTS_PER_SIGNATURE": flags.TargetLamportsPerSignature,
+		"INFLATION":                     flags.Inflation,
+		"LAMPORTS_PER_BYTE_YEAR":        flags.LamportsPerByteYear,
+		"SLOT_PER_EPOCH":                flags.SlotPerEpoch,
+		"CLUSTER_TYPE":                  flags.ClusterType,
+	}
 
-	if key == "" {
-		WarningLogger.Println("Warning: Missing key for environment variable")
-		return
+	for key, value := range flagsMappings {
+		if value == nil {
+			WarningLogger.Printf("Warning: Missing value for environment variable '%s'.", key)
+			continue
+		}
+		env[key] = *value
+		InfoLogger.Printf("Set environment variable '%s' to '%s'", key, *value)
 	}
-	if value == nil {
-		WarningLogger.Printf("Warning: Missung value for environment variable '%s'.", key)
-		return
-	}
-	env[key] = *value
 }
 
 func (cmd *CreateCommand) Env() map[string]string {
@@ -77,13 +84,7 @@ func (cmd *CreateCommand) Env() map[string]string {
 		"CLUSTER_TYPE":                  "development",
 	}
 
-	//
-	flagsField(env, "FAUCET_LAMOPORTS", cmd.Flags.FaucetLamports)
-	flagsField(env, "TARGET_LAMPORTS_PER_SIGNATURE", cmd.Flags.TargetLamportsPerSignature)
-	flagsField(env, "INFLATION", cmd.Flags.Inflation)
-	flagsField(env, "LAMPORTS_PER_BYTE_YEAR", cmd.Flags.LamportsPerByteYear)
-	flagsField(env, "SLOT_PER_EPOCH", cmd.Flags.SlotPerEpoch)
-	flagsField(env, "CLUSTER_TYPE", cmd.Flags.ClusterType)
+	setEnvFlags(env, cmd.Flags)
 
 	//considering abstracting this logic if Primodial data would be needed elsewhere
 	var primordialPubkeys, primordialLamports string
