@@ -137,32 +137,32 @@ func (cmd *InstallCommand) Env() map[string]string {
 		Metrics: cmd.Metrics,
 	}
 
-	env := map[string]string{
+	b := utils.NewEnvBuilder()
+
+	b.SetMap(map[string]string{
 		"VALIDATOR_FLAGS":      strings.Join(cmd.Flags.ToArgs(), " "),
 		"IDENTITY_KEYPAIR":     cmd.KeyPairs.Identity,
 		"VOTE_ACCOUNT_KEYPAIR": cmd.KeyPairs.VoteAccount,
 		"VALIDATOR_ENV":        validatorEnv.ToString(),
-	}
+	})
 
 	if senv := cmd.Environment; senv != nil {
 		conf := solana.CLIConfig{
 			URL: senv.RPCURL,
 		}
 
-		env["SOLANA_CLI_CONFIG_FLAGS"] = conf.ToFlags().String()
+		b.Set("SOLANA_CLI_CONFIG_FLAGS", conf.ToFlags().String())
 	}
 
-	if cmd.Version != nil {
-		env["VALIDATOR_VERSION"] = *cmd.Version
-	}
+	b.SetP("VALIDATOR_VERSION", cmd.Version)
 
 	if cmd.Variant != nil {
-		env["VALIDATOR_VARIANT"] = string(*cmd.Variant)
+		b.Set("VALIDATOR_VARIANT", string(*cmd.Variant))
 	} else {
-		env["VALIDATOR_VARIANT"] = string(VariantAgave)
+		b.Set("VALIDATOR_VARIANT", string(VariantAgave))
 	}
 
-	return env
+	return b.Map()
 }
 
 func (cmd *InstallCommand) Script() string {
