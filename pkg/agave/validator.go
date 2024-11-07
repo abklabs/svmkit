@@ -113,18 +113,20 @@ type InstallCommand struct {
 }
 
 func (cmd *InstallCommand) Check() error {
+	if m := cmd.Metrics; m != nil {
+		if err := m.Check(); err != nil {
+			return fmt.Errorf("Warning: Invalid metrics URL: %v\n", err)
+		}
+	}
+
 	return nil
 }
 
-func (cmd *InstallCommand) Env() map[string]string {
+func (cmd *InstallCommand) Env() *utils.EnvBuilder {
 	validatorEnv := utils.NewEnvBuilder()
 
-	if cmd.Metrics != nil {
-		if err := cmd.Metrics.Check(); err != nil {
-			fmt.Printf("Warning: Invalid metrics URL: %v\n", err)
-		} else {
-			validatorEnv.Set("SOLANA_METRICS_CONFIG", cmd.Metrics.String())
-		}
+	if m := cmd.Metrics; m != nil {
+		validatorEnv.Set("SOLANA_METRICS_CONFIG", m.String())
 	}
 
 	b := utils.NewEnvBuilder()
@@ -152,7 +154,7 @@ func (cmd *InstallCommand) Env() map[string]string {
 		b.Set("VALIDATOR_VARIANT", string(VariantAgave))
 	}
 
-	return b.Map()
+	return b
 }
 
 func (cmd *InstallCommand) Script() string {

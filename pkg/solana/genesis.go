@@ -31,7 +31,7 @@ func (cmd *CreateCommand) Check() error {
 	return nil
 }
 
-func (cmd *CreateCommand) Env() map[string]string {
+func (cmd *CreateCommand) Env() *utils.EnvBuilder {
 	b := utils.NewEnvBuilder()
 
 	b.SetMap(map[string]string{
@@ -71,7 +71,7 @@ func (cmd *CreateCommand) Env() map[string]string {
 
 	b.SetP("PACKAGE_VERSION", cmd.Version)
 
-	return b.Map()
+	return b
 }
 
 func (cmd *CreateCommand) Script() string {
