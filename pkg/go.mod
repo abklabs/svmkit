@@ -5,6 +5,7 @@ go 1.22
 toolchain go1.22.7
 
 require (
+	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/pkg/sftp v1.13.6
 	github.com/pulumi/pulumi-go-provider v0.22.0
 	github.com/pulumi/pulumi/sdk/v3 v3.126.0
