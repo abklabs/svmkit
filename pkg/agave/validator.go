@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/abklabs/svmkit/pkg/runner"
+	"github.com/abklabs/svmkit/pkg/solana"
 	"github.com/abklabs/svmkit/pkg/utils"
 	"github.com/abklabs/svmkit/pkg/validator"
 	"github.com/pulumi/pulumi-go-provider/infer"
@@ -139,6 +140,14 @@ func (cmd *InstallCommand) Env() map[string]string {
 		"VALIDATOR_ENV":        validatorEnv.ToString(),
 	}
 
+	if senv := cmd.Environment; senv != nil {
+		conf := solana.CLIConfig{
+			URL: senv.RPCURL,
+		}
+
+		env["SOLANA_CLI_CONFIG_FLAGS"] = conf.ToFlags().String()
+	}
+
 	if cmd.Version != nil {
 		env["VALIDATOR_VERSION"] = *cmd.Version
 	}
@@ -157,11 +166,12 @@ func (cmd *InstallCommand) Script() string {
 }
 
 type Agave struct {
-	Version  validator.Version `pulumi:"version,optional"`
-	Variant  *Variant          `pulumi:"variant,optional"`
-	KeyPairs KeyPairs          `pulumi:"keyPairs"`
-	Flags    Flags             `pulumi:"flags"`
-	Metrics  *Metrics          `pulumi:"metrics,optional"`
+	Environment *solana.Environment `pulumi:"environment,optional"`
+	Version     validator.Version   `pulumi:"version,optional"`
+	Variant     *Variant            `pulumi:"variant,optional"`
+	KeyPairs    KeyPairs            `pulumi:"keyPairs"`
+	Flags       Flags               `pulumi:"flags"`
+	Metrics     *Metrics            `pulumi:"metrics,optional"`
 }
 
 func (agave *Agave) Install() runner.Command {
