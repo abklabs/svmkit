@@ -128,6 +128,10 @@ type InstallCommand struct {
 	Agave
 }
 
+func (cmd *InstallCommand) Check() error {
+	return nil
+}
+
 func (cmd *InstallCommand) Env() map[string]string {
 	validatorEnv := ValidatorEnv{
 		Metrics: cmd.Metrics,

@@ -13,6 +13,7 @@ import (
 
 // CommandInterface is an interface for representing a script command to executed by the runner.
 type Command interface {
+	Check() error
 	Env() map[string]string
 	Script() string
 }
