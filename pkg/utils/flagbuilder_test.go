@@ -12,17 +12,17 @@ func TestFlagBuilderBasics(t *testing.T) {
 
 	{
 		v := false
-		f.B("notaflag", &v)
+		f.AppendBoolP("notaflag", &v)
 	}
 	assert.Equal(t, len(f.ToArgs()), 0)
 
-	f.S("somestring", nil)
+	f.AppendP("somestring", nil)
 
 	assert.Equal(t, len(f.ToArgs()), 0)
 
 	{
 		v := true
-		f.B("flag", &v)
+		f.AppendBoolP("flag", &v)
 	}
 
 	assert.Equal(t, len(f.ToArgs()), 1)
@@ -31,18 +31,18 @@ func TestFlagBuilderBasics(t *testing.T) {
 
 	{
 		s := "testing"
-		f.S("another-flag", &s)
+		f.AppendP("another-flag", &s)
 	}
 
 	assert.Equal(t, f.ToArgs(), []string{"--flag", "--another-flag", "testing"})
 
-	f.I64("anumber", nil)
+	f.AppendInt64P("anumber", nil)
 
 	assert.Equal(t, f.ToArgs(), []string{"--flag", "--another-flag", "testing"})
 
 	{
 		n := int64(42)
-		f.I64("anumber", &n)
+		f.AppendInt64P("anumber", &n)
 	}
 
 	assert.Equal(t, f.ToArgs(), []string{"--flag", "--another-flag", "testing", "--anumber", "42"})

@@ -23,7 +23,7 @@ func (f *FlagBuilder) String() string {
 	return strings.Join(f.ToArgs(), " ")
 }
 
-func (f *FlagBuilder) S(k string, v *string) {
+func (f *FlagBuilder) AppendP(k string, v *string) {
 	if v == nil {
 		return
 	}
@@ -31,7 +31,7 @@ func (f *FlagBuilder) S(k string, v *string) {
 	f.Append("--"+k, *v)
 }
 
-func (f *FlagBuilder) I64(k string, v *int64) {
+func (f *FlagBuilder) AppendInt64P(k string, v *int64) {
 	if v == nil {
 		return
 	}
@@ -39,7 +39,7 @@ func (f *FlagBuilder) I64(k string, v *int64) {
 	f.Append("--"+k, strconv.FormatInt(*v, 10))
 }
 
-func (f *FlagBuilder) I(k string, v *int) {
+func (f *FlagBuilder) AppendIntP(k string, v *int) {
 	if v == nil {
 		return
 	}
@@ -47,7 +47,7 @@ func (f *FlagBuilder) I(k string, v *int) {
 	f.Append("--"+k, strconv.FormatInt(int64(*v), 10))
 }
 
-func (f *FlagBuilder) B(k string, v *bool) {
+func (f *FlagBuilder) AppendBoolP(k string, v *bool) {
 	if v == nil {
 		return
 	}
