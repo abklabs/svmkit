@@ -5,6 +5,7 @@ import (
 
 	"github.com/abklabs/svmkit/pkg/genesis"
 	"github.com/abklabs/svmkit/pkg/runner"
+	"github.com/abklabs/svmkit/pkg/utils"
 )
 
 // GenesisFlags represents the configuration flags for the Solana genesis setup.
@@ -31,7 +32,9 @@ func (cmd *CreateCommand) Check() error {
 }
 
 func (cmd *CreateCommand) Env() map[string]string {
-	env := map[string]string{
+	b := utils.NewEnvBuilder()
+
+	b.SetMap(map[string]string{
 		"LEDGER_PATH":                   cmd.Flags.LedgerPath,
 		"IDENTITY_PUBKEY":               cmd.Flags.IdentityPubkey,
 		"VOTE_PUBKEY":                   cmd.Flags.VotePubkey,
@@ -43,26 +46,15 @@ func (cmd *CreateCommand) Env() map[string]string {
 		"LAMPORTS_PER_BYTE_YEAR":        "1",
 		"SLOT_PER_EPOCH":                "150",
 		"CLUSTER_TYPE":                  "development",
-	}
+	})
 
-	if cmd.Flags.FaucetLamports != nil {
-		env["FAUCET_LAMPORTS"] = *cmd.Flags.FaucetLamports
-	}
-	if cmd.Flags.TargetLamportsPerSignature != nil {
-		env["TARGET_LAMPORTS_PER_SIGNATURE"] = *cmd.Flags.TargetLamportsPerSignature
-	}
-	if cmd.Flags.Inflation != nil {
-		env["INFLATION"] = *cmd.Flags.Inflation
-	}
-	if cmd.Flags.LamportsPerByteYear != nil {
-		env["LAMPORTS_PER_BYTE_YEAR"] = *cmd.Flags.LamportsPerByteYear
-	}
-	if cmd.Flags.SlotPerEpoch != nil {
-		env["SLOT_PER_EPOCH"] = *cmd.Flags.SlotPerEpoch
-	}
-	if cmd.Flags.ClusterType != nil {
-		env["CLUSTER_TYPE"] = *cmd.Flags.ClusterType
-	}
+	b.SetP("FAUCET_LAMPORTS", cmd.Flags.FaucetLamports)
+	b.SetP("TARGET_LAMPORTS_PER_SIGNATURE", cmd.Flags.TargetLamportsPerSignature)
+	b.SetP("INFLATION", cmd.Flags.Inflation)
+	b.SetP("LAMPORTS_PER_BYTE_YEAR", cmd.Flags.LamportsPerByteYear)
+	b.SetP("SLOT_PER_EPOCH", cmd.Flags.SlotPerEpoch)
+	b.SetP("CLUSTER_TYPE", cmd.Flags.ClusterType)
+
 	var primordialPubkeys, primordialLamports string
 	if cmd.Primordial != nil {
 		var pubkeys, lamports []string
@@ -73,14 +65,13 @@ func (cmd *CreateCommand) Env() map[string]string {
 		primordialPubkeys = strings.Join(pubkeys, ",")
 		primordialLamports = strings.Join(lamports, ",")
 	}
-	env["PRIMORDIAL_PUBKEYS"] = primordialPubkeys
-	env["PRIMORDIAL_LAMPORTS"] = primordialLamports
 
-	if cmd.Version != nil {
-		env["PACKAGE_VERSION"] = *cmd.Version
-	}
+	b.Set("PRIMORDIAL_PUBKEYS", primordialPubkeys)
+	b.Set("PRIMORDIAL_LAMPORTS", primordialLamports)
 
-	return env
+	b.SetP("PACKAGE_VERSION", cmd.Version)
+
+	return b.Map()
 }
 
 func (cmd *CreateCommand) Script() string {
