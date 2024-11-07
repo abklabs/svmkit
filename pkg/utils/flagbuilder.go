@@ -2,6 +2,7 @@ package utils
 
 import (
 	"strconv"
+	"strings"
 )
 
 type FlagBuilder []string
@@ -14,6 +15,12 @@ func (f *FlagBuilder) ToArgs() []string {
 	var res []string
 
 	return append(res, *f...)
+}
+
+// XXX - We need to work backwards from this, and make sure we're
+// quoting spaces.
+func (f *FlagBuilder) String() string {
+	return strings.Join(f.ToArgs(), " ")
 }
 
 func (f *FlagBuilder) S(k string, v *string) {
