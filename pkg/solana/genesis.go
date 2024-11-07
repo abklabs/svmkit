@@ -26,6 +26,10 @@ type CreateCommand struct {
 	Genesis
 }
 
+func (cmd *CreateCommand) Check() error {
+	return nil
+}
+
 func (cmd *CreateCommand) Env() map[string]string {
 	env := map[string]string{
 		"LEDGER_PATH":                   cmd.Flags.LedgerPath,
