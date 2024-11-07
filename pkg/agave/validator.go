@@ -209,44 +209,44 @@ func (f Flags) ToArgs() []string {
 
 	if f.EntryPoint != nil {
 		for _, entrypoint := range *f.EntryPoint {
-			b.S("entrypoint", &entrypoint)
+			b.AppendP("entrypoint", &entrypoint)
 		}
 	}
 
 	if f.KnownValidator != nil {
 		for _, knownValidator := range *f.KnownValidator {
-			b.S("known-validator", &knownValidator)
+			b.AppendP("known-validator", &knownValidator)
 		}
 	}
 
-	b.S("expected-genesis-hash", f.ExpectedGenesisHash)
+	b.AppendP("expected-genesis-hash", f.ExpectedGenesisHash)
 
-	b.S("use-snapshot-archives-at-startup", &f.UseSnapshotArchivesAtStartup)
-	b.I("rpc-port", &f.RpcPort)
-	b.S("dynamic-port-range", &f.DynamicPortRange)
+	b.AppendP("use-snapshot-archives-at-startup", &f.UseSnapshotArchivesAtStartup)
+	b.AppendIntP("rpc-port", &f.RpcPort)
+	b.AppendP("dynamic-port-range", &f.DynamicPortRange)
 
-	b.S("gossip-host", f.GossipHost)
+	b.AppendP("gossip-host", f.GossipHost)
 
-	b.I("gossip-port", &f.GossipPort)
-	b.S("rpc-bind-address", &f.RpcBindAddress)
-	b.S("wal-recovery-mode", &f.WalRecoveryMode)
+	b.AppendIntP("gossip-port", &f.GossipPort)
+	b.AppendP("rpc-bind-address", &f.RpcBindAddress)
+	b.AppendP("wal-recovery-mode", &f.WalRecoveryMode)
 	b.Append("--log", logPath)
 	b.Append("--accounts", accountsPath)
 	b.Append("--ledger", ledgerPath)
-	b.I("limit-ledger-size", &f.LimitLedgerSize)
-	b.S("block-production-method", &f.BlockProductionMethod)
+	b.AppendIntP("limit-ledger-size", &f.LimitLedgerSize)
+	b.AppendP("block-production-method", &f.BlockProductionMethod)
 
-	b.I("tvu-receive-threads", f.TvuReceiveThreads)
+	b.AppendIntP("tvu-receive-threads", f.TvuReceiveThreads)
 
-	b.I("full-snapshot-interval-slots", &f.FullSnapshotIntervalSlots)
-	b.B("no-wait-for-vote-to-start-leader", &f.NoWaitForVoteToStartLeader)
-	b.B("only-known-rpc", &f.OnlyKnownRPC)
-	b.B("private-rpc", &f.PrivateRPC)
+	b.AppendIntP("full-snapshot-interval-slots", &f.FullSnapshotIntervalSlots)
+	b.AppendBoolP("no-wait-for-vote-to-start-leader", &f.NoWaitForVoteToStartLeader)
+	b.AppendBoolP("only-known-rpc", &f.OnlyKnownRPC)
+	b.AppendBoolP("private-rpc", &f.PrivateRPC)
 
-	b.B("full-rpc-api", f.FullRpcAPI)
+	b.AppendBoolP("full-rpc-api", f.FullRpcAPI)
 
-	b.B("no-voting", f.NoVoting)
-	b.B("allow-private-addr", f.AllowPrivateAddr)
+	b.AppendBoolP("no-voting", f.NoVoting)
+	b.AppendBoolP("allow-private-addr", f.AllowPrivateAddr)
 
 	if f.ExtraFlags != nil {
 		b.Append(*f.ExtraFlags...)

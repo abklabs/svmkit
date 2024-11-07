@@ -11,7 +11,7 @@ type CLIConfig struct {
 func (f *CLIConfig) ToFlags() *utils.FlagBuilder {
 	b := utils.FlagBuilder{}
 
-	b.S("url", f.URL)
+	b.AppendP("url", f.URL)
 
 	return &b
 }
