@@ -76,20 +76,25 @@ type Metrics struct {
 	Password string `pulumi:"password"`
 }
 
-// ToEnv constructs the Solana metrics configuration string from the separate fields
-// and returns it as an environment variable string.
-func (m *Metrics) ToEnv() (string, error) {
+func (m *Metrics) Check() error {
 	if m.URL == "" {
-		return "", fmt.Errorf("metrics URL cannot be empty")
+		return fmt.Errorf("metrics URL cannot be empty")
 	}
 
 	if m.Database == "" {
-		return "", fmt.Errorf("metrics database cannot be empty")
+		return fmt.Errorf("metrics database cannot be empty")
 	}
 
 	if m.User == "" {
-		return "", fmt.Errorf("metrics user cannot be empty")
+		return fmt.Errorf("metrics user cannot be empty")
 	}
+
+	return nil
+}
+
+// String constructs the Solana metrics configuration string from the separate fields
+// and returns it as an environment variable string.
+func (m *Metrics) String() string {
 
 	// Note: We allow empty password as it might be a valid case in some scenarios
 	configParts := []string{
@@ -99,29 +104,8 @@ func (m *Metrics) ToEnv() (string, error) {
 		fmt.Sprintf("p=%s", m.Password),
 	}
 
-	metricsConfig := strings.Join(configParts, ",")
-	// XXX - We should quote things more appropriately.
-	return fmt.Sprintf(`SOLANA_METRICS_CONFIG="%s"`, metricsConfig), nil
-}
+	return strings.Join(configParts, ",")
 
-// ValidatorEnv represents the runtime environment specifically for the validator
-type ValidatorEnv struct {
-	Metrics *Metrics
-}
-
-func (env *ValidatorEnv) ToString() string {
-	var envStrings []string
-
-	if env.Metrics != nil {
-		metricsEnv, err := env.Metrics.ToEnv()
-		if err == nil {
-			envStrings = append(envStrings, metricsEnv)
-		} else {
-			fmt.Printf("Warning: Invalid metrics URL: %v\n", err)
-		}
-	}
-
-	return strings.Join(envStrings, " ")
 }
 
 type InstallCommand struct {
@@ -133,8 +117,14 @@ func (cmd *InstallCommand) Check() error {
 }
 
 func (cmd *InstallCommand) Env() map[string]string {
-	validatorEnv := ValidatorEnv{
-		Metrics: cmd.Metrics,
+	validatorEnv := utils.NewEnvBuilder()
+
+	if cmd.Metrics != nil {
+		if err := cmd.Metrics.Check(); err != nil {
+			fmt.Printf("Warning: Invalid metrics URL: %v\n", err)
+		} else {
+			validatorEnv.Set("SOLANA_METRICS_CONFIG", cmd.Metrics.String())
+		}
 	}
 
 	b := utils.NewEnvBuilder()
@@ -143,7 +133,7 @@ func (cmd *InstallCommand) Env() map[string]string {
 		"VALIDATOR_FLAGS":      strings.Join(cmd.Flags.ToArgs(), " "),
 		"IDENTITY_KEYPAIR":     cmd.KeyPairs.Identity,
 		"VOTE_ACCOUNT_KEYPAIR": cmd.KeyPairs.VoteAccount,
-		"VALIDATOR_ENV":        validatorEnv.ToString(),
+		"VALIDATOR_ENV":        validatorEnv.String(),
 	})
 
 	if senv := cmd.Environment; senv != nil {
