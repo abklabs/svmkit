@@ -162,7 +162,7 @@ done
 
 build-ref svmkit-solana-validator solana-labs/master solana-validator
 
-for tag in v1.18.24 v1.18.25 v1.18.26 v2.0.10 v2.0.13 v2.0.14 ; do
+for tag in v1.18.24 v1.18.25 v1.18.26 v2.0.10 v2.0.13 v2.0.14 v2.0.15 ; do
     build-ref svmkit-agave-validator "$(lookup-remote-tag anza-xyz $tag)" agave-validator anza-build-extra
 done
 
