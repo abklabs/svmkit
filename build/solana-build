@@ -167,7 +167,10 @@ for tag in v1.18.24 v1.18.25 v1.18.26 v2.0.10 v2.0.13 v2.0.14 v2.0.15 ; do
 done
 
 build-ref svmkit-powerledger-validator PowerLedger/upgrade_to_v1.16.28 solana-validator
-build-ref svmkit-jito-validator jito-foundation/master agave-validator
+
+for tag in v2.0.15-jito ; do
+    build-ref svmkit-jito-validator "$(lookup-remote-tag jito-foundation $tag)" agave-validator
+done
 
 build-ref svmkit-pyth-validator pyth-network/pyth-v1.14.17 solana-validator build-with-other-clang
 
