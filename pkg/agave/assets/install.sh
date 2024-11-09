@@ -29,8 +29,12 @@ case $VALIDATOR_VARIANT in
 esac
 
 step::00::wait-for-a-stable-environment() {
-    if command -v cloud-init > /dev/null 2>&1 ; then
-	cloud-init status --wait
+    if command -v cloud-init >/dev/null 2>&1; then
+        if systemctl is-active --quiet cloud-init.service; then
+            cloud-init status --wait
+        else
+            log::warn "cloud-init in a failed state; not waiting for completion"
+        fi
     fi
 }
 
