@@ -77,7 +77,11 @@ func (e *EnvBuilder) SetBoolP(k string, v *bool) {
 		return
 	}
 
-	if *v {
+	e.SetBool(k, *v)
+}
+
+func (e *EnvBuilder) SetBool(k string, v bool) {
+	if v {
 		e.Set(k, "true")
 	} else {
 		e.Set(k, "false")

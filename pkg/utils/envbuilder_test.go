@@ -25,10 +25,11 @@ func TestEnvBuilderBasics(t *testing.T) {
 	assert.Equal(t, len(b.order), 2)
 
 	b.Set("SOMETHING_WITH_SPACES", "A B C D")
+	b.SetBool("SOMEBOOL", true)
 
 	m := b.Map()
 	assert.Equal(t, m["A"], "1")
 
-	assert.Equal(t, b.Args(), []string{"A=1", "C=SomeVal", `SOMETHING_WITH_SPACES='A B C D'`})
-	assert.Equal(t, b.String(), `A=1 C=SomeVal SOMETHING_WITH_SPACES='A B C D'`)
+	assert.Equal(t, b.Args(), []string{"A=1", "C=SomeVal", `SOMETHING_WITH_SPACES='A B C D'`, `SOMEBOOL=true`})
+	assert.Equal(t, b.String(), `A=1 C=SomeVal SOMETHING_WITH_SPACES='A B C D' SOMEBOOL=true`)
 }
