@@ -16,4 +16,11 @@ func TestCLIBasics(t *testing.T) {
 	}
 
 	assert.Equal(t, f.ToFlags().String(), "--url http://wherever.com:8899")
+
+	{
+		s := "/some/path/somewhere.json"
+		f.KeyPair = &s
+	}
+
+	assert.Equal(t, f.ToFlags().String(), "--url http://wherever.com:8899 --keypair /some/path/somewhere.json")
 }
