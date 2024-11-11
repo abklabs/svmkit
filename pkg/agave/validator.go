@@ -141,9 +141,14 @@ func (cmd *InstallCommand) Env() *utils.EnvBuilder {
 		"VALIDATOR_ENV":        validatorEnv.String(),
 	})
 
-	if senv := cmd.Environment; senv != nil {
+	{
+		s := identityKeyPairPath
 		conf := solana.CLIConfig{
-			URL: senv.RPCURL,
+			KeyPair: &s,
+		}
+
+		if senv := cmd.Environment; senv != nil {
+			conf.URL = senv.RPCURL
 		}
 
 		b.Set("SOLANA_CLI_CONFIG_FLAGS", conf.ToFlags().String())
