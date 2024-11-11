@@ -16,6 +16,9 @@ const (
 	accountsPath = "/home/sol/accounts"
 	ledgerPath   = "/home/sol/ledger"
 	logPath      = "/home/sol/log"
+
+	identityKeyPairPath    = "/home/sol/validator-keypair.json"
+	voteAccountKeyPairPath = "/home/sol/vote-account-keypair.json"
 )
 
 type Variant string
@@ -204,8 +207,8 @@ func (f Flags) ToArgs() []string {
 	b := utils.FlagBuilder{}
 
 	// Note: These locations are hard coded inside asset-builder.
-	b.Append("--identity", "/home/sol/validator-keypair.json")
-	b.Append("--vote-account", "/home/sol/vote-account-keypair.json")
+	b.Append("--identity", identityKeyPairPath)
+	b.Append("--vote-account", voteAccountKeyPairPath)
 
 	if f.EntryPoint != nil {
 		for _, entrypoint := range *f.EntryPoint {
