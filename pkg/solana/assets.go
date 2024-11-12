@@ -6,3 +6,6 @@ import (
 
 //go:embed assets/genesis.sh
 var GenesisScript string
+
+//go:embed assets/vote-account.sh
+var VoteAccountScript string
