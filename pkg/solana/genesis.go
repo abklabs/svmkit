@@ -1,38 +1,12 @@
 package solana
 
 import (
-	"log"
-	"os"
 	"strings"
 
 	"github.com/abklabs/svmkit/pkg/genesis"
 	"github.com/abklabs/svmkit/pkg/runner"
+	"github.com/abklabs/svmkit/pkg/utils"
 )
-
-var (
-	WarningLogger *log.Logger
-	InfoLogger    *log.Logger
-	ErrorLogger   *log.Logger
-)
-
-// centralized logger setup
-func init() {
-	file, err := os.OpenFile("logs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	InfoLogger = log.New(file, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
-	WarningLogger = log.New(file, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
-	ErrorLogger = log.New(file, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
-}
-
-type CreateCommand struct {
-	runner.Command
-	Flags      GenesisFlags
-	Primordial []genesis.PrimorialEntry
-	Version    genesis.Version
-}
 
 // GenesisFlags represents the configuration flags for the Solana genesis setup.
 type GenesisFlags struct {
@@ -49,28 +23,18 @@ type GenesisFlags struct {
 	ClusterType                *string `pulumi:"clusterType,optional"`
 }
 
-func setEnvFlags(env map[string]string, flags GenesisFlags) {
-	flagsMappings := map[string]*string{
-		"FAUCET_LAMPORTS":               flags.FaucetLamports,
-		"TARGET_LAMPORTS_PER_SIGNATURE": flags.TargetLamportsPerSignature,
-		"INFLATION":                     flags.Inflation,
-		"LAMPORTS_PER_BYTE_YEAR":        flags.LamportsPerByteYear,
-		"SLOT_PER_EPOCH":                flags.SlotPerEpoch,
-		"CLUSTER_TYPE":                  flags.ClusterType,
-	}
-
-	for key, value := range flagsMappings {
-		if value == nil {
-			WarningLogger.Printf("Warning: Missing value for environment variable '%s'.", key)
-			continue
-		}
-		env[key] = *value
-		InfoLogger.Printf("Set environment variable '%s' to '%s'", key, *value)
-	}
+type CreateCommand struct {
+	Genesis
 }
 
-func (cmd *CreateCommand) Env() map[string]string {
-	env := map[string]string{
+func (cmd *CreateCommand) Check() error {
+	return nil
+}
+
+func (cmd *CreateCommand) Env() *utils.EnvBuilder {
+	b := utils.NewEnvBuilder()
+
+	b.SetMap(map[string]string{
 		"LEDGER_PATH":                   cmd.Flags.LedgerPath,
 		"IDENTITY_PUBKEY":               cmd.Flags.IdentityPubkey,
 		"VOTE_PUBKEY":                   cmd.Flags.VotePubkey,
@@ -82,11 +46,15 @@ func (cmd *CreateCommand) Env() map[string]string {
 		"LAMPORTS_PER_BYTE_YEAR":        "1",
 		"SLOT_PER_EPOCH":                "150",
 		"CLUSTER_TYPE":                  "development",
-	}
+	})
 
-	setEnvFlags(env, cmd.Flags)
+	b.SetP("FAUCET_LAMPORTS", cmd.Flags.FaucetLamports)
+	b.SetP("TARGET_LAMPORTS_PER_SIGNATURE", cmd.Flags.TargetLamportsPerSignature)
+	b.SetP("INFLATION", cmd.Flags.Inflation)
+	b.SetP("LAMPORTS_PER_BYTE_YEAR", cmd.Flags.LamportsPerByteYear)
+	b.SetP("SLOT_PER_EPOCH", cmd.Flags.SlotPerEpoch)
+	b.SetP("CLUSTER_TYPE", cmd.Flags.ClusterType)
 
-	//considering abstracting this logic if Primodial data would be needed elsewhere
 	var primordialPubkeys, primordialLamports string
 	if cmd.Primordial != nil {
 		var pubkeys, lamports []string
@@ -97,14 +65,13 @@ func (cmd *CreateCommand) Env() map[string]string {
 		primordialPubkeys = strings.Join(pubkeys, ",")
 		primordialLamports = strings.Join(lamports, ",")
 	}
-	env["PRIMORDIAL_PUBKEYS"] = primordialPubkeys
-	env["PRIMORDIAL_LAMPORTS"] = primordialLamports
 
-	if cmd.Version != nil {
-		env["PACKAGE_VERSION"] = *cmd.Version
-	}
+	b.Set("PRIMORDIAL_PUBKEYS", primordialPubkeys)
+	b.Set("PRIMORDIAL_LAMPORTS", primordialLamports)
 
-	return env
+	b.SetP("PACKAGE_VERSION", cmd.Version)
+
+	return b
 }
 
 func (cmd *CreateCommand) Script() string {
@@ -112,16 +79,13 @@ func (cmd *CreateCommand) Script() string {
 }
 
 type Genesis struct {
-	genesis.Genesis
-	Flags      GenesisFlags
-	Primordial []genesis.PrimorialEntry
-	Version    genesis.Version
+	Flags      GenesisFlags             `pulumi:"flags"`
+	Primordial []genesis.PrimorialEntry `pulumi:"primordial"`
+	Version    genesis.Version          `pulumi:"version,optional"`
 }
 
 func (g *Genesis) Create() runner.Command {
 	return &CreateCommand{
-		Flags:      g.Flags,
-		Primordial: g.Primordial,
-		Version:    g.Version,
+		Genesis: *g,
 	}
 }

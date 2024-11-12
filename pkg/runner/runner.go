@@ -9,47 +9,37 @@ import (
 	"time"
 
 	"github.com/abklabs/svmkit/pkg/ssh"
+	"github.com/abklabs/svmkit/pkg/utils"
 )
 
 // CommandInterface is an interface for representing a script command to executed by the runner.
 type Command interface {
-	Env() map[string]string
+	Check() error
+	Env() *utils.EnvBuilder
 	Script() string
+}
+
+// NewRunner initializes a new Runner instance with the given SSH connection.
+func NewRunner(conn ssh.Connection, cmd Command) *Runner {
+	return &Runner{connection: conn, command: cmd}
 }
 
 // Runner represents the setup configuration for a machine.
 type Runner struct {
-	connection  ssh.Connection
-	environment map[string]string
-	script      string
-}
-
-// Machine initializes a new Runner instance with the given SSH connection.
-func Machine(conn ssh.Connection) *Runner {
-	return &Runner{connection: conn}
-}
-
-// Env sets the environment variables for the script.
-func (r *Runner) Env(entries map[string]string) *Runner {
-	r.environment = entries
-	return r
-}
-
-// Script sets the script to be executed.
-func (r *Runner) Script(script string) *Runner {
-	r.script = script
-	return r
+	connection ssh.Connection
+	command    Command
 }
 
 // Run executes the given setup script on the remote machine.
 func (r *Runner) Run(ctx context.Context) error {
 	// Load the install script
-	scriptBuffer := bytes.NewBufferString(r.script)
+	scriptBuffer := bytes.NewBufferString(r.command.Script())
 
 	// Generate the environment variables
 	var envBuffer bytes.Buffer
-	for key, value := range r.environment {
-		envBuffer.WriteString(fmt.Sprintf("%s=\"%s\"\n", key, value))
+	for _, value := range r.command.Env().Args() {
+		envBuffer.WriteString(value)
+		envBuffer.WriteString("\n")
 	}
 
 	// Establish SSH connection

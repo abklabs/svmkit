@@ -107,6 +107,16 @@ step::70::install-validator() {
     fi
 }
 
+step::75::setup-solana-cli() {
+    [[ -v SOLANA_CLI_CONFIG_FLAGS ]] || return 0
+
+    # First setup the login user.
+    solana config set $SOLANA_CLI_CONFIG_FLAGS
+
+    # Setup the sol user.
+    $SUDO -u sol -i solana config set $SOLANA_CLI_CONFIG_FLAGS
+}
+
 step::80::setup-validator-startup() {
     if systemctl list-unit-files "${VALIDATOR_SERVICE}" >/dev/null; then
         $SUDO systemctl stop "${VALIDATOR_SERVICE}" || true

@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/abklabs/svmkit/pkg/runner"
+	"github.com/abklabs/svmkit/pkg/solana"
+	"github.com/abklabs/svmkit/pkg/utils"
 	"github.com/abklabs/svmkit/pkg/validator"
 	"github.com/pulumi/pulumi-go-provider/infer"
 )
@@ -74,40 +76,25 @@ type Metrics struct {
 	Password string `pulumi:"password"`
 }
 
-// ValidatorEnv represents the runtime environment specifically for the validator
-type ValidatorEnv struct {
-	Metrics *Metrics
-}
-
-func (env *ValidatorEnv) ToString() string {
-	var envStrings []string
-
-	if env.Metrics != nil {
-		metricsEnv, err := env.Metrics.ToEnv()
-		if err == nil {
-			envStrings = append(envStrings, metricsEnv)
-		} else {
-			fmt.Printf("Warning: Invalid metrics URL: %v\n", err)
-		}
-	}
-
-	return strings.Join(envStrings, " ")
-}
-
-// ToEnv constructs the Solana metrics configuration string from the separate fields
-// and returns it as an environment variable string.
-func (m *Metrics) ToEnv() (string, error) {
+func (m *Metrics) Check() error {
 	if m.URL == "" {
-		return "", fmt.Errorf("metrics URL cannot be empty")
+		return fmt.Errorf("metrics URL cannot be empty")
 	}
 
 	if m.Database == "" {
-		return "", fmt.Errorf("metrics database cannot be empty")
+		return fmt.Errorf("metrics database cannot be empty")
 	}
 
 	if m.User == "" {
-		return "", fmt.Errorf("metrics user cannot be empty")
+		return fmt.Errorf("metrics user cannot be empty")
 	}
+
+	return nil
+}
+
+// String constructs the Solana metrics configuration string from the separate fields
+// and returns it as an environment variable string.
+func (m *Metrics) String() string {
 
 	// Note: We allow empty password as it might be a valid case in some scenarios
 	configParts := []string{
@@ -117,76 +104,79 @@ func (m *Metrics) ToEnv() (string, error) {
 		fmt.Sprintf("p=%s", m.Password),
 	}
 
-	metricsConfig := strings.Join(configParts, ",")
-	// XXX - We should quote things more appropriately.
-	return fmt.Sprintf(`SOLANA_METRICS_CONFIG="%s"`, metricsConfig), nil
+	return strings.Join(configParts, ",")
+
 }
 
 type InstallCommand struct {
-	runner.Command
-	Flags    Flags
-	KeyPairs KeyPairs
-	Version  validator.Version
-	Variant  *Variant
-	Metrics  *Metrics
+	Agave
 }
 
-func (cmd *InstallCommand) Env() map[string]string {
-	validatorEnv := ValidatorEnv{
-		Metrics: cmd.Metrics,
+func (cmd *InstallCommand) Check() error {
+	if m := cmd.Metrics; m != nil {
+		if err := m.Check(); err != nil {
+			return fmt.Errorf("Warning: Invalid metrics URL: %v\n", err)
+		}
 	}
 
-	env := map[string]string{
-		"VALIDATOR_FLAGS":      strings.Join(cmd.Flags.toArgs(), " "),
+	return nil
+}
+
+func (cmd *InstallCommand) Env() *utils.EnvBuilder {
+	validatorEnv := utils.NewEnvBuilder()
+
+	if m := cmd.Metrics; m != nil {
+		validatorEnv.Set("SOLANA_METRICS_CONFIG", m.String())
+	}
+
+	b := utils.NewEnvBuilder()
+
+	b.SetMap(map[string]string{
+		"VALIDATOR_FLAGS":      strings.Join(cmd.Flags.ToArgs(), " "),
 		"IDENTITY_KEYPAIR":     cmd.KeyPairs.Identity,
 		"VOTE_ACCOUNT_KEYPAIR": cmd.KeyPairs.VoteAccount,
-		"VALIDATOR_ENV":        validatorEnv.ToString(),
+		"VALIDATOR_ENV":        validatorEnv.String(),
+	})
+
+	if senv := cmd.Environment; senv != nil {
+		conf := solana.CLIConfig{
+			URL: senv.RPCURL,
+		}
+
+		b.Set("SOLANA_CLI_CONFIG_FLAGS", conf.ToFlags().String())
 	}
 
-	if cmd.Version != nil {
-		env["VALIDATOR_VERSION"] = *cmd.Version
-	}
+	b.SetP("VALIDATOR_VERSION", cmd.Version)
 
 	if cmd.Variant != nil {
-		env["VALIDATOR_VARIANT"] = string(*cmd.Variant)
+		b.Set("VALIDATOR_VARIANT", string(*cmd.Variant))
 	} else {
-		env["VALIDATOR_VARIANT"] = string(VariantAgave)
+		b.Set("VALIDATOR_VARIANT", string(VariantAgave))
 	}
 
-	return env
+	return b
 }
 
 func (cmd *InstallCommand) Script() string {
 	return InstallScript
 }
 
-type ValidatorPaths struct {
-	Accounts string `pulumi:"accounts"`
-	Ledger   string `pulumi:"ledger"`
-	Log      string `pulumi:"log"`
-}
-
 type Agave struct {
-	validator.Client
-	Version  validator.Version `pulumi:"version,optional"`
-	Variant  *Variant          `pulumi:"variant,optional"`
-	KeyPairs KeyPairs          `pulumi:"keyPairs" provider:"secret"`
-	Flags    Flags             `pulumi:"flags"`
-	Metrics  *Metrics          `pulumi:"metrics,optional"`
+	Environment *solana.Environment `pulumi:"environment,optional"`
+	Version     validator.Version   `pulumi:"version,optional"`
+	Variant     *Variant            `pulumi:"variant,optional"`
+	KeyPairs    KeyPairs            `pulumi:"keyPairs"`
+	Flags       Flags               `pulumi:"flags"`
+	Metrics     *Metrics            `pulumi:"metrics,optional"`
 }
 
 func (agave *Agave) Install() runner.Command {
 	return &InstallCommand{
-		Flags:    agave.Flags,
-		KeyPairs: agave.KeyPairs,
-		Version:  agave.Version,
-		Variant:  agave.Variant,
-		Metrics:  agave.Metrics,
+		Agave: *agave,
 	}
 }
 
 type Flags struct {
-	validator.ClientFlags
 	EntryPoint                   *[]string `pulumi:"entryPoint,optional"`
 	KnownValidator               *[]string `pulumi:"knownValidator,optional"`
 	UseSnapshotArchivesAtStartup string    `pulumi:"useSnapshotArchivesAtStartup"`
@@ -210,78 +200,57 @@ type Flags struct {
 	ExtraFlags                   *[]string `pulumi:"extraFlags,optional"`
 }
 
-func (f Flags) toArgs() []string {
-	var l []string
+func (f Flags) ToArgs() []string {
+	b := utils.FlagBuilder{}
 
 	// Note: These locations are hard coded inside asset-builder.
-	l = append(l, f.S("identity", "/home/sol/validator-keypair.json"))
-	l = append(l, f.S("vote-account", "/home/sol/vote-account-keypair.json"))
+	b.Append("--identity", "/home/sol/validator-keypair.json")
+	b.Append("--vote-account", "/home/sol/vote-account-keypair.json")
 
 	if f.EntryPoint != nil {
 		for _, entrypoint := range *f.EntryPoint {
-			l = append(l, f.S("entrypoint", entrypoint))
+			b.AppendP("entrypoint", &entrypoint)
 		}
 	}
 
 	if f.KnownValidator != nil {
 		for _, knownValidator := range *f.KnownValidator {
-			l = append(l, f.S("known-validator", knownValidator))
+			b.AppendP("known-validator", &knownValidator)
 		}
 	}
 
-	if f.ExpectedGenesisHash != nil {
-		l = append(l, f.S("expected-genesis-hash", *f.ExpectedGenesisHash))
-	}
-	l = append(l, f.S("use-snapshot-archives-at-startup", f.UseSnapshotArchivesAtStartup))
-	l = append(l, f.S("rpc-port", f.RpcPort))
-	l = append(l, f.S("dynamic-port-range", f.DynamicPortRange))
+	b.AppendP("expected-genesis-hash", f.ExpectedGenesisHash)
 
-	if f.GossipHost != nil {
-		l = append(l, f.S("gossip-host", *f.GossipHost))
-	}
+	b.AppendP("use-snapshot-archives-at-startup", &f.UseSnapshotArchivesAtStartup)
+	b.AppendIntP("rpc-port", &f.RpcPort)
+	b.AppendP("dynamic-port-range", &f.DynamicPortRange)
 
-	l = append(l, f.S("gossip-port", f.GossipPort))
-	l = append(l, f.S("rpc-bind-address", f.RpcBindAddress))
-	l = append(l, f.S("wal-recovery-mode", f.WalRecoveryMode))
-	l = append(l, f.S("log", logPath))
-	l = append(l, f.S("accounts", accountsPath))
-	l = append(l, f.S("ledger", ledgerPath))
-	l = append(l, f.S("limit-ledger-size", f.LimitLedgerSize))
-	l = append(l, f.S("block-production-method", f.BlockProductionMethod))
-	if f.TvuReceiveThreads != nil {
-		l = append(l, f.S("tvu-receive-threads", *f.TvuReceiveThreads))
-	}
-	l = append(l, f.S("full-snapshot-interval-slots", f.FullSnapshotIntervalSlots))
-	l = append(l, f.B("no-wait-for-vote-to-start-leader", f.NoWaitForVoteToStartLeader))
-	l = append(l, f.B("only-known-rpc", f.OnlyKnownRPC))
-	l = append(l, f.B("private-rpc", f.PrivateRPC))
+	b.AppendP("gossip-host", f.GossipHost)
 
-	if f.FullRpcAPI != nil {
-		l = append(l, f.B("full-rpc-api", *f.FullRpcAPI))
-	}
+	b.AppendIntP("gossip-port", &f.GossipPort)
+	b.AppendP("rpc-bind-address", &f.RpcBindAddress)
+	b.AppendP("wal-recovery-mode", &f.WalRecoveryMode)
+	b.Append("--log", logPath)
+	b.Append("--accounts", accountsPath)
+	b.Append("--ledger", ledgerPath)
+	b.AppendIntP("limit-ledger-size", &f.LimitLedgerSize)
+	b.AppendP("block-production-method", &f.BlockProductionMethod)
 
-	if f.NoVoting != nil {
-		l = append(l, f.B("no-voting", *f.NoVoting))
-	}
+	b.AppendIntP("tvu-receive-threads", f.TvuReceiveThreads)
 
-	if f.AllowPrivateAddr != nil {
-		l = append(l, f.B("allow-private-addr", *f.AllowPrivateAddr))
-	}
+	b.AppendIntP("full-snapshot-interval-slots", &f.FullSnapshotIntervalSlots)
+	b.AppendBoolP("no-wait-for-vote-to-start-leader", &f.NoWaitForVoteToStartLeader)
+	b.AppendBoolP("only-known-rpc", &f.OnlyKnownRPC)
+	b.AppendBoolP("private-rpc", &f.PrivateRPC)
+
+	b.AppendBoolP("full-rpc-api", f.FullRpcAPI)
+
+	b.AppendBoolP("no-voting", f.NoVoting)
+	b.AppendBoolP("allow-private-addr", f.AllowPrivateAddr)
 
 	if f.ExtraFlags != nil {
-		l = append(l, *f.ExtraFlags...)
+		b.Append(*f.ExtraFlags...)
 	}
 
-	return l
-}
-
-func (Flags) S(k string, v interface{}) string {
-	return fmt.Sprintf("--%s %v", k, v)
-}
-
-func (Flags) B(k string, v bool) string {
-	if v {
-		return fmt.Sprintf("--%s", k)
-	}
-	return ""
+	return b.ToArgs()
 }
