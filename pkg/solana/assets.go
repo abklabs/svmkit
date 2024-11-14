@@ -9,3 +9,6 @@ var GenesisScript string
 
 //go:embed assets/vote-account.sh
 var VoteAccountScript string
+
+//go:embed assets/transfer.sh
+var TransferScript string
