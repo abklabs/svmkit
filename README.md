@@ -6,6 +6,11 @@ SVMKit is built with this ethos in mind. We encourage you to fork, customize, an
 
 SVMKit is a suite of tools designed to make building, maintaining, and operating blockchains with the Solana Virtual Machine (SVM) more accessible. With SVMKit, you have a powerful foundation whether you're a chain builder or a node operator.
 
+### Example: Launch a standalone Solana cluster on AWS
+![An example of launching an SPE on AWS](https://github.com/abklabs/svmkit-media/blob/main/SVMKitSPELaunch/10x_speed_shorter.gif?raw=true)
+
+Deploy an [SPE on AWS](https://github.com/abklabs/svmkit-examples/tree/main/aws-network-spe-py#solana-permissioned-environment-inside-an-aws-vpc) in under 2 minutes!
+
 ## Key Features:
 
 - **Rapid Setup for Chain Builders**: Go from genesis block to a multi-node cluster in under an hour, enabling fast deployment and network scalability.
