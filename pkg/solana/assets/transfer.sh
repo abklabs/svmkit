@@ -15,8 +15,6 @@ transfer-create() {
         args+=(--allow-unfunded-recipient)
     fi
 
-    cat "$payer_keypair"
-
     solana -k "$payer_keypair" transfer "${args[@]}" "$RECIPIENT_PUBKEY" "$AMOUNT"
 }
 
