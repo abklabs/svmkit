@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"strconv"
 	"strings"
 
@@ -46,6 +47,17 @@ func (e *EnvBuilder) Args() []string {
 
 func (e *EnvBuilder) String() string {
 	return strings.Join(e.Args(), " ")
+}
+
+func (e *EnvBuilder) Buffer() *bytes.Buffer {
+	b := bytes.NewBuffer(nil)
+
+	for _, value := range e.Args() {
+		b.WriteString(value)
+		b.WriteString("\n")
+	}
+
+	return b
 }
 
 func (e *EnvBuilder) SetP(k string, v *string) {
