@@ -29,7 +29,7 @@ fetch-program() {
         local so_name="spl_${name//-/_}.so"
         (
             set -x
-            curl -L --retry 5 --retry-delay 2 --retry-connrefused \
+            curl -s -S -L --retry 5 --retry-delay 2 --retry-connrefused \
                 -o "$so" \
                 "https://github.com/solana-labs/solana-program-library/releases/download/$name-v$version/$so_name"
         )
