@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/abklabs/svmkit/pkg/runner"
 	"github.com/abklabs/svmkit/pkg/utils"
 	"golang.org/x/crypto/ssh"
 )
@@ -32,8 +31,8 @@ func (r *Runner) Run(ctx context.Context, handler DeployerHandler) error {
 		RootPath: fmt.Sprintf("/tmp/runner-%d-%d", time.Now().Unix(), rand.Int()),
 	}
 
-	p.AddString("lib.bash", runner.LibBash)
-	p.Add(PayloadFile{"run.sh", strings.NewReader(runner.RunScript), 0755})
+	p.AddString("lib.bash", LibBash)
+	p.Add(PayloadFile{"run.sh", strings.NewReader(RunScript), 0755})
 	p.AddReader("env", r.command.Env().Buffer())
 	p.AddString("steps.sh", r.command.Script())
 
