@@ -155,6 +155,7 @@ EOF
 Description=SVMkit $VALIDATOR_VARIANT validator
 
 [Service]
+Type=exec
 User=sol
 Group=sol
 ExecStart=/home/sol/run-validator
