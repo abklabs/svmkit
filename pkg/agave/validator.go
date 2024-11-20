@@ -162,6 +162,10 @@ func (cmd *InstallCommand) Env() *utils.EnvBuilder {
 		b.Set("VALIDATOR_VARIANT", string(VariantAgave))
 	}
 
+	b.SetBoolP("FULL_RPC", cmd.Flags.FullRpcAPI)
+	b.Set("RPC_BIND_ADDRESS", cmd.Flags.RpcBindAddress)
+	b.SetInt("RPC_PORT", cmd.Flags.RpcPort)
+
 	return b
 }
 

@@ -147,8 +147,31 @@ step::80::setup-validator-startup() {
 $VALIDATOR_ENV exec $VALIDATOR_PROCESS $VALIDATOR_FLAGS
 EOF
 
-    $SUDO chmod 755 /home/sol/run-validator
-    $SUDO chown sol:sol /home/sol/run-validator
+    cat <<EOF | $SUDO tee /home/sol/check-validator >/dev/null
+#!/usr/bin/env bash
+set -euo pipefail
+
+FULL_RPC=$FULL_RPC
+RPC_BIND_ADDRESS=$RPC_BIND_ADDRESS
+RPC_PORT=$RPC_PORT
+
+\$FULL_RPC || exit 0
+
+for i in {1..120} ; do
+    if solana slot --url http://\$RPC_BIND_ADDRESS:\$RPC_PORT &> /dev/null ; then
+        exit 0
+    fi
+    sleep .25
+done
+
+echo "timed out waiting for validator to bring RPC online!" 1>&2
+exit 1
+EOF
+
+    for i in run-validator check-validator ; do
+	$SUDO chmod 755 /home/sol/$i
+	$SUDO chown sol:sol /home/sol/$i
+    done
 
     cat <<EOF | $SUDO tee /etc/systemd/system/"${VALIDATOR_SERVICE}" >/dev/null
 [Unit]
@@ -159,6 +182,7 @@ Type=exec
 User=sol
 Group=sol
 ExecStart=/home/sol/run-validator
+ExecStartPost=/home/sol/check-validator
 LimitNOFILE=1000000
 
 [Install]
