@@ -76,12 +76,16 @@ func (e *EnvBuilder) SetInt64P(k string, v *int64) {
 	e.Set(k, strconv.FormatInt(*v, 10))
 }
 
+func (e *EnvBuilder) SetInt(k string, v int) {
+	e.Set(k, strconv.FormatInt(int64(v), 10))
+}
+
 func (e *EnvBuilder) SetIntP(k string, v *int) {
 	if v == nil {
 		return
 	}
 
-	e.Set(k, strconv.FormatInt(int64(*v), 10))
+	e.SetInt(k, *v)
 }
 
 func (e *EnvBuilder) SetFloat64(k string, v float64) {
