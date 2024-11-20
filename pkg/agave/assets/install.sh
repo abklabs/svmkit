@@ -151,7 +151,7 @@ EOF
 #!/usr/bin/env bash
 set -euo pipefail
 
-FULL_RPC=$FULL_RPC
+FULL_RPC=${FULL_RPC:=false}
 RPC_BIND_ADDRESS=$RPC_BIND_ADDRESS
 RPC_PORT=$RPC_PORT
 
