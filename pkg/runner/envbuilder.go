@@ -16,6 +16,10 @@ type EnvBuilder struct {
 func (e *EnvBuilder) Set(k, v string) {
 	v = shellquote.Join(v)
 
+	e.SetRaw(k, v)
+}
+
+func (e *EnvBuilder) SetRaw(k, v string) {
 	_, ok := e.val[k]
 
 	if !ok {
