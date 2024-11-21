@@ -5,10 +5,13 @@ import (
 	"io"
 	"path/filepath"
 	"strings"
+	"text/template"
 
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 )
+
+var runWrapperTemplate = template.Must(template.New("runWrapper").Parse(`ret=0 ; ( set -euo pipefail ; cd {{ .RootPath }} ; {{ .Cmd }} ; ) || ret=$? ; rm -rf {{ .RootPath }} ; exit $ret`))
 
 type DeployerHandler interface {
 	// IngestReaders is responsible for keeping the readers drained.
@@ -61,12 +64,19 @@ func (p *Deployer) Deploy() error {
 }
 
 func (p *Deployer) Run(cmdSegs []string, dontCleanup bool, handler DeployerHandler) error {
-	// XXX - This looks worse than it is, but we should come up
-	// with a nicer way to do this that isn't Sprintfs.
-	cmdSegs = append([]string{"ret=0", ";", "(", "set", "-euo", "pipefail", ";", "cd", p.Payload.RootPath, ";"}, cmdSegs...)
-	cmdSegs = append(cmdSegs, []string{")", "||", "ret=$?", ";", "rm", "-rf", p.Payload.RootPath, ";", "exit", "$ret"}...)
+	runWrapper := &strings.Builder{}
 
-	cmd := strings.Join(cmdSegs, " ")
+	err := runWrapperTemplate.Execute(runWrapper, struct {
+		*Payload
+		Cmd string
+	}{
+		p.Payload,
+		strings.Join(cmdSegs, " "),
+	})
+
+	if err != nil {
+		return fmt.Errorf("couldn't format the deployer's run wrapper: %w", err)
+	}
 
 	execSession, err := p.Client.NewSession()
 	if err != nil {
@@ -84,7 +94,7 @@ func (p *Deployer) Run(cmdSegs []string, dontCleanup bool, handler DeployerHandl
 		return fmt.Errorf("failed to get stderr pipe: %w", err)
 	}
 
-	if err := execSession.Start(cmd); err != nil {
+	if err := execSession.Start(runWrapper.String()); err != nil {
 		return fmt.Errorf("failed to start command: %w", err)
 	}
 
