@@ -35,6 +35,18 @@ func (e *EnvBuilder) SetMap(m map[string]string) {
 	}
 }
 
+func (e *EnvBuilder) SetArray(k string, s []string) {
+	e.SetRaw(k, "("+shellquote.Join(s...)+")")
+}
+
+func (e *EnvBuilder) SetArrayP(k string, s *[]string) {
+	if s == nil {
+		return
+	}
+
+	e.SetArray(k, *s)
+}
+
 func (e *EnvBuilder) Map() map[string]string {
 	return e.val
 }

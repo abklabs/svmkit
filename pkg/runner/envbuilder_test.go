@@ -47,3 +47,9 @@ func TestEnvBuilderMerge(t *testing.T) {
 
 	assert.Equal(t, "A=1 B=4 C=3 D=5", b0.String())
 }
+
+func TestEnvBuilderArray(t *testing.T) {
+	b0 := NewEnvBuilder()
+	b0.SetArray("MY_ARRAY", []string{"1", "2", "HEY YOU", "3"})
+	assert.Equal(t, `MY_ARRAY=(1 2 'HEY YOU' 3)`, b0.String())
+}
