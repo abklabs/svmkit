@@ -21,7 +21,6 @@ func (v *Transfer) Env() *runner.EnvBuilder {
 	b := runner.NewEnvBuilder()
 
 	b.SetMap(map[string]string{
-		"PAYER_KEYPAIR":    v.PayerKeyPair,
 		"RECIPIENT_PUBKEY": v.RecipientPubkey,
 	})
 
@@ -48,6 +47,8 @@ func (v *TransferCreate) Env() *runner.EnvBuilder {
 
 func (v *TransferCreate) AddToPayload(p *runner.Payload) error {
 	p.AddString("steps.sh", TransferScript)
+
+	p.AddString("payer.json", v.PayerKeyPair)
 
 	return nil
 }

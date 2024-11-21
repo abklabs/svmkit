@@ -31,12 +31,6 @@ func (v *VoteAccount) Delete() runner.Command {
 func (v *VoteAccount) Env() *runner.EnvBuilder {
 	b := runner.NewEnvBuilder()
 
-	b.SetMap(map[string]string{
-		"IDENTITY_KEYPAIR":        v.VoteAccountKeyPairs.Identity,
-		"VOTE_ACCOUNT_KEYPAIR":    v.VoteAccountKeyPairs.VoteAccount,
-		"AUTH_WITHDRAWER_KEYPAIR": v.VoteAccountKeyPairs.AuthWithdrawer,
-	})
-
 	b.SetP("AUTH_VOTER_PUBKEY", v.AuthVoterPubkey)
 	b.SetP("CLOSE_RECIPIENT_PUBKEY", v.CloseRecipientPubkey)
 
@@ -59,6 +53,10 @@ func (v *VoteAccountCreate) Env() *runner.EnvBuilder {
 }
 
 func (v *VoteAccountCreate) AddToPayload(p *runner.Payload) error {
+	p.AddString("identity.json", v.VoteAccountKeyPairs.Identity)
+	p.AddString("vote_account.json", v.VoteAccountKeyPairs.VoteAccount)
+	p.AddString("auth_withdrawer.json", v.VoteAccountKeyPairs.AuthWithdrawer)
+
 	p.AddString("steps.sh", VoteAccountScript)
 
 	return nil

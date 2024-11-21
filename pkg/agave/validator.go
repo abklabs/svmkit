@@ -134,10 +134,8 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 	b := runner.NewEnvBuilder()
 
 	b.SetMap(map[string]string{
-		"VALIDATOR_FLAGS":      strings.Join(cmd.Flags.ToArgs(), " "),
-		"IDENTITY_KEYPAIR":     cmd.KeyPairs.Identity,
-		"VOTE_ACCOUNT_KEYPAIR": cmd.KeyPairs.VoteAccount,
-		"VALIDATOR_ENV":        validatorEnv.String(),
+		"VALIDATOR_FLAGS": strings.Join(cmd.Flags.ToArgs(), " "),
+		"VALIDATOR_ENV":   validatorEnv.String(),
 	})
 
 	{
@@ -170,6 +168,9 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 
 func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
 	p.AddString("steps.sh", InstallScript)
+
+	p.AddString("validator-keypair.json", cmd.KeyPairs.Identity)
+	p.AddString("vote-account-keypair.json", cmd.KeyPairs.VoteAccount)
 
 	return nil
 }
