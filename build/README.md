@@ -1,6 +1,6 @@
 # Building Solana Validator Packages
 
-`solana-build` will produce a series of Debian packages out of a Solana-fork-based git repository.  To build all of the forked flavors, you should configure your remotes to have all of the following in your `.git/config`:
+`solana-build` will produce a series of Debian packages out of a Solana-fork-based git repository. To build all of the forked flavors, you should configure your remotes to have all of the following in your `.git/config`:
 
 ```
 [remote "solana-labs"]
