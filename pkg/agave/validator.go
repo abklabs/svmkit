@@ -7,7 +7,6 @@ import (
 
 	"github.com/abklabs/svmkit/pkg/runner"
 	"github.com/abklabs/svmkit/pkg/solana"
-	"github.com/abklabs/svmkit/pkg/validator"
 	"github.com/pulumi/pulumi-go-provider/infer"
 )
 
@@ -183,13 +182,13 @@ func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
 }
 
 type Agave struct {
-	Environment *solana.Environment `pulumi:"environment,optional"`
-	Version     validator.Version   `pulumi:"version,optional"`
-	Variant     *Variant            `pulumi:"variant,optional"`
-	KeyPairs    KeyPairs            `pulumi:"keyPairs"`
-	Flags       Flags               `pulumi:"flags"`
-	Metrics     *Metrics            `pulumi:"metrics,optional"`
-	Info        *validator.Info     `pulumi:"info,optional"`
+	Environment *solana.Environment   `pulumi:"environment,optional"`
+	Version     *string               `pulumi:"version,optional"`
+	Variant     *Variant              `pulumi:"variant,optional"`
+	KeyPairs    KeyPairs              `pulumi:"keyPairs"`
+	Flags       Flags                 `pulumi:"flags"`
+	Metrics     *Metrics              `pulumi:"metrics,optional"`
+	Info        *solana.ValidatorInfo `pulumi:"info,optional"`
 }
 
 func (agave *Agave) Install() runner.Command {
