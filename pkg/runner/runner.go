@@ -27,7 +27,7 @@ type Runner struct {
 
 func (r *Runner) Run(ctx context.Context, handler DeployerHandler) error {
 	p := &Payload{
-		RootPath: fmt.Sprintf("/tmp/runner-%d-%d", time.Now().Unix(), rand.Int()),
+		RootPath:    fmt.Sprintf("/tmp/runner-%d-%d", time.Now().Unix(), rand.Int()),
 		DefaultMode: 0640,
 	}
 
