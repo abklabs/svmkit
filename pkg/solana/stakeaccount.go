@@ -2,7 +2,6 @@ package solana
 
 import (
 	"github.com/abklabs/svmkit/pkg/runner"
-	"github.com/abklabs/svmkit/pkg/utils"
 )
 
 type StakeAccountKeyPairs struct {
@@ -21,8 +20,8 @@ func (v *StakeAccount) Create() runner.Command {
 	}
 }
 
-func (v *StakeAccount) Env() *utils.EnvBuilder {
-	b := utils.NewEnvBuilder()
+func (v *StakeAccount) Env() *runner.EnvBuilder {
+	b := runner.NewEnvBuilder()
 
 	b.SetMap(map[string]string{
 		"STAKE_ACCOUNT_KEYPAIR": v.StakeAccountKeyPairs.StakeAccount,
@@ -42,7 +41,7 @@ func (v *StakeAccountCreate) Check() error {
 	return nil
 }
 
-func (v *StakeAccountCreate) Env() *utils.EnvBuilder {
+func (v *StakeAccountCreate) Env() *runner.EnvBuilder {
 	e := v.StakeAccount.Env()
 	e.Set("STAKE_ACCOUNT_ACTION", "CREATE")
 

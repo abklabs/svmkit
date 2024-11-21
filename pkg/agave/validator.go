@@ -7,7 +7,6 @@ import (
 
 	"github.com/abklabs/svmkit/pkg/runner"
 	"github.com/abklabs/svmkit/pkg/solana"
-	"github.com/abklabs/svmkit/pkg/utils"
 	"github.com/abklabs/svmkit/pkg/validator"
 	"github.com/pulumi/pulumi-go-provider/infer"
 )
@@ -125,14 +124,14 @@ func (cmd *InstallCommand) Check() error {
 	return nil
 }
 
-func (cmd *InstallCommand) Env() *utils.EnvBuilder {
-	validatorEnv := utils.NewEnvBuilder()
+func (cmd *InstallCommand) Env() *runner.EnvBuilder {
+	validatorEnv := runner.NewEnvBuilder()
 
 	if m := cmd.Metrics; m != nil {
 		validatorEnv.Set("SOLANA_METRICS_CONFIG", m.String())
 	}
 
-	b := utils.NewEnvBuilder()
+	b := runner.NewEnvBuilder()
 
 	b.SetMap(map[string]string{
 		"VALIDATOR_FLAGS":      strings.Join(cmd.Flags.ToArgs(), " "),
@@ -213,7 +212,7 @@ type Flags struct {
 }
 
 func (f Flags) ToArgs() []string {
-	b := utils.FlagBuilder{}
+	b := runner.FlagBuilder{}
 
 	// Note: These locations are hard coded inside asset-builder.
 	b.Append("--identity", identityKeyPairPath)
