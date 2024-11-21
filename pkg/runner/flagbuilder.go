@@ -47,6 +47,18 @@ func (f *FlagBuilder) AppendIntP(k string, v *int) {
 	f.Append("--"+k, strconv.FormatInt(int64(*v), 10))
 }
 
+func (f *FlagBuilder) AppendFloat64(k string, v float64) {
+	f.Append(k, strconv.FormatFloat(v, 'f', -1, 64))
+}
+
+func (f *FlagBuilder) AppendFloat64P(k string, v *float64) {
+	if v == nil {
+		return
+	}
+
+	f.AppendFloat64("--"+k, *v)
+}
+
 func (f *FlagBuilder) AppendBoolP(k string, v *bool) {
 	if v == nil {
 		return

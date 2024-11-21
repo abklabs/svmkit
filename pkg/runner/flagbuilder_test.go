@@ -46,4 +46,11 @@ func TestFlagBuilderBasics(t *testing.T) {
 	}
 
 	assert.Equal(t, f.ToArgs(), []string{"--flag", "--another-flag", "testing", "--anumber", "42"})
+
+	{
+		n := float64(3.14)
+		f.AppendFloat64P("pi", &n)
+	}
+
+	assert.Equal(t, f.ToArgs(), []string{"--flag", "--another-flag", "testing", "--anumber", "42", "--pi", "3.14"})
 }
