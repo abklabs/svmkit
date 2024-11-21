@@ -45,6 +45,12 @@ func (e *EnvBuilder) Args() []string {
 	return res
 }
 
+func (e *EnvBuilder) Merge(other *EnvBuilder) {
+	for k, v := range other.Map() {
+		e.SetRaw(k, v)
+	}
+}
+
 func (e *EnvBuilder) String() string {
 	return strings.Join(e.Args(), " ")
 }
