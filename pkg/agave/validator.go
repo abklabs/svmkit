@@ -163,6 +163,13 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 	b.Set("RPC_BIND_ADDRESS", cmd.Flags.RpcBindAddress)
 	b.SetInt("RPC_PORT", cmd.Flags.RpcPort)
 
+	if i := cmd.Info; i != nil {
+		b.Set("VALIDATOR_INFO_NAME", i.Name)
+		b.SetP("VALIDATOR_INFO_WEBSITE", i.Website)
+		b.SetP("VALIDATOR_INFO_ICON_URL", i.IconURL)
+		b.SetP("VALIDATOR_INFO_DETAILS", i.Details)
+	}
+
 	return b
 }
 
@@ -182,6 +189,7 @@ type Agave struct {
 	KeyPairs    KeyPairs            `pulumi:"keyPairs"`
 	Flags       Flags               `pulumi:"flags"`
 	Metrics     *Metrics            `pulumi:"metrics,optional"`
+	Info        *validator.Info     `pulumi:"info,optional"`
 }
 
 func (agave *Agave) Install() runner.Command {
