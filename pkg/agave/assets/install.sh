@@ -63,9 +63,14 @@ step::10::install-base-software() {
 }
 
 step::20::create-sol-user() {
+    local username
+
     id sol >/dev/null 2>&1 || $SUDO adduser --disabled-password --gecos "" sol
     $SUDO mkdir -p "/home/sol"
     $SUDO chown -f -R sol:sol "/home/sol"
+
+    username=$(whoami)
+    id -nGz "$username" | grep -qzxF sol || $SUDO adduser "$username" sol
 }
 
 step::30::copy-validator-keys() {
