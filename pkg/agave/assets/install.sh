@@ -198,3 +198,23 @@ EOF
     $SUDO systemctl enable "${VALIDATOR_SERVICE}"
     $SUDO systemctl start "${VALIDATOR_SERVICE}"
 }
+
+step::90::setup-validator-info() {
+    local args
+
+    [[ -v VALIDATOR_INFO_NAME ]] || return 0
+
+    if [[ -v VALIDATOR_INFO_WEBSITE ]] ; then
+	args+=(--website "$VALIDATOR_INFO_WEBSITE")
+    fi
+
+    if [[ -v VALIDATOR_INFO_ICON_URL ]] ; then
+	args+=(--icon-url "$VALIDATOR_INFO_ICON_URL")
+    fi
+
+    if [[ -v VALIDATOR_INFO_DETAILS ]] ; then
+	args+=(--details "$VALIDATOR_INFO_DETAILS")
+    fi
+
+    $SUDO -u sol -i solana validator-info publish "${args[@]}" "$VALIDATOR_INFO_NAME"
+}
