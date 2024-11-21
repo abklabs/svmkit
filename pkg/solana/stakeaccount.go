@@ -48,6 +48,8 @@ func (v *StakeAccountCreate) Env() *runner.EnvBuilder {
 	return e
 }
 
-func (v *StakeAccountCreate) Script() string {
-	return StakeAccountScript
+func (v *StakeAccountCreate) AddToPayload(p *runner.Payload) error {
+	p.AddString("steps.sh", StakeAccountScript)
+
+	return nil
 }

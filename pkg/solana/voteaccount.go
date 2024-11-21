@@ -58,8 +58,10 @@ func (v *VoteAccountCreate) Env() *runner.EnvBuilder {
 	return e
 }
 
-func (v *VoteAccountCreate) Script() string {
-	return VoteAccountScript
+func (v *VoteAccountCreate) AddToPayload(p *runner.Payload) error {
+	p.AddString("steps.sh", VoteAccountScript)
+
+	return nil
 }
 
 type VoteAccountDelete struct {
@@ -77,6 +79,8 @@ func (v *VoteAccountDelete) Env() *runner.EnvBuilder {
 	return e
 }
 
-func (v *VoteAccountDelete) Script() string {
-	return VoteAccountScript
+func (v *VoteAccountDelete) AddToPayload(p *runner.Payload) error {
+	p.AddString("steps.sh", VoteAccountScript)
+
+	return nil
 }
