@@ -23,11 +23,6 @@ func (v *StakeAccount) Create() runner.Command {
 func (v *StakeAccount) Env() *runner.EnvBuilder {
 	b := runner.NewEnvBuilder()
 
-	b.SetMap(map[string]string{
-		"STAKE_ACCOUNT_KEYPAIR": v.StakeAccountKeyPairs.StakeAccount,
-		"VOTE_ACCOUNT_KEYPAIR":  v.StakeAccountKeyPairs.VoteAccount,
-	})
-
 	b.SetFloat64("STAKE_AMOUNT", v.Amount)
 
 	return b
@@ -50,6 +45,9 @@ func (v *StakeAccountCreate) Env() *runner.EnvBuilder {
 
 func (v *StakeAccountCreate) AddToPayload(p *runner.Payload) error {
 	p.AddString("steps.sh", StakeAccountScript)
+
+	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
+	p.AddString("vote_account.json", v.StakeAccountKeyPairs.VoteAccount)
 
 	return nil
 }

@@ -69,7 +69,8 @@ step::20::create-sol-user() {
 }
 
 step::30::copy-validator-keys() {
-    keypairs::write "sol" "${IDENTITY_KEYPAIR}:validator-keypair" "${VOTE_ACCOUNT_KEYPAIR}:vote-account-keypair"
+    $SUDO cp validator-keypair.json vote-account-keypair.json /home/sol
+    $SUDO chown sol:sol /home/sol/{validator-keypair,vote-account-keypair}.json
 }
 
 step::40::configure-sysctl() {
