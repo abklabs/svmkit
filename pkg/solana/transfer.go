@@ -2,7 +2,6 @@ package solana
 
 import (
 	"github.com/abklabs/svmkit/pkg/runner"
-	"github.com/abklabs/svmkit/pkg/utils"
 )
 
 type Transfer struct {
@@ -18,8 +17,8 @@ func (v *Transfer) Create() runner.Command {
 	}
 }
 
-func (v *Transfer) Env() *utils.EnvBuilder {
-	b := utils.NewEnvBuilder()
+func (v *Transfer) Env() *runner.EnvBuilder {
+	b := runner.NewEnvBuilder()
 
 	b.SetMap(map[string]string{
 		"PAYER_KEYPAIR":    v.PayerKeyPair,
@@ -40,7 +39,7 @@ func (v *TransferCreate) Check() error {
 	return nil
 }
 
-func (v *TransferCreate) Env() *utils.EnvBuilder {
+func (v *TransferCreate) Env() *runner.EnvBuilder {
 	e := v.Transfer.Env()
 	e.Set("TRANSFER_ACTION", "CREATE")
 

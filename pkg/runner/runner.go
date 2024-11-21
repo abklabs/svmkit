@@ -7,13 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/abklabs/svmkit/pkg/utils"
 	"golang.org/x/crypto/ssh"
 )
 
 type Command interface {
 	Check() error
-	Env() *utils.EnvBuilder
+	Env() *EnvBuilder
 	Script() string
 }
 

@@ -2,7 +2,6 @@ package solana
 
 import (
 	"github.com/abklabs/svmkit/pkg/runner"
-	"github.com/abklabs/svmkit/pkg/utils"
 )
 
 type VoteAccountKeyPairs struct {
@@ -29,8 +28,8 @@ func (v *VoteAccount) Delete() runner.Command {
 	}
 }
 
-func (v *VoteAccount) Env() *utils.EnvBuilder {
-	b := utils.NewEnvBuilder()
+func (v *VoteAccount) Env() *runner.EnvBuilder {
+	b := runner.NewEnvBuilder()
 
 	b.SetMap(map[string]string{
 		"IDENTITY_KEYPAIR":        v.VoteAccountKeyPairs.Identity,
@@ -52,7 +51,7 @@ func (v *VoteAccountCreate) Check() error {
 	return nil
 }
 
-func (v *VoteAccountCreate) Env() *utils.EnvBuilder {
+func (v *VoteAccountCreate) Env() *runner.EnvBuilder {
 	e := v.VoteAccount.Env()
 	e.Set("VOTE_ACCOUNT_ACTION", "CREATE")
 
@@ -71,7 +70,7 @@ func (v *VoteAccountDelete) Check() error {
 	return nil
 }
 
-func (v *VoteAccountDelete) Env() *utils.EnvBuilder {
+func (v *VoteAccountDelete) Env() *runner.EnvBuilder {
 	e := v.VoteAccount.Env()
 	e.Set("VOTE_ACCOUNT_ACTION", "DELETE")
 

@@ -5,7 +5,6 @@ import (
 
 	"github.com/abklabs/svmkit/pkg/genesis"
 	"github.com/abklabs/svmkit/pkg/runner"
-	"github.com/abklabs/svmkit/pkg/utils"
 )
 
 // GenesisFlags represents the configuration flags for the Solana genesis setup.
@@ -31,8 +30,8 @@ func (cmd *CreateCommand) Check() error {
 	return nil
 }
 
-func (cmd *CreateCommand) Env() *utils.EnvBuilder {
-	b := utils.NewEnvBuilder()
+func (cmd *CreateCommand) Env() *runner.EnvBuilder {
+	b := runner.NewEnvBuilder()
 
 	b.SetMap(map[string]string{
 		"LEDGER_PATH":                   cmd.Flags.LedgerPath,
