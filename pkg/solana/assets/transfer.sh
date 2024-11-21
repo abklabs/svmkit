@@ -4,18 +4,13 @@
 umask 077
 
 transfer-create() {
-    local payer_keypair args
-
-    payer_keypair=$(temp::file)
-    echo "$PAYER_KEYPAIR" >"$payer_keypair"
-
-    args=()
+    local args=()
 
     if [[ -v ALLOW_UNFUNDED_RECIPIENT ]]; then
         args+=(--allow-unfunded-recipient)
     fi
 
-    solana -k "$payer_keypair" transfer "${args[@]}" "$RECIPIENT_PUBKEY" "$AMOUNT"
+    solana -k payer.json transfer "${args[@]}" "$RECIPIENT_PUBKEY" "$AMOUNT"
 }
 
 case "$TRANSFER_ACTION" in

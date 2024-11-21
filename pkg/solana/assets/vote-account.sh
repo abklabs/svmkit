@@ -4,29 +4,16 @@
 umask 077
 
 vote-account-create () {
-    local identity_keypair vote_account_keypair auth_withdrawer_keypair args
-
-    identity_keypair=$(temp::file)
-    echo "$IDENTITY_KEYPAIR" > "$identity_keypair"
-
-    vote_account_keypair=$(temp::file)
-    echo "$VOTE_ACCOUNT_KEYPAIR" > "$vote_account_keypair"
-
-    auth_withdrawer_keypair=$(temp::file)
-    echo "$AUTH_WITHDRAWER_KEYPAIR" > "$auth_withdrawer_keypair"
-
-    args=()
+    local args=()
 
     if [[ -v AUTH_VOTER_PUBKEY ]]; then
 	args+=(--authorized-voter "$AUTH_VOTER_PUBKEY")
     fi
 
-    solana create-vote-account "$vote_account_keypair" "$identity_keypair" "$auth_withdrawer_keypair"
+    solana create-vote-account vote_account.json identity.json auth_withdrawer.json
 }
 
 vote-account-delete () {
-    local identity_keypair vote_account_keypair auth_withdrawer_keypair
-
     # If they haven't provided a close-recipient public key, then
     # don't bother closing down the account.  The logic being either:
     #
@@ -39,13 +26,7 @@ vote-account-delete () {
 
     [[ -v CLOSE_RECIPIENT_PUBKEY ]] || return 0
 
-    vote_account_keypair=$(temp::file)
-    echo "$VOTE_ACCOUNT_KEYPAIR" > "$vote_account_keypair"
-
-    auth_withdrawer_keypair=$(temp::file)
-    echo "$AUTH_WITHDRAWER_KEYPAIR" > "$auth_withdrawer_keypair"
-
-    solana close-vote-account --authorized-withdrawer "$auth_withdrawer_keypair" "$vote_account_keypair" "$CLOSE_RECIPIENT_PUBKEY"
+    solana close-vote-account --authorized-withdrawer auth_withdrawer.json vote_account.json "$CLOSE_RECIPIENT_PUBKEY"
 }
 
 case "$VOTE_ACCOUNT_ACTION" in

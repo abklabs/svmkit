@@ -2,7 +2,6 @@ package solana
 
 import (
 	"github.com/abklabs/svmkit/pkg/runner"
-	"github.com/abklabs/svmkit/pkg/utils"
 )
 
 type StakeAccountKeyPairs struct {
@@ -21,13 +20,8 @@ func (v *StakeAccount) Create() runner.Command {
 	}
 }
 
-func (v *StakeAccount) Env() *utils.EnvBuilder {
-	b := utils.NewEnvBuilder()
-
-	b.SetMap(map[string]string{
-		"STAKE_ACCOUNT_KEYPAIR": v.StakeAccountKeyPairs.StakeAccount,
-		"VOTE_ACCOUNT_KEYPAIR":  v.StakeAccountKeyPairs.VoteAccount,
-	})
+func (v *StakeAccount) Env() *runner.EnvBuilder {
+	b := runner.NewEnvBuilder()
 
 	b.SetFloat64("STAKE_AMOUNT", v.Amount)
 
@@ -42,13 +36,18 @@ func (v *StakeAccountCreate) Check() error {
 	return nil
 }
 
-func (v *StakeAccountCreate) Env() *utils.EnvBuilder {
+func (v *StakeAccountCreate) Env() *runner.EnvBuilder {
 	e := v.StakeAccount.Env()
 	e.Set("STAKE_ACCOUNT_ACTION", "CREATE")
 
 	return e
 }
 
-func (v *StakeAccountCreate) Script() string {
-	return StakeAccountScript
+func (v *StakeAccountCreate) AddToPayload(p *runner.Payload) error {
+	p.AddString("steps.sh", StakeAccountScript)
+
+	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
+	p.AddString("vote_account.json", v.StakeAccountKeyPairs.VoteAccount)
+
+	return nil
 }

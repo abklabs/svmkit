@@ -13,8 +13,9 @@ type PayloadFile struct {
 }
 
 type Payload struct {
-	RootPath string
-	Files    []PayloadFile
+	RootPath    string
+	Files       []PayloadFile
+	DefaultMode fs.FileMode
 }
 
 func (p *Payload) Add(f PayloadFile) {
@@ -26,5 +27,11 @@ func (p *Payload) AddString(path string, body string) {
 }
 
 func (p *Payload) AddReader(path string, reader io.Reader) {
-	p.Add(PayloadFile{Path: path, Reader: reader, Mode: 0644})
+	mode := p.DefaultMode
+
+	if mode == 0 {
+		mode = 0644
+	}
+
+	p.Add(PayloadFile{Path: path, Reader: reader, Mode: mode})
 }

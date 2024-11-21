@@ -63,13 +63,19 @@ step::10::install-base-software() {
 }
 
 step::20::create-sol-user() {
+    local username
+
     id sol >/dev/null 2>&1 || $SUDO adduser --disabled-password --gecos "" sol
     $SUDO mkdir -p "/home/sol"
     $SUDO chown -f -R sol:sol "/home/sol"
+
+    username=$(whoami)
+    id -nGz "$username" | grep -qzxF sol || $SUDO adduser "$username" sol
 }
 
 step::30::copy-validator-keys() {
-    keypairs::write "sol" "${IDENTITY_KEYPAIR}:validator-keypair" "${VOTE_ACCOUNT_KEYPAIR}:vote-account-keypair"
+    $SUDO cp validator-keypair.json vote-account-keypair.json /home/sol
+    $SUDO chown sol:sol /home/sol/{validator-keypair,vote-account-keypair}.json
 }
 
 step::40::configure-sysctl() {
@@ -191,4 +197,24 @@ EOF
     $SUDO systemctl daemon-reload
     $SUDO systemctl enable "${VALIDATOR_SERVICE}"
     $SUDO systemctl start "${VALIDATOR_SERVICE}"
+}
+
+step::90::setup-validator-info() {
+    local args
+
+    [[ -v VALIDATOR_INFO_NAME ]] || return 0
+
+    if [[ -v VALIDATOR_INFO_WEBSITE ]] ; then
+	args+=(--website "$VALIDATOR_INFO_WEBSITE")
+    fi
+
+    if [[ -v VALIDATOR_INFO_ICON_URL ]] ; then
+	args+=(--icon-url "$VALIDATOR_INFO_ICON_URL")
+    fi
+
+    if [[ -v VALIDATOR_INFO_DETAILS ]] ; then
+	args+=(--details "$VALIDATOR_INFO_DETAILS")
+    fi
+
+    $SUDO -u sol -i solana validator-info publish "${args[@]}" "$VALIDATOR_INFO_NAME"
 }

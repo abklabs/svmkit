@@ -7,7 +7,6 @@ import (
 
 	"github.com/abklabs/svmkit/pkg/runner"
 	"github.com/abklabs/svmkit/pkg/solana"
-	"github.com/abklabs/svmkit/pkg/utils"
 	"github.com/abklabs/svmkit/pkg/validator"
 	"github.com/pulumi/pulumi-go-provider/infer"
 )
@@ -125,20 +124,18 @@ func (cmd *InstallCommand) Check() error {
 	return nil
 }
 
-func (cmd *InstallCommand) Env() *utils.EnvBuilder {
-	validatorEnv := utils.NewEnvBuilder()
+func (cmd *InstallCommand) Env() *runner.EnvBuilder {
+	validatorEnv := runner.NewEnvBuilder()
 
 	if m := cmd.Metrics; m != nil {
 		validatorEnv.Set("SOLANA_METRICS_CONFIG", m.String())
 	}
 
-	b := utils.NewEnvBuilder()
+	b := runner.NewEnvBuilder()
 
 	b.SetMap(map[string]string{
-		"VALIDATOR_FLAGS":      strings.Join(cmd.Flags.ToArgs(), " "),
-		"IDENTITY_KEYPAIR":     cmd.KeyPairs.Identity,
-		"VOTE_ACCOUNT_KEYPAIR": cmd.KeyPairs.VoteAccount,
-		"VALIDATOR_ENV":        validatorEnv.String(),
+		"VALIDATOR_FLAGS": strings.Join(cmd.Flags.ToArgs(), " "),
+		"VALIDATOR_ENV":   validatorEnv.String(),
 	})
 
 	{
@@ -166,11 +163,23 @@ func (cmd *InstallCommand) Env() *utils.EnvBuilder {
 	b.Set("RPC_BIND_ADDRESS", cmd.Flags.RpcBindAddress)
 	b.SetInt("RPC_PORT", cmd.Flags.RpcPort)
 
+	if i := cmd.Info; i != nil {
+		b.Set("VALIDATOR_INFO_NAME", i.Name)
+		b.SetP("VALIDATOR_INFO_WEBSITE", i.Website)
+		b.SetP("VALIDATOR_INFO_ICON_URL", i.IconURL)
+		b.SetP("VALIDATOR_INFO_DETAILS", i.Details)
+	}
+
 	return b
 }
 
-func (cmd *InstallCommand) Script() string {
-	return InstallScript
+func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
+	p.AddString("steps.sh", InstallScript)
+
+	p.AddString("validator-keypair.json", cmd.KeyPairs.Identity)
+	p.AddString("vote-account-keypair.json", cmd.KeyPairs.VoteAccount)
+
+	return nil
 }
 
 type Agave struct {
@@ -180,6 +189,7 @@ type Agave struct {
 	KeyPairs    KeyPairs            `pulumi:"keyPairs"`
 	Flags       Flags               `pulumi:"flags"`
 	Metrics     *Metrics            `pulumi:"metrics,optional"`
+	Info        *validator.Info     `pulumi:"info,optional"`
 }
 
 func (agave *Agave) Install() runner.Command {
@@ -213,7 +223,7 @@ type Flags struct {
 }
 
 func (f Flags) ToArgs() []string {
-	b := utils.FlagBuilder{}
+	b := runner.FlagBuilder{}
 
 	// Note: These locations are hard coded inside asset-builder.
 	b.Append("--identity", identityKeyPairPath)

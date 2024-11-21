@@ -7,14 +7,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/abklabs/svmkit/pkg/utils"
 	"golang.org/x/crypto/ssh"
 )
 
 type Command interface {
 	Check() error
-	Env() *utils.EnvBuilder
-	Script() string
+	Env() *EnvBuilder
+	AddToPayload(*Payload) error
 }
 
 func NewRunner(client *ssh.Client, cmd Command) *Runner {
@@ -28,13 +27,17 @@ type Runner struct {
 
 func (r *Runner) Run(ctx context.Context, handler DeployerHandler) error {
 	p := &Payload{
-		RootPath: fmt.Sprintf("/tmp/runner-%d-%d", time.Now().Unix(), rand.Int()),
+		RootPath:    fmt.Sprintf("/tmp/runner-%d-%d", time.Now().Unix(), rand.Int()),
+		DefaultMode: 0640,
 	}
 
 	p.AddString("lib.bash", LibBash)
 	p.Add(PayloadFile{"run.sh", strings.NewReader(RunScript), 0755})
 	p.AddReader("env", r.command.Env().Buffer())
-	p.AddString("steps.sh", r.command.Script())
+
+	if err := r.command.AddToPayload(p); err != nil {
+		return err
+	}
 
 	d := Deployer{Payload: p, Client: r.client}
 

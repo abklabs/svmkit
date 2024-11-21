@@ -1,7 +1,7 @@
 package solana
 
 import (
-	"github.com/abklabs/svmkit/pkg/utils"
+	"github.com/abklabs/svmkit/pkg/runner"
 )
 
 type CLIConfig struct {
@@ -9,8 +9,8 @@ type CLIConfig struct {
 	KeyPair *string
 }
 
-func (f *CLIConfig) ToFlags() *utils.FlagBuilder {
-	b := utils.FlagBuilder{}
+func (f *CLIConfig) ToFlags() *runner.FlagBuilder {
+	b := runner.FlagBuilder{}
 
 	b.AppendP("url", f.URL)
 	b.AppendP("keypair", f.KeyPair)
