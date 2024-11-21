@@ -31,6 +31,7 @@ func (r *Runner) Run(ctx context.Context, handler DeployerHandler) error {
 		DefaultMode: 0640,
 	}
 
+	p.Add(PayloadFile{"opsh", strings.NewReader(OPSH), 0755})
 	p.AddString("lib.bash", LibBash)
 	p.Add(PayloadFile{"run.sh", strings.NewReader(RunScript), 0755})
 	p.AddReader("env", r.command.Env().Buffer())
