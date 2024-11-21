@@ -13,7 +13,7 @@ import (
 type Command interface {
 	Check() error
 	Env() *EnvBuilder
-	Script() string
+	AddToPayload(*Payload) error
 }
 
 func NewRunner(client *ssh.Client, cmd Command) *Runner {
@@ -33,7 +33,10 @@ func (r *Runner) Run(ctx context.Context, handler DeployerHandler) error {
 	p.AddString("lib.bash", LibBash)
 	p.Add(PayloadFile{"run.sh", strings.NewReader(RunScript), 0755})
 	p.AddReader("env", r.command.Env().Buffer())
-	p.AddString("steps.sh", r.command.Script())
+
+	if err := r.command.AddToPayload(p); err != nil {
+		return err
+	}
 
 	d := Deployer{Payload: p, Client: r.client}
 

@@ -46,6 +46,8 @@ func (v *TransferCreate) Env() *runner.EnvBuilder {
 	return e
 }
 
-func (v *TransferCreate) Script() string {
-	return TransferScript
+func (v *TransferCreate) AddToPayload(p *runner.Payload) error {
+	p.AddString("steps.sh", TransferScript)
+
+	return nil
 }

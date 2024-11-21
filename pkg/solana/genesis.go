@@ -73,8 +73,10 @@ func (cmd *CreateCommand) Env() *runner.EnvBuilder {
 	return b
 }
 
-func (cmd *CreateCommand) Script() string {
-	return GenesisScript
+func (cmd *CreateCommand) AddToPayload(p *runner.Payload) error {
+	p.AddString("steps.sh", GenesisScript)
+
+	return nil
 }
 
 type Genesis struct {

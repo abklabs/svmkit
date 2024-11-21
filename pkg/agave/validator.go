@@ -168,8 +168,10 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 	return b
 }
 
-func (cmd *InstallCommand) Script() string {
-	return InstallScript
+func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
+	p.AddString("steps.sh", InstallScript)
+
+	return nil
 }
 
 type Agave struct {
