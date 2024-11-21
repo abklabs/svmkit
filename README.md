@@ -42,7 +42,7 @@ If you have questions or want to contribute, join us in the SVM community chat o
 ## Next Steps
 
 - [SVMKit Examples](https://github.com/abklabs/svmkit-examples) - A collection of examples on how to use SVMKit in your environment.
-- [Developer Information](/docs/DEV.md) - Interested in developing with SVMKit? Take a look here.
+- [Developer Information](/docs/DEVELOPMENT.md) - Interested in developing with SVMKit? Take a look here.
 - [APT Setup](/docs/APT-SETUP.md) - APT setup documentation.
 
 ---

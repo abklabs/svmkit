@@ -33,46 +33,18 @@ make --version
 
 ```sh
 svmkit/
-├── agave/                 # Agave validator implementation
-│   ├── assets/           # Validator deployment assets
-│   │   └── install.sh    # Validator installation script
-│   ├── assets.go         # Asset embedding definitions
-│   ├── validator.go      # Core validator logic
-│   └── validator_test.go # Validator tests
+├── agave/       # Agave validator implementation
+│   ├── assets/  # Validator deployment assets
 │
-├── genesis/              # Genesis block configuration
-│   └── genesis.go        # Genesis creation and management
+├── genesis/     # Genesis block configuration
 │
-├── runner/               # Deployment and execution system
-│   ├── assets/          # Runner deployment assets
-│   │   ├── lib.bash     # Common bash utilities
-│   │   └── run.sh       # Main runner script
-│   ├── assets.go        # Asset embedding definitions
-│   ├── envbuilder.go   # Environment variable handling
-│   ├── envbuilder_test.go  # Environment builder tests
-│   ├── flagbuilder.go      # CLI flag management
-│   └── flagbuilder_test.go # Flag builder tests
-│   ├── deployer.go      # Remote deployment logic
-│   ├── payload.go       # Deployment payload handling
-│   └── runner.go        # Main runner implementation
+├── runner/      # Deployment and execution system
+│   ├── assets/  # Runner deployment assets
 │
-├── solana/              # Core Solana functionality
-│   ├── assets/         # Solana-specific scripts
-│   │   ├── genesis.sh  # Genesis initialization
-│   │   ├── stake-account.sh  # Stake account management
-│   │   ├── transfer.sh       # Token transfer utilities
-│   │   └── vote-account.sh   # Vote account management
-│   ├── assets.go       # Asset embedding definitions
-│   ├── cli.go          # CLI interface implementation
-│   ├── cli_test.go     # CLI tests
-│   ├── env.go          # Environment configuration
-│   ├── genesis.go      # Genesis block management
-│   ├── stakeaccount.go # Stake account operations
-│   ├── transfer.go     # Transfer operations
-│   └── voteaccount.go  # Vote account operations
+├── solana/      # Core Solana functionality
+│   ├── assets/  # Solana-specific scripts
 │
-└── validator/          # Generic validator interface
-    └── validator.go    # Validator interface definitions
+└── validator/   # Generic validator interface
 ```
 
 ## Development Workflow

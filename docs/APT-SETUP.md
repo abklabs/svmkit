@@ -11,13 +11,13 @@ ABK Labs maintains an official APT repository at `apt.abklabs.com` for distribut
 
 ## Available Packages
 
-| Package Name                   | Description                          | Dependencies    |
-| ------------------------------ | ------------------------------------ | --------------- |
-| `svmkit-agave-validator`       | Agave validator implementation       | `curl`, `gnupg` |
-| `svmkit-solana-cli`            | Solana CLI tools                     | `curl`, `gnupg` |
-| `svmkit-jito-validator`        | Jito validator implementation        | `curl`, `gnupg` |
-| `svmkit-pyth-validator`        | Pyth validator implementation        | `curl`, `gnupg` |
-| `svmkit-powerledger-validator` | PowerLedger validator implementation | `curl`, `gnupg` |
+| Package Name                   | Description                          |
+| ------------------------------ | ------------------------------------ |
+| `svmkit-agave-validator`       | Agave validator implementation       |
+| `svmkit-solana-cli`            | Solana CLI tools                     |
+| `svmkit-jito-validator`        | Jito validator implementation        |
+| `svmkit-pyth-validator`        | Pyth validator implementation        |
+| `svmkit-powerledger-validator` | PowerLedger validator implementation |
 
 ## Installation Guide
 
