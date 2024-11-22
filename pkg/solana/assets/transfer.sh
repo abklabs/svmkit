@@ -4,13 +4,13 @@
 umask 077
 
 transfer-create() {
-    local args=()
+    local args=("${SOLANA_CLI_TXN_FLAGS[@]}")
 
     if [[ -v ALLOW_UNFUNDED_RECIPIENT ]]; then
         args+=(--allow-unfunded-recipient)
     fi
 
-    solana -k payer.json transfer "${args[@]}" "$RECIPIENT_PUBKEY" "$AMOUNT"
+    solana transfer "${args[@]}" "$RECIPIENT_PUBKEY" "$AMOUNT"
 }
 
 case "$TRANSFER_ACTION" in

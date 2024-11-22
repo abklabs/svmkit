@@ -4,8 +4,8 @@
 umask 077
 
 stake-account-create () {
-    solana create-stake-account stake_account.json "$STAKE_AMOUNT"
-    solana delegate-stake stake_account.json vote_account.json
+    solana create-stake-account "${SOLANA_CLI_TXN_FLAGS[@]}" stake_account.json "$STAKE_AMOUNT"
+    solana delegate-stake "${SOLANA_CLI_TXN_FLAGS[@]}" stake_account.json vote_account.json
 }
 
 case "$STAKE_ACCOUNT_ACTION" in
