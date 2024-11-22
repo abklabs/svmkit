@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/usr/bin/env ./opsh
 
 source ./lib.bash
 source ./env

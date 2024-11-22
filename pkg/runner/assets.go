@@ -9,3 +9,6 @@ var LibBash string
 
 //go:embed assets/run.sh
 var RunScript string
+
+//go:embed assets/opsh
+var OPSH string

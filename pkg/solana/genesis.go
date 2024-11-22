@@ -3,9 +3,13 @@ package solana
 import (
 	"strings"
 
-	"github.com/abklabs/svmkit/pkg/genesis"
 	"github.com/abklabs/svmkit/pkg/runner"
 )
+
+type PrimorialEntry struct {
+	Pubkey   string `pulumi:"pubkey"`
+	Lamports string `pulumi:"lamports"`
+}
 
 // GenesisFlags represents the configuration flags for the Solana genesis setup.
 type GenesisFlags struct {
@@ -80,9 +84,9 @@ func (cmd *CreateCommand) AddToPayload(p *runner.Payload) error {
 }
 
 type Genesis struct {
-	Flags      GenesisFlags             `pulumi:"flags"`
-	Primordial []genesis.PrimorialEntry `pulumi:"primordial"`
-	Version    genesis.Version          `pulumi:"version,optional"`
+	Flags      GenesisFlags     `pulumi:"flags"`
+	Primordial []PrimorialEntry `pulumi:"primordial"`
+	Version    *string          `pulumi:"version,optional"`
 }
 
 func (g *Genesis) Create() runner.Command {

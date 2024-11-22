@@ -1,4 +1,4 @@
-package validator
+package solana
 
 import (
 	"fmt"
@@ -11,14 +11,14 @@ const (
 	MAX_VALIDATOR_INFO     = 576
 )
 
-type Info struct {
+type ValidatorInfo struct {
 	Name    string  `pulumi:"name"`
 	Website *string `pulumi:"website,optional"`
 	IconURL *string `pulumi:"iconURL,optional"`
 	Details *string `pulumi:"details,optional"`
 }
 
-func (i *Info) Check() error {
+func (i *ValidatorInfo) Check() error {
 	if len(i.Name) > MAX_SHORT_FIELD_LENGTH {
 		return fmt.Errorf("name exceeds maximum length of %d", MAX_SHORT_FIELD_LENGTH)
 	}
