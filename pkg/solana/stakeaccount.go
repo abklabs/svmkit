@@ -10,6 +10,7 @@ type StakeAccountKeyPairs struct {
 }
 
 type StakeAccount struct {
+	TransactionOptions   *TxnOptions          `pulumi:"transactionOptions"`
 	StakeAccountKeyPairs StakeAccountKeyPairs `pulumi:"keyPairs"`
 	Amount               float64              `pulumi:"amount"`
 }
@@ -24,6 +25,11 @@ func (v *StakeAccount) Env() *runner.EnvBuilder {
 	b := runner.NewEnvBuilder()
 
 	b.SetFloat64("STAKE_AMOUNT", v.Amount)
+
+	if opt := v.TransactionOptions; opt != nil {
+		cli := CLITxnOptions{*opt}
+		b.SetArray("SOLANA_CLI_TXN_FLAGS", cli.ToFlags().ToArgs())
+	}
 
 	return b
 }
@@ -48,6 +54,16 @@ func (v *StakeAccountCreate) AddToPayload(p *runner.Payload) error {
 
 	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
 	p.AddString("vote_account.json", v.StakeAccountKeyPairs.VoteAccount)
+
+	if opt := v.TransactionOptions; opt != nil {
+		cli := CLITxnOptions{*opt}
+
+		err := cli.AddToPayload(p)
+
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
