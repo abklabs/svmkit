@@ -36,15 +36,11 @@ svmkit/
 ├── agave/       # Agave validator implementation
 │   ├── assets/  # Validator deployment assets
 │
-├── genesis/     # Genesis block configuration
-│
 ├── runner/      # Deployment and execution system
 │   ├── assets/  # Runner deployment assets
 │
-├── solana/      # Core Solana functionality
-│   ├── assets/  # Solana-specific scripts
-│
-└── validator/   # Generic validator interface
+└── solana/      # Core Solana functionality
+    └── assets/  # Solana-specific scripts
 ```
 
 ## Development Workflow
