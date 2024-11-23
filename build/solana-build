@@ -55,13 +55,10 @@ default-build () {
 }
 
 generate-replacement-metadata () {
-    local name oldname
+    local name
     name=$1 ; shift
-    oldname=zuma-${name#svmkit-}
 cat <<EOF
 name = "$name"
-conflicts = "$oldname"
-replaces = "$oldname"
 EOF
 }
 
@@ -106,7 +103,6 @@ build-ref () {
     package_name=$1 ; shift
     ref=$1 ; shift
     target=$1 ; shift
-    old_package_name="zuma-${package_name#svmkit-}"
 
     if [[ $# -gt 0 ]] ; then
 	buildfunc=$1 ; shift
@@ -121,8 +117,8 @@ build-ref () {
 [package.metadata.deb]
 name = "$package_name"
 provides = "svmkit-validator"
-conflicts = "svmkit-validator,${old_package_name}"
-replaces = "svmkit-validator,${old_package_name}"
+conflicts = "svmkit-validator"
+replaces = "svmkit-validator"
 EOF
     $buildfunc
     git submodule deinit --all
