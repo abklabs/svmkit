@@ -150,6 +150,10 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 		b.Set("SOLANA_CLI_CONFIG_FLAGS", conf.ToFlags().String())
 	}
 
+	if t := cmd.TimeoutConfig; t != nil {
+		b.Merge(t.Env())
+	}
+
 	b.SetP("VALIDATOR_VERSION", cmd.Version)
 
 	if cmd.Variant != nil {
@@ -182,13 +186,14 @@ func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
 }
 
 type Agave struct {
-	Environment *solana.Environment   `pulumi:"environment,optional"`
-	Version     *string               `pulumi:"version,optional"`
-	Variant     *Variant              `pulumi:"variant,optional"`
-	KeyPairs    KeyPairs              `pulumi:"keyPairs"`
-	Flags       Flags                 `pulumi:"flags"`
-	Metrics     *Metrics              `pulumi:"metrics,optional"`
-	Info        *solana.ValidatorInfo `pulumi:"info,optional"`
+	Environment   *solana.Environment   `pulumi:"environment,optional"`
+	Version       *string               `pulumi:"version,optional"`
+	Variant       *Variant              `pulumi:"variant,optional"`
+	KeyPairs      KeyPairs              `pulumi:"keyPairs"`
+	Flags         Flags                 `pulumi:"flags"`
+	Metrics       *Metrics              `pulumi:"metrics,optional"`
+	Info          *solana.ValidatorInfo `pulumi:"info,optional"`
+	TimeoutConfig *TimeoutConfig        `pulumi:"timeoutConfig,optional"`
 }
 
 func (agave *Agave) Install() runner.Command {
