@@ -1,6 +1,8 @@
 # -*- mode: shell-script -*-
 # shellcheck shell=bash
 
+: "${RPC_SERVICE_TIMEOUT:=60}"
+
 VALIDATOR_PACKAGE=svmkit-${VALIDATOR_VARIANT}-validator
 VALIDATOR_SERVICE=${VALIDATOR_PACKAGE}.service
 
@@ -160,14 +162,15 @@ set -euo pipefail
 FULL_RPC=${FULL_RPC:=false}
 RPC_BIND_ADDRESS=$RPC_BIND_ADDRESS
 RPC_PORT=$RPC_PORT
+RPC_SERVICE_TIMEOUT=$RPC_SERVICE_TIMEOUT
 
 \$FULL_RPC || exit 0
 
-for i in {1..120} ; do
+for i in \$(seq 1 \$RPC_SERVICE_TIMEOUT) ; do
     if solana slot --url http://\$RPC_BIND_ADDRESS:\$RPC_PORT &> /dev/null ; then
         exit 0
     fi
-    sleep .25
+    sleep 1
 done
 
 echo "timed out waiting for validator to bring RPC online!" 1>&2
