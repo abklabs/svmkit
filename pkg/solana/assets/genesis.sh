@@ -69,6 +69,12 @@ step::005::create-sol-user() {
     $SUDO chown -f -R sol:sol /home/sol
 }
 
+step::007::check-for-existing-ledger() {
+    if [[ -d $LEDGER_PATH/rocksdb ]] ; then
+	log::fatal "Ledger directory '$LEDGER_PATH' already appears used!"
+    fi
+}
+
 step::010::install-dependencies() {
     apt::abk
     if [[ -v PACKAGE_VERSION ]]; then
