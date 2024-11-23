@@ -167,7 +167,7 @@ RPC_SERVICE_TIMEOUT=$RPC_SERVICE_TIMEOUT
 \$FULL_RPC || exit 0
 
 for i in \$(seq 1 \$RPC_SERVICE_TIMEOUT) ; do
-    if solana slot --url http://\$RPC_BIND_ADDRESS:\$RPC_PORT &> /dev/null ; then
+    if solana validator-info get --url http://\$RPC_BIND_ADDRESS:\$RPC_PORT &> /dev/null ; then
         exit 0
     fi
     sleep 1
