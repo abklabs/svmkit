@@ -44,8 +44,7 @@ step::000::wait-for-a-stable-environment() {
 }
 
 step::005::create-sol-user() {
-    id sol >/dev/null 2>&1 || $SUDO adduser --disabled-password --gecos "" sol
-    $SUDO chown -f -R sol:sol /home/sol
+    create-sol-user
 }
 
 step::007::check-for-existing-ledger() {
