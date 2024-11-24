@@ -56,7 +56,7 @@ step::00::wait-for-a-stable-environment() {
 }
 
 step::05::setup-abklabs-apt() {
-    apt::abk
+    apt::setup-abk-apt-source
 }
 
 step::10::install-base-software() {
