@@ -31,28 +31,7 @@ case $VALIDATOR_VARIANT in
 esac
 
 step::00::wait-for-a-stable-environment() {
-    local ret
-
-    if command -v cloud-init >/dev/null 2>&1; then
-        if systemctl is-active --quiet cloud-init.service; then
-            ret=0
-            cloud-init status --wait || ret=$?
-
-            case "$ret" in
-                0)
-                    log::info "cloud-init has finished, continuing on"
-                    ;;
-                2)
-                    log::warn "cloud-init had a recoverable error; we're continuing anyway"
-                    ;;
-                *)
-                    log::error "cloud-init status exited with status $ret; continuing but you should investigate"
-                    ;;
-            esac
-        else
-            log::warn "cloud-init.service in a failed state; not waiting for completion"
-        fi
-    fi
+    cloud-init::wait-for-stable-environment
 }
 
 step::05::setup-abklabs-apt() {
