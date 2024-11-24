@@ -84,13 +84,13 @@ step::50::configure-firewall() {
 
 step::60::setup-logrotate() {
     cat <<EOF | $SUDO tee /etc/logrotate.d/solana >/dev/null
-/home/sol/solana-validator.log {
+/home/sol/log {
 su sol sol
 daily
 rotate 1
 missingok
 postrotate
-    systemctl kill -s USR1 sol.service
+    systemctl kill -s USR1 "${VALIDATOR_SERVICE}"
 endscript
 }
 EOF
