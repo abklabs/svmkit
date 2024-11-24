@@ -1,4 +1,4 @@
-apt::abk() {
+apt::setup-abk-apt-source() {
     $APT update
     $APT install curl gnupg
     if ! grep -q "^deb .*/svmkit dev main" /etc/apt/sources.list /etc/apt/sources.list.d/*; then
