@@ -123,6 +123,12 @@ step::80::setup-validator-startup() {
         $SUDO systemctl stop "${VALIDATOR_SERVICE}" || true
     fi
 
+    cat <<EOF | $SUDO tee /home/sol/stop-validator >/dev/null
+#!/usr/bin/env bash
+
+$VALIDATOR_ENV exec $VALIDATOR_PROCESS --ledger $LEDGER_PATH exit ${VALIDATOR_EXIT_FLAGS[@]@Q}
+EOF
+
     cat <<EOF | $SUDO tee /home/sol/run-validator >/dev/null
 #!/usr/bin/env bash
 
@@ -159,7 +165,7 @@ echo "timed out waiting for validator to bring RPC online!" 1>&2
 exit 1
 EOF
 
-    for i in run-validator check-validator ; do
+    for i in run-validator check-validator stop-validator ; do
 	$SUDO chmod 755 /home/sol/$i
 	$SUDO chown sol:sol /home/sol/$i
     done
@@ -174,6 +180,7 @@ User=sol
 Group=sol
 ExecStart=/home/sol/run-validator
 ExecStartPost=/home/sol/check-validator
+ExecStop=/home/sol/stop-validator
 LimitNOFILE=1000000
 
 [Install]
