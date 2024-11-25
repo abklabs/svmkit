@@ -11,3 +11,8 @@ lint:
 
 vet:
 	go vet ./pkg/...
+
+check: test lint
+
+format:
+	cd pkg && go fmt ./...
