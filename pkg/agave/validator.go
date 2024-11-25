@@ -176,6 +176,12 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 		b.SetP("VALIDATOR_INFO_DETAILS", i.Details)
 	}
 
+	if s := cmd.ShutdownPolicy; s != nil {
+		b.SetArray("VALIDATOR_EXIT_FLAGS", s.ToFlags().ToArgs())
+	}
+
+	b.Set("LEDGER_PATH", ledgerPath)
+
 	return b
 }
 
@@ -189,15 +195,16 @@ func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
 }
 
 type Agave struct {
-	Environment   *solana.Environment   `pulumi:"environment,optional"`
-	Version       *string               `pulumi:"version,optional"`
-	Variant       *Variant              `pulumi:"variant,optional"`
-	KeyPairs      KeyPairs              `pulumi:"keyPairs"`
-	Flags         Flags                 `pulumi:"flags"`
-	Metrics       *Metrics              `pulumi:"metrics,optional"`
-	Info          *solana.ValidatorInfo `pulumi:"info,optional"`
-	TimeoutConfig *TimeoutConfig        `pulumi:"timeoutConfig,optional"`
-	StartupPolicy *StartupPolicy        `pulumi:"startupPolicy,optional"`
+	Environment    *solana.Environment   `pulumi:"environment,optional"`
+	Version        *string               `pulumi:"version,optional"`
+	Variant        *Variant              `pulumi:"variant,optional"`
+	KeyPairs       KeyPairs              `pulumi:"keyPairs"`
+	Flags          Flags                 `pulumi:"flags"`
+	Metrics        *Metrics              `pulumi:"metrics,optional"`
+	Info           *solana.ValidatorInfo `pulumi:"info,optional"`
+	TimeoutConfig  *TimeoutConfig        `pulumi:"timeoutConfig,optional"`
+	StartupPolicy  *StartupPolicy        `pulumi:"startupPolicy,optional"`
+	ShutdownPolicy *ShutdownPolicy       `pulumi:"shutdownPolicy,optional"`
 }
 
 func (agave *Agave) Install() runner.Command {
