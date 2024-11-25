@@ -117,6 +117,8 @@ step::75::setup-solana-cli() {
 }
 
 step::80::setup-validator-startup() {
+    $APT install jq
+
     if systemctl list-unit-files "${VALIDATOR_SERVICE}" >/dev/null; then
         $SUDO systemctl stop "${VALIDATOR_SERVICE}" || true
     fi
@@ -138,8 +140,16 @@ RPC_SERVICE_TIMEOUT=$RPC_SERVICE_TIMEOUT
 
 \$FULL_RPC || exit 0
 
+is-rpc-healthy() {
+    local url result
+    url=\$1 ; shift
+    result=\$(curl \$url -s -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","id":1, "method":"getHealth"}' | jq -r .result)
+
+    [[ \$result = ok ]]
+}
+
 for i in \$(seq 1 \$RPC_SERVICE_TIMEOUT) ; do
-    if solana validator-info get --url http://\$RPC_BIND_ADDRESS:\$RPC_PORT &> /dev/null ; then
+    if is-rpc-healthy http://\$RPC_BIND_ADDRESS:\$RPC_PORT ; then
         exit 0
     fi
     sleep 1
