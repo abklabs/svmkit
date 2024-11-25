@@ -162,9 +162,12 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 		b.Set("VALIDATOR_VARIANT", string(VariantAgave))
 	}
 
-	b.SetBoolP("FULL_RPC", cmd.Flags.FullRpcAPI)
 	b.Set("RPC_BIND_ADDRESS", cmd.Flags.RpcBindAddress)
 	b.SetInt("RPC_PORT", cmd.Flags.RpcPort)
+
+	if cmd.Flags.FullRpcAPI != nil && *cmd.Flags.FullRpcAPI && cmd.StartupPolicy != nil {
+		b.SetBoolP("WAIT_FOR_RPC_HEALTH", cmd.StartupPolicy.WaitForRPCHealth)
+	}
 
 	if i := cmd.Info; i != nil {
 		b.Set("VALIDATOR_INFO_NAME", i.Name)
@@ -194,6 +197,7 @@ type Agave struct {
 	Metrics       *Metrics              `pulumi:"metrics,optional"`
 	Info          *solana.ValidatorInfo `pulumi:"info,optional"`
 	TimeoutConfig *TimeoutConfig        `pulumi:"timeoutConfig,optional"`
+	StartupPolicy *StartupPolicy        `pulumi:"startupPolicy,optional"`
 }
 
 func (agave *Agave) Install() runner.Command {
