@@ -133,12 +133,12 @@ EOF
 #!/usr/bin/env bash
 set -euo pipefail
 
-FULL_RPC=${FULL_RPC:=false}
+WAIT_FOR_RPC_HEALTH=${WAIT_FOR_RPC_HEALTH:=false}
 RPC_BIND_ADDRESS=$RPC_BIND_ADDRESS
 RPC_PORT=$RPC_PORT
 RPC_SERVICE_TIMEOUT=$RPC_SERVICE_TIMEOUT
 
-\$FULL_RPC || exit 0
+\$WAIT_FOR_RPC_HEALTH || exit 0
 
 is-rpc-healthy() {
     local url result
