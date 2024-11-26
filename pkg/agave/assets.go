@@ -1,8 +1,12 @@
 package agave
 
 import (
-	_ "embed"
+	"embed"
 )
 
-//go:embed assets/install.sh
-var InstallScript string
+//go:embed assets
+var assets embed.FS
+
+const (
+	assetsInstallScript = "assets/install.sh"
+)

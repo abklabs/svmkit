@@ -50,7 +50,13 @@ func (v *StakeAccountCreate) Env() *runner.EnvBuilder {
 }
 
 func (v *StakeAccountCreate) AddToPayload(p *runner.Payload) error {
-	p.AddString("steps.sh", StakeAccountScript)
+	stakeAccountScript, err := assets.Open(assetsStakeAccountScript)
+
+	if err != nil {
+		return err
+	}
+
+	p.AddReader("steps.sh", stakeAccountScript)
 
 	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
 	p.AddString("vote_account.json", v.StakeAccountKeyPairs.VoteAccount)

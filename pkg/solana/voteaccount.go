@@ -57,7 +57,13 @@ func (v *VoteAccountCreate) AddToPayload(p *runner.Payload) error {
 	p.AddString("vote_account.json", v.VoteAccountKeyPairs.VoteAccount)
 	p.AddString("auth_withdrawer.json", v.VoteAccountKeyPairs.AuthWithdrawer)
 
-	p.AddString("steps.sh", VoteAccountScript)
+	voteAccountScript, err := assets.Open(assetsVoteAccountScript)
+
+	if err != nil {
+		return err
+	}
+
+	p.AddReader("steps.sh", voteAccountScript)
 
 	return nil
 }
@@ -78,7 +84,13 @@ func (v *VoteAccountDelete) Env() *runner.EnvBuilder {
 }
 
 func (v *VoteAccountDelete) AddToPayload(p *runner.Payload) error {
-	p.AddString("steps.sh", VoteAccountScript)
+	voteAccountScript, err := assets.Open(assetsVoteAccountScript)
+
+	if err != nil {
+		return err
+	}
+
+	p.AddReader("steps.sh", voteAccountScript)
 
 	return nil
 }
