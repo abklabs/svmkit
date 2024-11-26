@@ -1,17 +1,15 @@
 package solana
 
 import (
-	_ "embed"
+	"embed"
 )
 
-//go:embed assets/genesis.sh
-var GenesisScript string
+//go:embed assets
+var assets embed.FS
 
-//go:embed assets/vote-account.sh
-var VoteAccountScript string
-
-//go:embed assets/stake-account.sh
-var StakeAccountScript string
-
-//go:embed assets/transfer.sh
-var TransferScript string
+const (
+	assetsGenesisScript      = "assets/genesis.sh"
+	assetsStakeAccountScript = "assets/stake-account.sh"
+	assetsTransferScript     = "assets/transfer.sh"
+	assetsVoteAccountScript  = "assets/vote-account.sh"
+)

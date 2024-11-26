@@ -51,7 +51,13 @@ func (v *TransferCreate) Env() *runner.EnvBuilder {
 }
 
 func (v *TransferCreate) AddToPayload(p *runner.Payload) error {
-	p.AddString("steps.sh", TransferScript)
+	transferScript, err := assets.Open(assetsTransferScript)
+
+	if err != nil {
+		return err
+	}
+
+	p.AddReader("steps.sh", transferScript)
 
 	if opt := v.TransactionOptions; opt != nil {
 		cli := CLITxnOptions{*opt}

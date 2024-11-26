@@ -78,7 +78,13 @@ func (cmd *CreateCommand) Env() *runner.EnvBuilder {
 }
 
 func (cmd *CreateCommand) AddToPayload(p *runner.Payload) error {
-	p.AddString("steps.sh", GenesisScript)
+	genesisScript, err := assets.Open(assetsGenesisScript)
+
+	if err != nil {
+		return err
+	}
+
+	p.AddReader("steps.sh", genesisScript)
 
 	return nil
 }
