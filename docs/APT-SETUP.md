@@ -4,7 +4,7 @@
 
 ABK Labs maintains an official APT repository at `apt.abklabs.com` for distributing SVMKit components. More details can be found in the [build](../build/) directory. This repository provides:
 
-- Multiple validator implementations (Agave, Solana, Jito, etc.)
+- Multiple validator implementations (Agave, Jito, Frankendancer etc.)
 - CLI tools and utilities
 - Regular updates and security patches
 - Seamless integration with Ubuntu/Debian systems
