@@ -2,11 +2,10 @@ package agave
 
 import (
 	"embed"
+	"text/template"
 )
 
 //go:embed assets
 var assets embed.FS
 
-const (
-	assetsInstallScript = "assets/install.sh"
-)
+var installScriptTmpl = template.Must(template.ParseFS(assets, "assets/install.sh.tmpl"))

@@ -186,13 +186,11 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 }
 
 func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
-	installScript, err := assets.Open(assetsInstallScript)
+	err := p.AddTemplate("steps.sh", installScriptTmpl, cmd)
 
 	if err != nil {
 		return err
 	}
-
-	p.AddReader("steps.sh", installScript)
 
 	p.AddString("validator-keypair.json", cmd.KeyPairs.Identity)
 	p.AddString("vote-account-keypair.json", cmd.KeyPairs.VoteAccount)
