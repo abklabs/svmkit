@@ -1,9 +1,11 @@
 package runner
 
 import (
+	"bytes"
 	"io"
 	"io/fs"
 	"strings"
+	"text/template"
 )
 
 type PayloadFile struct {
@@ -34,4 +36,18 @@ func (p *Payload) AddReader(path string, reader io.Reader) {
 	}
 
 	p.Add(PayloadFile{Path: path, Reader: reader, Mode: mode})
+}
+
+func (p *Payload) AddTemplate(path string, tmpl *template.Template, data any) error {
+	b := &bytes.Buffer{}
+
+	err := tmpl.Execute(b, data)
+
+	if err != nil {
+		return err
+	}
+
+	p.AddReader(path, b)
+
+	return nil
 }
