@@ -135,35 +135,7 @@ EOF
 $VALIDATOR_ENV exec $VALIDATOR_PROCESS $VALIDATOR_FLAGS
 EOF
 
-    cat <<EOF | $SUDO tee /home/sol/check-validator >/dev/null
-#!/usr/bin/env bash
-set -euo pipefail
-
-WAIT_FOR_RPC_HEALTH=${WAIT_FOR_RPC_HEALTH:=false}
-RPC_BIND_ADDRESS=$RPC_BIND_ADDRESS
-RPC_PORT=$RPC_PORT
-RPC_SERVICE_TIMEOUT=$RPC_SERVICE_TIMEOUT
-
-\$WAIT_FOR_RPC_HEALTH || exit 0
-
-is-rpc-healthy() {
-    local url result
-    url=\$1 ; shift
-    result=\$(curl \$url -s -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","id":1, "method":"getHealth"}' | jq -r .result)
-
-    [[ \$result = ok ]]
-}
-
-for i in \$(seq 1 \$RPC_SERVICE_TIMEOUT) ; do
-    if is-rpc-healthy http://\$RPC_BIND_ADDRESS:\$RPC_PORT ; then
-        exit 0
-    fi
-    sleep 1
-done
-
-echo "timed out waiting for validator to bring RPC online!" 1>&2
-exit 1
-EOF
+    $SUDO cp check-validator /home/sol/.
 
     for i in run-validator check-validator stop-validator ; do
 	$SUDO chmod 755 /home/sol/$i
