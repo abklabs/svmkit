@@ -21,6 +21,14 @@ type Payload struct {
 }
 
 func (p *Payload) Add(f PayloadFile) {
+	if f.Mode == 0 {
+		if p.DefaultMode != 0 {
+			f.Mode = p.DefaultMode
+		} else {
+			f.Mode = 0644
+		}
+	}
+
 	p.Files = append(p.Files, f)
 }
 
@@ -29,13 +37,7 @@ func (p *Payload) AddString(path string, body string) {
 }
 
 func (p *Payload) AddReader(path string, reader io.Reader) {
-	mode := p.DefaultMode
-
-	if mode == 0 {
-		mode = 0644
-	}
-
-	p.Add(PayloadFile{Path: path, Reader: reader, Mode: mode})
+	p.Add(PayloadFile{Path: path, Reader: reader})
 }
 
 func (p *Payload) AddTemplate(path string, tmpl *template.Template, data any) error {
