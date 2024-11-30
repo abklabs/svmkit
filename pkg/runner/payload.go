@@ -40,16 +40,17 @@ func (p *Payload) AddReader(path string, reader io.Reader) {
 	p.Add(PayloadFile{Path: path, Reader: reader})
 }
 
-func (p *Payload) AddTemplate(path string, tmpl *template.Template, data any) error {
+func (p *Payload) NewWriter(info PayloadFile) io.Writer {
 	b := &bytes.Buffer{}
+	info.Reader = b
+	p.Add(info)
 
-	err := tmpl.Execute(b, data)
+	return b
+}
 
-	if err != nil {
-		return err
-	}
+func (p *Payload) AddTemplate(path string, tmpl *template.Template, data any) error {
+	w := p.NewWriter(PayloadFile{Path: path})
+	err := tmpl.Execute(w, data)
 
-	p.AddReader(path, b)
-
-	return nil
+	return err
 }
