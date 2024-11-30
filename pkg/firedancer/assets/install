@@ -1,0 +1,59 @@
+# -*- mode: shell-script -*-
+# shellcheck shell=bash
+
+USER=sol
+GROUP=sol
+HOME=/home/$USER
+
+VALIDATOR_PACKAGE=svmkit-frankendancer
+VALIDATOR_SERVICE=${VALIDATOR_PACKAGE}.service
+
+step::00::wait-for-a-stable-environment() {
+    cloud-init::wait-for-stable-environment
+}
+
+step::05::setup-abklabs-apt() {
+    apt::setup-abk-apt-source
+}
+
+step::20::create-sol-user() {
+    create-sol-user
+}
+
+step::30::copy-assets() {
+    $SUDO cp validator-keypair.json vote-account-keypair.json config.toml "$HOME"
+    $SUDO chown "$USER:$GROUP" "$HOME"/{validator-keypair,vote-account-keypair}.json "$HOME"/config.toml
+
+    $SUDO cp *.service /etc/systemd/system/.
+    $SUDO systemctl daemon-reload
+}
+
+step::70::install-validator() {
+    if [[ -v VALIDATOR_VERSION ]]; then
+        # XXX - This needs to be fixed up to be able to select the right solana CLI major version.
+        $APT --allow-downgrades install "${VALIDATOR_PACKAGE}=$VALIDATOR_VERSION" "svmkit-solana-cli"
+    else
+        $APT --allow-downgrades install "${VALIDATOR_PACKAGE}" "svmkit-solana-cli"
+    fi
+}
+
+step::75::setup-solana-cli() {
+    [[ -v SOLANA_CLI_CONFIG_FLAGS ]] || return 0
+
+    # First setup the login user.
+    solana config set $SOLANA_CLI_CONFIG_FLAGS
+
+    # Setup the sol user.
+    $SUDO -u "$USER" -i solana config set $SOLANA_CLI_CONFIG_FLAGS
+}
+
+step::80::setup-validator() {
+    if systemctl list-unit-files svmkit-fd.service >/dev/null; then
+        $SUDO systemctl stop svmkit-fd.service || true
+    fi
+
+    $SUDO systemctl enable svmkit-fd-setup.service
+    $SUDO systemctl start svmkit-fd-setup.service
+    $SUDO systemctl enable svmkit-fd-validator.service
+    $SUDO systemctl start svmkit-fd-validator.service
+}
