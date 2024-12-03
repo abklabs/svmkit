@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+{{if .StartupPolicy }}
 WAIT_FOR_RPC_HEALTH={{ or .StartupPolicy.WaitForRPCHealth false }}
 RPC_BIND_ADDRESS={{.Flags.RpcBindAddress}}
 RPC_PORT={{.Flags.RpcPort}}
@@ -29,3 +30,4 @@ done
 
 echo "timed out waiting for validator to bring RPC online!" 1>&2
 exit 1
+{{end}}
