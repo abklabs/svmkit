@@ -7,7 +7,7 @@
 	url = git@github.com:solana-labs/solana.git
 	fetch = +refs/heads/*:refs/remotes/solana-labs/*
 [branch "master"]
-	remote = solana-labs
+	remote = anza-xyz
 	merge = refs/heads/master
 [remote "anza-xyz"]
 	url = git@github.com:anza-xyz/agave.git
@@ -24,6 +24,15 @@
 [branch "powerledger"]
 	remote = PowerLedger
 	merge = refs/heads/master
+[remote "mantis"]
+	url = git@github.com:ComposableFi/mantis-solana.git
+	fetch = +refs/heads/*:refs/remotes/mantis/*
+[remote "mirrorworld-universe"]
+	url = git@github.com:mirrorworld-universe/hypergrid-grid.git
+	fetch = +refs/heads/*:refs/remotes/mirrorworld-universe/*
+[remote "xen"]
+	url = git@github.com:FairCrypto/solanalabs.git
+	fetch = +refs/heads/*:refs/remotes/xen/*
 ```
 
 Once that's in place, you can run `solana-build` and get something like the following:
