@@ -28,6 +28,7 @@ const (
 	VariantJito        Variant = "jito"
 	VariantPyth        Variant = "pyth"
 	VariantMantis      Variant = "mantis"
+	VariantXen         Variant = "xen"
 )
 
 func (Variant) Values() []infer.EnumValue[Variant] {
@@ -61,6 +62,11 @@ func (Variant) Values() []infer.EnumValue[Variant] {
 			Name:        string(VariantMantis),
 			Value:       VariantMantis,
 			Description: "The Mantis validator",
+		},
+		{
+			Name:        string(VariantXen),
+			Value:       VariantXen,
+			Description: "The Xen validator",
 		},
 	}
 }
