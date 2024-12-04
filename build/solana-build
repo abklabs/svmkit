@@ -158,7 +158,7 @@ EOF
     rm -rf "$tmpdir"
 }
 
-for remote in solana-labs anza-xyz PowerLedger jito-foundation pyth-network mantis ; do
+for remote in solana-labs anza-xyz PowerLedger jito-foundation pyth-network mantis xen ; do
     fetch-remote $remote
 done
 
@@ -177,3 +177,5 @@ done
 build-ref svmkit-pyth-validator pyth-network/pyth-v1.14.17 solana-validator build-with-other-clang
 
 build-ref svmkit-mantis-validator mantis/mantis/diet-validator-rpc solana-validator
+
+build-ref svmkit-xen-validator xen/dyn_fees_v1 solana-validator
