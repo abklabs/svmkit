@@ -25,6 +25,9 @@ case $VALIDATOR_VARIANT in
     solana)
 	VALIDATOR_PROCESS=solana-validator
 	;;
+    xen)
+	VALIDATOR_PROCESS=solana-validator
+	;;
     *)
 	log::fatal "unknown validator variant '$VALIDATOR_VARIANT'!"
 	;;
