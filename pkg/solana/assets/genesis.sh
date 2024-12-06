@@ -4,6 +4,10 @@
 upgradeableLoader=BPFLoaderUpgradeab1e11111111111111111111111
 genesis_args=()
 
+if [[ -v GENESIS_EXTRA_FLAGS ]] ; then
+    genesis_args+=("${GENESIS_EXTRA_FLAGS[@]}")
+fi
+
 fetch-program() {
     local name=$1
     local version=$2
