@@ -28,7 +28,11 @@ func (f *FlagBuilder) AppendP(k string, v *string) {
 		return
 	}
 
-	f.AppendRaw("--"+k, *v)
+	f.Append(k, *v)
+}
+
+func (f *FlagBuilder) Append(k string, v string) {
+	f.AppendRaw("--"+k, v)
 }
 
 func (f *FlagBuilder) AppendInt64P(k string, v *int64) {
