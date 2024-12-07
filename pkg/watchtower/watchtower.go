@@ -94,9 +94,7 @@ type Flags struct {
 func (f *Flags) ToArgs(rpcURL *string) []string {
 	b := runner.FlagBuilder{}
 
-	for _, identity := range f.ValidatorIdentities {
-		b.Append("validator-identity", identity)
-	}
+	b.AppendArray("validator-identity", f.ValidatorIdentities)
 
 	if rpcURL != nil {
 		b.AppendP("url", rpcURL)
