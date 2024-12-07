@@ -7,7 +7,7 @@ import (
 
 type FlagBuilder []string
 
-func (f *FlagBuilder) Append(s ...string) {
+func (f *FlagBuilder) AppendRaw(s ...string) {
 	*f = append(*f, s...)
 }
 
@@ -28,7 +28,7 @@ func (f *FlagBuilder) AppendP(k string, v *string) {
 		return
 	}
 
-	f.Append("--"+k, *v)
+	f.AppendRaw("--"+k, *v)
 }
 
 func (f *FlagBuilder) AppendInt64P(k string, v *int64) {
@@ -36,7 +36,7 @@ func (f *FlagBuilder) AppendInt64P(k string, v *int64) {
 		return
 	}
 
-	f.Append("--"+k, strconv.FormatInt(*v, 10))
+	f.AppendRaw("--"+k, strconv.FormatInt(*v, 10))
 }
 
 func (f *FlagBuilder) AppendIntP(k string, v *int) {
@@ -44,11 +44,11 @@ func (f *FlagBuilder) AppendIntP(k string, v *int) {
 		return
 	}
 
-	f.Append("--"+k, strconv.FormatInt(int64(*v), 10))
+	f.AppendRaw("--"+k, strconv.FormatInt(int64(*v), 10))
 }
 
 func (f *FlagBuilder) AppendFloat64(k string, v float64) {
-	f.Append(k, strconv.FormatFloat(v, 'f', -1, 64))
+	f.AppendRaw(k, strconv.FormatFloat(v, 'f', -1, 64))
 }
 
 func (f *FlagBuilder) AppendFloat64P(k string, v *float64) {
@@ -68,5 +68,5 @@ func (f *FlagBuilder) AppendBoolP(k string, v *bool) {
 		return
 	}
 
-	f.Append("--" + k)
+	f.AppendRaw("--" + k)
 }
