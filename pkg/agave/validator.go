@@ -352,11 +352,11 @@ func (f Flags) ToArgs() []string {
 	b := runner.FlagBuilder{}
 
 	// Note: These locations are hard coded inside asset-builder.
-	b.AppendRaw("--identity", identityKeyPairPath)
-	b.AppendRaw("--vote-account", voteAccountKeyPairPath)
-	b.AppendRaw("--log", logPath)
-	b.AppendRaw("--accounts", accountsPath)
-	b.AppendRaw("--ledger", ledgerPath)
+	b.Append("identity", identityKeyPairPath)
+	b.Append("vote-account", voteAccountKeyPairPath)
+	b.Append("log", logPath)
+	b.Append("accounts", accountsPath)
+	b.Append("ledger", ledgerPath)
 
 	if f.AccountIndex != nil {
 		for _, index := range *f.AccountIndex {
