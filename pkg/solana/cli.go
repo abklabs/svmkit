@@ -43,7 +43,7 @@ func (f *CLITxnOptions) ToFlags() *runner.FlagBuilder {
 
 	if s := f.Signer; s != nil {
 		for _, signer := range *s {
-			b.Append("signer", signer)
+			b.Append("--signer", signer)
 		}
 	}
 
