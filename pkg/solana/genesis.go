@@ -13,17 +13,18 @@ type PrimorialEntry struct {
 
 // GenesisFlags represents the configuration flags for the Solana genesis setup.
 type GenesisFlags struct {
-	LedgerPath                 string  `pulumi:"ledgerPath"`
-	IdentityPubkey             string  `pulumi:"identityPubkey"`
-	VotePubkey                 string  `pulumi:"votePubkey"`
-	StakePubkey                string  `pulumi:"stakePubkey"`
-	FaucetPubkey               string  `pulumi:"faucetPubkey"`
-	FaucetLamports             *string `pulumi:"faucetLamports,optional"`
-	TargetLamportsPerSignature *string `pulumi:"targetLamportsPerSignature,optional"`
-	Inflation                  *string `pulumi:"inflation,optional"`
-	LamportsPerByteYear        *string `pulumi:"lamportsPerByteYear,optional"`
-	SlotPerEpoch               *string `pulumi:"slotPerEpoch,optional"`
-	ClusterType                *string `pulumi:"clusterType,optional"`
+	LedgerPath                 string    `pulumi:"ledgerPath"`
+	IdentityPubkey             string    `pulumi:"identityPubkey"`
+	VotePubkey                 string    `pulumi:"votePubkey"`
+	StakePubkey                string    `pulumi:"stakePubkey"`
+	ExtraFlags                 *[]string `pulumi:"extraFlags,optional"`
+	FaucetPubkey               string    `pulumi:"faucetPubkey"`
+	FaucetLamports             *string   `pulumi:"faucetLamports,optional"`
+	TargetLamportsPerSignature *string   `pulumi:"targetLamportsPerSignature,optional"`
+	Inflation                  *string   `pulumi:"inflation,optional"`
+	LamportsPerByteYear        *string   `pulumi:"lamportsPerByteYear,optional"`
+	SlotPerEpoch               *string   `pulumi:"slotPerEpoch,optional"`
+	ClusterType                *string   `pulumi:"clusterType,optional"`
 }
 
 type CreateCommand struct {
@@ -51,6 +52,7 @@ func (cmd *CreateCommand) Env() *runner.EnvBuilder {
 		"CLUSTER_TYPE":                  "development",
 	})
 
+	b.SetArrayP("GENESIS_EXTRA_FLAGS", cmd.Flags.ExtraFlags)
 	b.SetP("FAUCET_LAMPORTS", cmd.Flags.FaucetLamports)
 	b.SetP("TARGET_LAMPORTS_PER_SIGNATURE", cmd.Flags.TargetLamportsPerSignature)
 	b.SetP("INFLATION", cmd.Flags.Inflation)

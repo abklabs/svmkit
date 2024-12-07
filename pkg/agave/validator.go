@@ -352,58 +352,27 @@ func (f Flags) ToArgs() []string {
 	b := runner.FlagBuilder{}
 
 	// Note: These locations are hard coded inside asset-builder.
-	b.Append("--identity", identityKeyPairPath)
-	b.Append("--vote-account", voteAccountKeyPairPath)
-	b.Append("--log", logPath)
-	b.Append("--accounts", accountsPath)
-	b.Append("--ledger", ledgerPath)
-
-	if f.AccountIndex != nil {
-		for _, index := range *f.AccountIndex {
-			b.AppendP("account-index", &index)
-		}
-	}
-
-	if f.AccountIndexExcludeKey != nil {
-		for _, key := range *f.AccountIndexExcludeKey {
-			b.AppendP("account-index-exclude-key", &key)
-		}
-	}
-
-	if f.AccountIndexIncludeKey != nil {
-		for _, key := range *f.AccountIndexIncludeKey {
-			b.AppendP("account-index-include-key", &key)
-		}
-	}
-
-	if f.AccountShrinkPath != nil {
-		for _, path := range *f.AccountShrinkPath {
-			b.AppendP("account-shrink-path", &path)
-		}
-	}
-
+	b.Append("identity", identityKeyPairPath)
+	b.Append("vote-account", voteAccountKeyPairPath)
+	b.Append("log", logPath)
+	b.Append("accounts", accountsPath)
+	b.Append("ledger", ledgerPath)
+	b.AppendArrayP("account-index", f.AccountIndex)
+	b.AppendArrayP("account-index-exclude-key", f.AccountIndexExcludeKey)
+	b.AppendArrayP("account-index-include-key", f.AccountIndexIncludeKey)
+	b.AppendArrayP("account-shrink-path", f.AccountShrinkPath)
 	b.AppendIntP("accounts-db-cache-limit-mb", f.AccountsDbCacheLimitMb)
 	b.AppendBoolP("accounts-db-test-hash-calculation", f.AccountsDbTestHashCalculation)
 	b.AppendP("accounts-hash-cache-path", f.AccountsHashCachePath)
 	b.AppendIntP("accounts-index-bins", f.AccountsIndexBins)
-
-	if f.AccountsIndexPath != nil {
-		for _, path := range *f.AccountsIndexPath {
-			b.AppendP("accounts-index-path", &path)
-		}
-	}
-
+	b.AppendArrayP("accounts-index-path", f.AccountsIndexPath)
 	b.AppendIntP("accounts-index-scan-results-limit-mb", f.AccountsIndexScanResultsLimitMb)
 	b.AppendBoolP("accounts-shrink-optimize-total-space", f.AccountsShrinkOptimizeTotalSpace)
 	b.AppendP("accounts-shrink-ratio", f.AccountsShrinkRatio)
 
 	b.AppendBoolP("allow-private-addr", f.AllowPrivateAddr)
 
-	if f.AuthorizedVoter != nil {
-		for _, voter := range *f.AuthorizedVoter {
-			b.AppendP("authorized-voter", &voter)
-		}
-	}
+	b.AppendArrayP("authorized-voter", f.AuthorizedVoter)
 
 	b.AppendP("bind-address", f.BindAddress)
 	b.AppendP("block-production-method", f.BlockProductionMethod)
@@ -411,13 +380,7 @@ func (f Flags) ToArgs() []string {
 	b.AppendP("check-vote-account", f.CheckVoteAccount)
 	b.AppendIntP("contact-debug-interval", f.ContactDebugInterval)
 	b.AppendBoolP("cuda", f.Cuda)
-
-	if f.DebugKey != nil {
-		for _, key := range *f.DebugKey {
-			b.AppendP("debug-key", &key)
-		}
-	}
-
+	b.AppendArrayP("debug-key", f.DebugKey)
 	b.AppendIntP("dev-halt-at-slot", f.DevHaltAtSlot)
 	b.AppendBoolP("disable-banking-trace", f.DisableBankingTrace)
 	b.AppendP("dynamic-port-range", f.DynamicPortRange)
@@ -426,51 +389,28 @@ func (f Flags) ToArgs() []string {
 	b.AppendBoolP("enable-extended-tx-metadata-storage", f.EnableExtendedTxMetadataStorage)
 	b.AppendBoolP("enable-rpc-bigtable-ledger-storage", f.EnableRpcBigtableLedgerStorage)
 	b.AppendBoolP("enable-rpc-transaction-history", f.EnableRpcTransactionHistory)
-
-	if f.EntryPoint != nil {
-		for _, entrypoint := range *f.EntryPoint {
-			b.AppendP("entrypoint", &entrypoint)
-		}
-	}
-
+	b.AppendArrayP("entrypoint", f.EntryPoint)
 	b.AppendP("etcd-cacert-file", f.EtcdCacertFile)
 	b.AppendP("etcd-cert-file", f.EtcdCertFile)
 	b.AppendP("etcd-domain-name", f.EtcdDomainName)
-
-	if f.EtcdEndpoint != nil {
-		for _, endpoint := range *f.EtcdEndpoint {
-			b.AppendP("etcd-endpoint", &endpoint)
-		}
-	}
-
+	b.AppendArrayP("etcd-endpoint", f.EtcdEndpoint)
 	b.AppendP("etcd-key-file", f.EtcdKeyFile)
 	b.AppendP("expected-bank-hash", f.ExpectedBankHash)
 	b.AppendP("expected-genesis-hash", f.ExpectedGenesisHash)
 	b.AppendIntP("expected-shred-version", f.ExpectedShredVersion)
 
 	if f.ExtraFlags != nil {
-		b.Append(*f.ExtraFlags...)
+		b.AppendRaw(*f.ExtraFlags...)
 	}
 
 	b.AppendBoolP("full-rpc-api", f.FullRpcAPI)
 	b.AppendP("full-snapshot-archive-path", f.FullSnapshotArchivePath)
 	b.AppendIntP("full-snapshot-interval-slots", f.FullSnapshotIntervalSlots)
 	b.AppendBoolP("geyser-plugin-always-enabled", f.GeyserPluginAlwaysEnabled)
-
-	if f.GeyserPluginConfig != nil {
-		for _, config := range *f.GeyserPluginConfig {
-			b.AppendP("geyser-plugin-config", &config)
-		}
-	}
-
+	b.AppendArrayP("geyser-plugin-config", f.GeyserPluginConfig)
 	b.AppendP("gossip-host", f.GossipHost)
 	b.AppendIntP("gossip-port", f.GossipPort)
-
-	if f.GossipValidator != nil {
-		for _, validator := range *f.GossipValidator {
-			b.AppendP("gossip-validator", &validator)
-		}
-	}
+	b.AppendArrayP("gossip-validator", f.GossipValidator)
 
 	if f.HardFork != nil {
 		for _, slot := range *f.HardFork {
@@ -481,13 +421,7 @@ func (f Flags) ToArgs() []string {
 	b.AppendIntP("health-check-slot-distance", f.HealthCheckSlotDistance)
 	b.AppendP("incremental-snapshot-archive-path", f.IncrementalSnapshotArchivePath)
 	b.AppendP("init-complete-file", f.InitCompleteFile)
-
-	if f.KnownValidator != nil {
-		for _, knownValidator := range *f.KnownValidator {
-			b.AppendP("known-validator", &knownValidator)
-		}
-	}
-
+	b.AppendArrayP("known-validator", f.KnownValidator)
 	b.AppendIntP("limit-ledger-size", f.LimitLedgerSize)
 	b.AppendIntP("log-messages-bytes-limit", f.LogMessagesBytesLimit)
 	b.AppendIntP("max-genesis-archive-unpacked-size", f.MaxGenesisArchiveUnpackedSize)
@@ -510,13 +444,7 @@ func (f Flags) ToArgs() []string {
 	b.AppendP("public-rpc-address", f.PublicRpcAddress)
 	b.AppendP("public-tpu-address", f.PublicTpuAddress)
 	b.AppendP("public-tpu-forwards-address", f.PublicTpuForwardsAddress)
-
-	if f.RepairValidator != nil {
-		for _, validator := range *f.RepairValidator {
-			b.AppendP("repair-validator", &validator)
-		}
-	}
-
+	b.AppendArrayP("repair-validator", f.RepairValidator)
 	b.AppendBoolP("require-tower", f.RequireTower)
 	b.AppendBoolP("restricted-repair-only-mode", f.RestrictedRepairOnlyMode)
 	b.AppendIntP("rocksdb-fifo-shred-storage-size", f.RocksdbFifoShredStorageSize)
@@ -544,13 +472,7 @@ func (f Flags) ToArgs() []string {
 	b.AppendIntP("rpc-send-service-max-retries", f.RpcSendServiceMaxRetries)
 	b.AppendBoolP("rpc-send-transaction-also-leader", f.RpcSendTransactionAlsoLeader)
 	b.AppendIntP("rpc-send-transaction-retry-pool-max-size", f.RpcSendTransactionRetryPoolMaxSize)
-
-	if f.RpcSendTransactionTpuPeer != nil {
-		for _, peer := range *f.RpcSendTransactionTpuPeer {
-			b.AppendP("rpc-send-transaction-tpu-peer", &peer)
-		}
-	}
-
+	b.AppendArrayP("rpc-send-transaction-tpu-peer", f.RpcSendTransactionTpuPeer)
 	b.AppendIntP("rpc-threads", f.RpcThreads)
 	b.AppendBoolP("skip-preflight-health-check", f.SkipPreflightHealthCheck)
 	b.AppendBoolP("skip-seed-phrase-validation", f.SkipSeedPhraseValidation)
