@@ -35,6 +35,20 @@ func (f *FlagBuilder) Append(k string, v string) {
 	f.AppendRaw("--"+k, v)
 }
 
+func (f *FlagBuilder) AppendArrayP(k string, array *[]string) {
+	if array == nil {
+		return
+	}
+
+	f.AppendArray(k, *array)
+}
+
+func (f *FlagBuilder) AppendArray(k string, array []string) {
+	for _, v := range array {
+		f.Append(k, v)
+	}
+}
+
 func (f *FlagBuilder) AppendInt64P(k string, v *int64) {
 	if v == nil {
 		return

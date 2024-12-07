@@ -53,4 +53,12 @@ func TestFlagBuilderBasics(t *testing.T) {
 	}
 
 	assert.Equal(t, f.ToArgs(), []string{"--flag", "--another-flag", "testing", "--anumber", "42", "--pi", "3.14"})
+
+	{
+		n := []string{"never", "say", "die"}
+
+		f.AppendArrayP("goonies", &n)
+	}
+
+	assert.Equal(t, f.ToArgs(), []string{"--flag", "--another-flag", "testing", "--anumber", "42", "--pi", "3.14", "--goonies", "never", "--goonies", "say", "--goonies", "die"})
 }
