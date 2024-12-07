@@ -95,7 +95,7 @@ func (f *Flags) ToArgs(rpcURL *string) []string {
 	b := runner.FlagBuilder{}
 
 	for _, identity := range f.ValidatorIdentities {
-		b.Append("--validator-identity", identity)
+		b.AppendRaw("--validator-identity", identity)
 	}
 
 	if rpcURL != nil {

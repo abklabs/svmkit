@@ -43,20 +43,20 @@ func (f *CLITxnOptions) ToFlags() *runner.FlagBuilder {
 
 	if s := f.Signer; s != nil {
 		for _, signer := range *s {
-			b.Append("--signer", signer)
+			b.AppendRaw("--signer", signer)
 		}
 	}
 
 	if f.FeePayer != nil {
-		b.Append("--fee-payer", "txn_feepayer.json")
+		b.AppendRaw("--fee-payer", "txn_feepayer.json")
 	}
 
 	if f.From != nil {
-		b.Append("--from", "txn_from.json")
+		b.AppendRaw("--from", "txn_from.json")
 	}
 
 	if f.KeyPair != nil {
-		b.Append("--keypair", "txn_keypair.json")
+		b.AppendRaw("--keypair", "txn_keypair.json")
 	}
 
 	b.AppendP("ws", f.WS)

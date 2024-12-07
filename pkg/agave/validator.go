@@ -352,11 +352,11 @@ func (f Flags) ToArgs() []string {
 	b := runner.FlagBuilder{}
 
 	// Note: These locations are hard coded inside asset-builder.
-	b.Append("--identity", identityKeyPairPath)
-	b.Append("--vote-account", voteAccountKeyPairPath)
-	b.Append("--log", logPath)
-	b.Append("--accounts", accountsPath)
-	b.Append("--ledger", ledgerPath)
+	b.AppendRaw("--identity", identityKeyPairPath)
+	b.AppendRaw("--vote-account", voteAccountKeyPairPath)
+	b.AppendRaw("--log", logPath)
+	b.AppendRaw("--accounts", accountsPath)
+	b.AppendRaw("--ledger", ledgerPath)
 
 	if f.AccountIndex != nil {
 		for _, index := range *f.AccountIndex {
@@ -449,7 +449,7 @@ func (f Flags) ToArgs() []string {
 	b.AppendIntP("expected-shred-version", f.ExpectedShredVersion)
 
 	if f.ExtraFlags != nil {
-		b.Append(*f.ExtraFlags...)
+		b.AppendRaw(*f.ExtraFlags...)
 	}
 
 	b.AppendBoolP("full-rpc-api", f.FullRpcAPI)
