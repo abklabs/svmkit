@@ -26,7 +26,12 @@ step::005::configure-firewall() {
     $SUDO ufw reload
 }
 
-step::006::setup-faucet-startup() {
+step::006::copy-faucet-keys() {
+    $SUDO cp faucet-keypair.json /home/sol
+    $SUDO chown sol:sol /home/sol/faucet-keypair.json
+}
+
+step::007::setup-faucet-startup() {
     if systemctl list-unit-files "${FAUCET_SERVICE}" >/dev/null; then
         $SUDO systemctl stop "${FAUCET_SERVICE}" || true
     fi
