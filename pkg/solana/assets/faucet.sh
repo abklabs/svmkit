@@ -11,21 +11,17 @@ step::001::setup-abklabs-api() {
     apt::setup-abk-apt-source
 }
 
-step::10::install-base-software() {
-    $SUDO apt-get update
-    $APT install logrotate ufw
+step::003::install-faucet() {
+    $APT install ufw svmkit-solana-faucet
 }
 
-step::002::install-faucet() {
-    $APT install svmkit-solana-faucet
-}
-
-step::005::create-sol-user() {
+step::004::create-sol-user() {
     create-sol-user
 }
 
-step::006::configure-firewall() {
+step::005::configure-firewall() {
     $SUDO ufw allow $FAUCET_PORT/tcp
+    $SUDO ufw allow 22/tcp
     $SUDO ufw --force enable
     $SUDO ufw reload
 }
