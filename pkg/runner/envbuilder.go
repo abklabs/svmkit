@@ -52,7 +52,7 @@ func (e *EnvBuilder) Map() map[string]string {
 }
 
 func (e *EnvBuilder) Args() []string {
-	res := []string{}
+	var res []string
 
 	for _, k := range e.order {
 		res = append(res, k+"="+e.val[k])

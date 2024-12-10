@@ -2,6 +2,7 @@ package agave
 
 import (
 	_ "embed"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -85,15 +86,15 @@ type Metrics struct {
 
 func (m *Metrics) Check() error {
 	if m.URL == "" {
-		return fmt.Errorf("metrics URL cannot be empty")
+		return errors.New("metrics URL cannot be empty")
 	}
 
 	if m.Database == "" {
-		return fmt.Errorf("metrics database cannot be empty")
+		return errors.New("metrics database cannot be empty")
 	}
 
 	if m.User == "" {
-		return fmt.Errorf("metrics user cannot be empty")
+		return errors.New("metrics user cannot be empty")
 	}
 
 	return nil

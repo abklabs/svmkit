@@ -62,7 +62,7 @@ func (v *TransferCreate) AddToPayload(p *runner.Payload) error {
 	if opt := v.TransactionOptions; opt != nil {
 		cli := CLITxnOptions{*opt}
 
-		err := cli.AddToPayload(p)
+		err = cli.AddToPayload(p)
 
 		if err != nil {
 			return err

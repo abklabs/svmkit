@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"os"
 	"strings"
 	"time"
 
@@ -31,9 +32,9 @@ func (r *Runner) Run(ctx context.Context, handler DeployerHandler) error {
 		DefaultMode: 0640,
 	}
 
-	p.Add(PayloadFile{"opsh", strings.NewReader(OPSH), 0755})
+	p.Add(PayloadFile{"opsh", strings.NewReader(OPSH), os.FileMode(0755)})
 	p.AddString("lib.bash", LibBash)
-	p.Add(PayloadFile{"run.sh", strings.NewReader(RunScript), 0755})
+	p.Add(PayloadFile{"run.sh", strings.NewReader(RunScript), os.FileMode(0755)})
 	p.AddReader("env", r.command.Env().Buffer())
 
 	if err := r.command.AddToPayload(p); err != nil {
