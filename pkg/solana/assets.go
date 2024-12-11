@@ -12,4 +12,5 @@ const (
 	assetsStakeAccountScript = "assets/stake-account.sh"
 	assetsTransferScript     = "assets/transfer.sh"
 	assetsVoteAccountScript  = "assets/vote-account.sh"
+	assetsFaucetScript       = "assets/faucet.sh"
 )
