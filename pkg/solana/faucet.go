@@ -87,14 +87,8 @@ type FaucetFlags struct {
 func (f *FaucetFlags) ToArgs() []string {
 	b := runner.FlagBuilder{}
 
-	b.Append("--keypair", faucetKeyPairPath)
-
-	if f.AllowIPs != nil {
-		for _, ip := range *f.AllowIPs {
-			b.AppendP("allow-ip", &ip)
-		}
-	}
-
+	b.Append("keypair", faucetKeyPairPath)
+	b.AppendArrayP("allow-ip", f.AllowIPs)
 	b.AppendIntP("per-request-cap", f.PerRequestCap)
 	b.AppendIntP("per-time-cap", f.PerTimeCap)
 	b.AppendIntP("slice-seconds", f.SliceSeconds)
