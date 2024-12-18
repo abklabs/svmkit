@@ -12,7 +12,11 @@ step::001::setup-abklabs-api() {
 }
 
 step::003::install-faucet() {
-    $APT install ufw svmkit-solana-faucet
+    if [[ -v FAUCET_VERSION ]]; then
+        $APT install ufw "svmkit-solana-faucet=$FAUCET_VERSION"
+    else
+        $APT install ufw svmkit-solana-faucet
+    fi
 }
 
 step::004::create-sol-user() {
