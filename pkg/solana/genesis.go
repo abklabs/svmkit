@@ -1,65 +1,42 @@
 package solana
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/abklabs/svmkit/pkg/runner"
 )
 
-type PrimorialEntry struct {
-	Pubkey   string `pulumi:"pubkey"`
-	Lamports string `pulumi:"lamports"`
-}
+const (
+	ledgerPath            = "/home/sol/ledger"
+	primordialAccountPath = "/home/sol/primordial.yaml"
 
-// GenesisFlags represents the configuration flags for the Solana genesis setup.
-type GenesisFlags struct {
-	LedgerPath                 string    `pulumi:"ledgerPath"`
-	IdentityPubkey             string    `pulumi:"identityPubkey"`
-	VotePubkey                 string    `pulumi:"votePubkey"`
-	StakePubkey                string    `pulumi:"stakePubkey"`
-	ExtraFlags                 *[]string `pulumi:"extraFlags,optional"`
-	FaucetPubkey               string    `pulumi:"faucetPubkey"`
-	FaucetLamports             *string   `pulumi:"faucetLamports,optional"`
-	TargetLamportsPerSignature *string   `pulumi:"targetLamportsPerSignature,optional"`
-	Inflation                  *string   `pulumi:"inflation,optional"`
-	LamportsPerByteYear        *string   `pulumi:"lamportsPerByteYear,optional"`
-	SlotPerEpoch               *string   `pulumi:"slotPerEpoch,optional"`
-	ClusterType                *string   `pulumi:"clusterType,optional"`
-}
+	defaultClusterType                = "development"
+	defaultFaucetLamports             = 1000
+	defaultTargetLamportsPerSignature = 0
+	defaultInflation                  = "none"
+	defaultLamportsPerByteYear        = 1
+	defaultSlotPerEpoch               = 150
+)
 
 type CreateCommand struct {
 	Genesis
 }
 
-func (cmd *CreateCommand) Check() error {
-	return nil
-}
-
 func (cmd *CreateCommand) Env() *runner.EnvBuilder {
+	genesisEnv := runner.NewEnvBuilder()
+
 	b := runner.NewEnvBuilder()
 
+	// Set any env variables here that will be passed directly to the script
+
 	b.SetMap(map[string]string{
-		"LEDGER_PATH":                   cmd.Flags.LedgerPath,
-		"IDENTITY_PUBKEY":               cmd.Flags.IdentityPubkey,
-		"VOTE_PUBKEY":                   cmd.Flags.VotePubkey,
-		"STAKE_PUBKEY":                  cmd.Flags.StakePubkey,
-		"FAUCET_PUBKEY":                 cmd.Flags.FaucetPubkey,
-		"FAUCET_LAMPORTS":               "1000",
-		"TARGET_LAMPORTS_PER_SIGNATURE": "0",
-		"INFLATION":                     "none",
-		"LAMPORTS_PER_BYTE_YEAR":        "1",
-		"SLOT_PER_EPOCH":                "150",
-		"CLUSTER_TYPE":                  "development",
+		"GENESIS_FLAGS": strings.Join(cmd.Flags.ToArgs(), " "),
+		"GENESIS_ENV":   genesisEnv.String(),
 	})
 
-	b.SetArrayP("GENESIS_EXTRA_FLAGS", cmd.Flags.ExtraFlags)
-	b.SetP("FAUCET_LAMPORTS", cmd.Flags.FaucetLamports)
-	b.SetP("TARGET_LAMPORTS_PER_SIGNATURE", cmd.Flags.TargetLamportsPerSignature)
-	b.SetP("INFLATION", cmd.Flags.Inflation)
-	b.SetP("LAMPORTS_PER_BYTE_YEAR", cmd.Flags.LamportsPerByteYear)
-	b.SetP("SLOT_PER_EPOCH", cmd.Flags.SlotPerEpoch)
-	b.SetP("CLUSTER_TYPE", cmd.Flags.ClusterType)
-
+	// Primordial accounts as environment variables
 	var primordialPubkeys, primordialLamports string
 	if cmd.Primordial != nil {
 		var pubkeys, lamports []string
@@ -71,24 +48,49 @@ func (cmd *CreateCommand) Env() *runner.EnvBuilder {
 		primordialLamports = strings.Join(lamports, ",")
 	}
 
+	b.Set("LEDGER_PATH", ledgerPath)
 	b.Set("PRIMORDIAL_PUBKEYS", primordialPubkeys)
 	b.Set("PRIMORDIAL_LAMPORTS", primordialLamports)
-
 	b.SetP("PACKAGE_VERSION", cmd.Version)
 
 	return b
 }
 
+func (cmd *CreateCommand) Check() error {
+
+	if cmd.Flags.HashesPerTick != nil {
+		value := *cmd.Flags.HashesPerTick
+		switch value {
+		case "auto", "sleep":
+		default:
+			if _, err := strconv.Atoi(value); err != nil {
+				return fmt.Errorf("invalid value for HashesPerTick: %q; must be 'auto', 'sleep' or a number", value)
+			}
+		}
+	}
+
+	return nil
+}
+
+func (g *Genesis) Create() runner.Command {
+	return &CreateCommand{
+		Genesis: *g,
+	}
+}
+
 func (cmd *CreateCommand) AddToPayload(p *runner.Payload) error {
 	genesisScript, err := assets.Open(assetsGenesisScript)
-
 	if err != nil {
 		return err
 	}
 
 	p.AddReader("steps.sh", genesisScript)
-
 	return nil
+}
+
+type PrimorialEntry struct {
+	Pubkey   string `pulumi:"pubkey"`
+	Lamports string `pulumi:"lamports"`
 }
 
 type Genesis struct {
@@ -97,8 +99,116 @@ type Genesis struct {
 	Version    *string          `pulumi:"version,optional"`
 }
 
-func (g *Genesis) Create() runner.Command {
-	return &CreateCommand{
-		Genesis: *g,
+type GenesisFlags struct {
+	IdentityPubkey string `pulumi:"identityPubkey"`
+	VotePubkey     string `pulumi:"votePubkey"`
+	StakePubkey    string `pulumi:"stakePubkey"`
+
+	BootstrapStakeAuthorizedPubkey  *string   `pulumi:"bootstrapStakeAuthorizedPubkey,optional"`
+	BootstrapValidatorLamports      *int      `pulumi:"bootstrapValidatorLamports,optional"`
+	BootstrapValidatorStakeLamports *int      `pulumi:"bootstrapValidatorStakeLamports,optional"`
+	ClusterType                     *string   `pulumi:"clusterType,optional"`
+	CreationTime                    *string   `pulumi:"creationTime,optional"`
+	DeactivateFeatures              *[]string `pulumi:"deactivateFeatures,optional"`
+	EnableWarmupEpochs              *bool     `pulumi:"enableWarmupEpochs,optional"`
+	FaucetPubkey                    *string   `pulumi:"faucetPubkey,optional"`
+	FaucetLamports                  *int      `pulumi:"faucetLamports,optional"`
+	FeeBurnPercentage               *int      `pulumi:"feeBurnPercentage,optional"`
+	HashesPerTick                   *string   `pulumi:"hashesPerTick,optional"` // can be "auto", "sleep", or a number
+	Inflation                       *string   `pulumi:"inflation,optional"`
+	LamportsPerByteYear             *int      `pulumi:"lamportsPerByteYear,optional"`
+	MaxGenesisArchiveUnpackedSize   *int      `pulumi:"maxGenesisArchiveUnpackedSize,optional"`
+	RentBurnPercentage              *int      `pulumi:"rentBurnPercentage,optional"`
+	RentExemptionThreshold          *int      `pulumi:"rentExemptionThreshold,optional"`
+	SlotPerEpoch                    *int      `pulumi:"slotPerEpoch,optional"`
+	TargetLamportsPerSignature      *int      `pulumi:"targetLamportsPerSignature,optional"`
+	TargetSignaturesPerSlot         *int      `pulumi:"targetSignaturesPerSlot,optional"`
+	TargetTickDuration              *int      `pulumi:"targetTickDuration,optional"`
+	TicksPerSlot                    *int      `pulumi:"ticksPerSlot,optional"`
+	Url                             *string   `pulumi:"url,optional"`
+	VoteCommissionPercentage        *int      `pulumi:"voteCommissionPercentage,optional"`
+	ExtraFlags                      *[]string `pulumi:"extraFlags,optional"`
+}
+
+func (f GenesisFlags) ToArgs() []string {
+	b := runner.FlagBuilder{}
+
+	// Note: --upgradeable-program, --bpf-program are hard-coded in the install
+	// script and should not be included here.
+
+	// Required flags
+	b.Append("primordial-accounts-file", primordialAccountPath)
+	b.AppendRaw("--bootstrap-validator", f.IdentityPubkey, f.VotePubkey, f.StakePubkey)
+	b.Append("ledger", ledgerPath)
+
+	// Optional flags
+	b.AppendP("bootstrap-stake-authorized-pubkey", f.BootstrapStakeAuthorizedPubkey)
+	b.AppendIntP("bootstrap-validator-lamports", f.BootstrapValidatorLamports)
+	b.AppendIntP("bootstrap-validator-stake-lamports", f.BootstrapValidatorStakeLamports)
+
+	if f.ClusterType != nil {
+		b.AppendP("cluster-type", f.ClusterType)
+	} else {
+		value := defaultClusterType
+		b.AppendP("cluster-type", &value)
 	}
+
+	b.AppendP("creation-time", f.CreationTime)
+	b.AppendArrayP("deactivate-feature", f.DeactivateFeatures)
+	b.AppendBoolP("enable-warmup-epochs", f.EnableWarmupEpochs)
+	b.AppendP("faucet-pubkey", f.FaucetPubkey)
+
+	if f.FaucetLamports != nil {
+		b.AppendIntP("faucet-lamports", f.FaucetLamports)
+	} else {
+		value := defaultFaucetLamports
+		b.AppendIntP("faucet-lamports", &value)
+	}
+
+	b.AppendIntP("fee-burn-percentage", f.FeeBurnPercentage)
+	b.AppendP("hashes-per-tick", f.HashesPerTick) // This can be "auto", "sleep" or a number
+
+	if f.Inflation != nil {
+		b.AppendP("inflation", f.Inflation)
+	} else {
+		value := defaultInflation
+		b.AppendP("inflation", &value)
+	}
+
+	if f.LamportsPerByteYear != nil {
+		b.AppendIntP("lamports-per-byte-year", f.LamportsPerByteYear)
+	} else {
+		value := defaultLamportsPerByteYear
+		b.AppendIntP("lamports-per-byte-year", &value)
+	}
+
+	b.AppendIntP("max-genesis-archive-unpacked-size", f.MaxGenesisArchiveUnpackedSize)
+	b.AppendIntP("rent-burn-percentage", f.RentBurnPercentage)
+	b.AppendIntP("rent-exemption-threshold", f.RentExemptionThreshold)
+
+	if f.SlotPerEpoch != nil {
+		b.AppendIntP("slots-per-epoch", f.SlotPerEpoch)
+	} else {
+		value := defaultSlotPerEpoch
+		b.AppendIntP("slots-per-epoch", &value)
+	}
+
+	if f.TargetLamportsPerSignature != nil {
+		b.AppendIntP("target-lamports-per-signature", f.TargetLamportsPerSignature)
+	} else {
+		value := defaultTargetLamportsPerSignature
+		b.AppendIntP("target-lamports-per-signature", &value)
+	}
+
+	b.AppendIntP("target-signatures-per-slot", f.TargetSignaturesPerSlot)
+	b.AppendIntP("target-tick-duration", f.TargetTickDuration)
+	b.AppendIntP("ticks-per-slot", f.TicksPerSlot)
+	b.AppendP("url", f.Url)
+	b.AppendIntP("vote-commission-percentage", f.VoteCommissionPercentage)
+
+	if f.ExtraFlags != nil {
+		b.AppendRaw(*f.ExtraFlags...)
+	}
+
+	return b.ToArgs()
 }
