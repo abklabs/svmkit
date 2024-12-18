@@ -4,10 +4,6 @@
 upgradeableLoader=BPFLoaderUpgradeab1e11111111111111111111111
 genesis_args=()
 
-if [[ -v GENESIS_EXTRA_FLAGS ]] ; then
-    genesis_args+=("${GENESIS_EXTRA_FLAGS[@]}")
-fi
-
 fetch-program() {
     local name=$1
     local version=$2
@@ -105,21 +101,7 @@ EOF
 }
 
 step::040::execute-solana-genesis() {
-    $SUDO -u sol solana-genesis \
-        --ledger $LEDGER_PATH \
-        --bootstrap-validator \
-        $IDENTITY_PUBKEY \
-        $VOTE_PUBKEY \
-        $STAKE_PUBKEY \
-        --faucet-pubkey $FAUCET_PUBKEY \
-        --faucet-lamports $FAUCET_LAMPORTS \
-        --target-lamports-per-signature $TARGET_LAMPORTS_PER_SIGNATURE \
-        --inflation $INFLATION \
-        --lamports-per-byte-year $LAMPORTS_PER_BYTE_YEAR \
-        --slots-per-epoch $SLOT_PER_EPOCH \
-        --cluster-type $CLUSTER_TYPE \
-        --primordial-accounts-file /home/sol/primordial.yaml \
-        "${genesis_args[@]}"
+    $SUDO -u sol $GENESIS_ENV solana-genesis $GENESIS_FLAGS "${genesis_args[@]}"
 }
 
 step::050::create-initial-snapshot() {
