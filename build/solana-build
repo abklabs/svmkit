@@ -59,6 +59,7 @@ generate-replacement-metadata () {
     name=$1 ; shift
 cat <<EOF
 name = "$name"
+maintainer = "Engineering <engineering@abklabs.com>"
 EOF
 }
 
@@ -122,6 +123,7 @@ build-ref () {
     cat <<EOF >> validator/Cargo.toml
 [package.metadata.deb]
 name = "$package_name"
+maintainer = "Engineering <engineering@abklabs.com>"
 provides = "svmkit-validator"
 conflicts = "svmkit-validator"
 replaces = "svmkit-validator"
