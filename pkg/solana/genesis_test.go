@@ -10,6 +10,7 @@ func TestGenesisFlags(t *testing.T) {
 	identityPubkey := "identity_key"
 	votePubkey := "vote_key"
 	stakePubkey := "stake_key"
+	ledgerPath := "ledger_path"
 	bootstrapStakeAuthorizedPubkey := "bootstrap_auth_key"
 	bootstrapValidatorLamports := 5000000000
 	bootstrapValidatorStakeLamports := 1000000000
@@ -37,6 +38,7 @@ func TestGenesisFlags(t *testing.T) {
 
 	f := GenesisFlags{
 		IdentityPubkey:                  identityPubkey,
+		LedgerPath:                      ledgerPath,
 		VotePubkey:                      votePubkey,
 		StakePubkey:                     stakePubkey,
 		BootstrapStakeAuthorizedPubkey:  &bootstrapStakeAuthorizedPubkey,
