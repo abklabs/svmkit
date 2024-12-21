@@ -28,12 +28,8 @@ func (cmd *CreateCommand) Env() *runner.EnvBuilder {
 
 	b := runner.NewEnvBuilder()
 
-	// Set any env variables here that will be passed directly to the script
-
-	b.SetMap(map[string]string{
-		"GENESIS_FLAGS": strings.Join(cmd.Flags.Args(), " "),
-		"GENESIS_ENV":   genesisEnv.String(),
-	})
+	b.SetArray("GENESIS_FLAGS", cmd.Flags.Args())
+	b.SetArray("GENESIS_ENV", genesisEnv.Args())
 
 	// Primordial accounts as environment variables
 	var primordialPubkeys, primordialLamports string
