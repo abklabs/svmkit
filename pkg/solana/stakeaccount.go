@@ -28,7 +28,7 @@ func (v *StakeAccount) Env() *runner.EnvBuilder {
 
 	if opt := v.TransactionOptions; opt != nil {
 		cli := CLITxnOptions{*opt}
-		b.SetArray("SOLANA_CLI_TXN_FLAGS", cli.ToFlags().ToArgs())
+		b.SetArray("SOLANA_CLI_TXN_FLAGS", cli.Flags().Args())
 	}
 
 	return b

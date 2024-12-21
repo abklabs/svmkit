@@ -40,7 +40,7 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 	b := runner.NewEnvBuilder()
 
 	b.SetMap(map[string]string{
-		"WATCHTOWER_FLAGS": strings.Join(cmd.ToArgs(), " "),
+		"WATCHTOWER_FLAGS": strings.Join(cmd.Args(), " "),
 		"WATCHTOWER_ENV":   watchtowerEnv.String(),
 	})
 
@@ -68,7 +68,7 @@ type Watchtower struct {
 	Notifications NotificationConfig `pulumi:"notifications"`
 }
 
-func (w *Watchtower) ToArgs() []string {
+func (w *Watchtower) Args() []string {
 	return w.Flags.ToArgs(w.Environment.RPCURL)
 }
 
@@ -111,7 +111,7 @@ func (f *Flags) ToArgs(rpcURL *string) []string {
 	b.AppendBoolP("monitor-active-stake", f.MonitorActiveStake)
 	b.AppendBoolP("ignore-http-bad-gateway", f.IgnoreHTTPBadGateway)
 
-	return b.ToArgs()
+	return b.Args()
 }
 
 type NotificationConfig struct {

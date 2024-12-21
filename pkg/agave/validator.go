@@ -139,7 +139,7 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 	b := runner.NewEnvBuilder()
 
 	b.SetMap(map[string]string{
-		"VALIDATOR_FLAGS": strings.Join(cmd.Flags.ToArgs(), " "),
+		"VALIDATOR_FLAGS": strings.Join(cmd.Flags.Args(), " "),
 		"VALIDATOR_ENV":   validatorEnv.String(),
 	})
 
@@ -153,7 +153,7 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 			conf.URL = senv.RPCURL
 		}
 
-		b.Set("SOLANA_CLI_CONFIG_FLAGS", conf.ToFlags().String())
+		b.Set("SOLANA_CLI_CONFIG_FLAGS", conf.Flags().String())
 	}
 
 	if t := cmd.TimeoutConfig; t != nil {
@@ -183,7 +183,7 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 	}
 
 	if s := cmd.ShutdownPolicy; s != nil {
-		b.SetArray("VALIDATOR_EXIT_FLAGS", s.ToFlags().ToArgs())
+		b.SetArray("VALIDATOR_EXIT_FLAGS", s.Flags().Args())
 	}
 
 	b.Set("LEDGER_PATH", ledgerPath)
@@ -348,7 +348,7 @@ type Flags struct {
 	WalRecoveryMode                     string    `pulumi:"walRecoveryMode"`
 }
 
-func (f Flags) ToArgs() []string {
+func (f Flags) Args() []string {
 	b := runner.FlagBuilder{}
 
 	// Note: These locations are hard coded inside asset-builder.
@@ -493,5 +493,5 @@ func (f Flags) ToArgs() []string {
 	b.AppendIntP("wait-for-supermajority", f.WaitForSupermajority)
 	b.AppendP("wal-recovery-mode", &f.WalRecoveryMode)
 
-	return b.ToArgs()
+	return b.Args()
 }

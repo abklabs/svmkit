@@ -65,7 +65,7 @@ func TestGenesisFlags(t *testing.T) {
 		ExtraFlags:                      &extraFlags,
 	}
 
-	actualArgs := f.ToArgs()
+	actualArgs := f.Args()
 
 	// Construct the expected argument list
 	expectedArgs := []string{

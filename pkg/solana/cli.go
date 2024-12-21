@@ -19,7 +19,7 @@ type CLIConfig struct {
 	KeyPair *string
 }
 
-func (f *CLIConfig) ToFlags() *runner.FlagBuilder {
+func (f *CLIConfig) Flags() *runner.FlagBuilder {
 	b := runner.FlagBuilder{}
 
 	b.AppendP("url", f.URL)
@@ -32,7 +32,7 @@ type CLITxnOptions struct {
 	TxnOptions
 }
 
-func (f *CLITxnOptions) ToFlags() *runner.FlagBuilder {
+func (f *CLITxnOptions) Flags() *runner.FlagBuilder {
 	b := &runner.FlagBuilder{}
 
 	b.AppendP("blockhash", f.BlockHash)

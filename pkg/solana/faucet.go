@@ -21,7 +21,7 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 	b := runner.NewEnvBuilder()
 
 	b.SetMap(map[string]string{
-		"FAUCET_FLAGS": strings.Join(cmd.Flags.ToArgs(), " "),
+		"FAUCET_FLAGS": strings.Join(cmd.Flags.Args(), " "),
 		"FAUCET_ENV":   faucetEnv.String(),
 	})
 
@@ -56,8 +56,8 @@ type Faucet struct {
 	KeyPair string      `pulumi:"keypair" provider:"secret"`
 }
 
-func (f *Faucet) ToArgs() []string {
-	return f.Flags.ToArgs()
+func (f *Faucet) Args() []string {
+	return f.Flags.Args()
 }
 
 func (f *Faucet) Install() runner.Command {
@@ -84,7 +84,7 @@ type FaucetFlags struct {
 	SliceSeconds *int `pulumi:"sliceSeconds,optional"`
 }
 
-func (f *FaucetFlags) ToArgs() []string {
+func (f *FaucetFlags) Args() []string {
 	b := runner.FlagBuilder{}
 
 	b.Append("keypair", faucetKeyPairPath)
@@ -93,5 +93,5 @@ func (f *FaucetFlags) ToArgs() []string {
 	b.AppendIntP("per-time-cap", f.PerTimeCap)
 	b.AppendIntP("slice-seconds", f.SliceSeconds)
 
-	return b.ToArgs()
+	return b.Args()
 }
