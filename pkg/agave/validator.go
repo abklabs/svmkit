@@ -153,7 +153,7 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 			conf.URL = senv.RPCURL
 		}
 
-		b.Set("SOLANA_CLI_CONFIG_FLAGS", conf.Flags().String())
+		b.SetArray("SOLANA_CLI_CONFIG_FLAGS", conf.Flags().Args())
 	}
 
 	if t := cmd.TimeoutConfig; t != nil {
