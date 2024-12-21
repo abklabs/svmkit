@@ -9,7 +9,6 @@ import (
 )
 
 const (
-	ledgerPath            = "/home/sol/ledger"
 	primordialAccountPath = "/home/sol/primordial.yaml"
 
 	defaultClusterType                = "development"
@@ -48,7 +47,7 @@ func (cmd *CreateCommand) Env() *runner.EnvBuilder {
 		primordialLamports = strings.Join(lamports, ",")
 	}
 
-	b.Set("LEDGER_PATH", ledgerPath)
+	b.Set("LEDGER_PATH", cmd.Flags.LedgerPath)
 	b.Set("PRIMORDIAL_PUBKEYS", primordialPubkeys)
 	b.Set("PRIMORDIAL_LAMPORTS", primordialLamports)
 	b.SetP("PACKAGE_VERSION", cmd.Version)
@@ -101,6 +100,7 @@ type Genesis struct {
 
 type GenesisFlags struct {
 	IdentityPubkey string `pulumi:"identityPubkey"`
+	LedgerPath     string `pulumi:"ledgerPath"`
 	VotePubkey     string `pulumi:"votePubkey"`
 	StakePubkey    string `pulumi:"stakePubkey"`
 
@@ -139,7 +139,7 @@ func (f GenesisFlags) Args() []string {
 	// Required flags
 	b.Append("primordial-accounts-file", primordialAccountPath)
 	b.AppendRaw("--bootstrap-validator", f.IdentityPubkey, f.VotePubkey, f.StakePubkey)
-	b.Append("ledger", ledgerPath)
+	b.Append("ledger", f.LedgerPath)
 
 	// Optional flags
 	b.AppendP("bootstrap-stake-authorized-pubkey", f.BootstrapStakeAuthorizedPubkey)
