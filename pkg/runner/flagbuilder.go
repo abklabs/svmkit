@@ -11,7 +11,7 @@ func (f *FlagBuilder) AppendRaw(s ...string) {
 	*f = append(*f, s...)
 }
 
-func (f *FlagBuilder) ToArgs() []string {
+func (f *FlagBuilder) Args() []string {
 	var res []string
 
 	return append(res, *f...)
@@ -20,7 +20,7 @@ func (f *FlagBuilder) ToArgs() []string {
 // XXX - We need to work backwards from this, and make sure we're
 // quoting spaces.
 func (f *FlagBuilder) String() string {
-	return strings.Join(f.ToArgs(), " ")
+	return strings.Join(f.Args(), " ")
 }
 
 func (f *FlagBuilder) AppendP(k string, v *string) {

@@ -402,7 +402,7 @@ func TestValidatorFlags(t *testing.T) {
 		"--wal-recovery-mode", "someaddress",
 	}
 
-	actualArgs := f.ToArgs()
+	actualArgs := f.Args()
 
 	assert.Equal(t, expectedArgs, actualArgs)
 }
