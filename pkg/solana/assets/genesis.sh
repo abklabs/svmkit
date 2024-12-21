@@ -101,7 +101,7 @@ EOF
 }
 
 step::040::execute-solana-genesis() {
-    $SUDO -u sol $GENESIS_ENV solana-genesis $GENESIS_FLAGS "${genesis_args[@]}"
+    $SUDO -u sol "${GENESIS_ENV[@]}" solana-genesis "${GENESIS_FLAGS[@]}" "${genesis_args[@]}"
 }
 
 step::050::create-initial-snapshot() {
