@@ -32,7 +32,7 @@ func (cmd *CreateCommand) Env() *runner.EnvBuilder {
 	// Set any env variables here that will be passed directly to the script
 
 	b.SetMap(map[string]string{
-		"GENESIS_FLAGS": strings.Join(cmd.Flags.ToArgs(), " "),
+		"GENESIS_FLAGS": strings.Join(cmd.Flags.Args(), " "),
 		"GENESIS_ENV":   genesisEnv.String(),
 	})
 
@@ -130,7 +130,7 @@ type GenesisFlags struct {
 	ExtraFlags                      *[]string `pulumi:"extraFlags,optional"`
 }
 
-func (f GenesisFlags) ToArgs() []string {
+func (f GenesisFlags) Args() []string {
 	b := runner.FlagBuilder{}
 
 	// Note: --upgradeable-program, --bpf-program are hard-coded in the install
@@ -210,5 +210,5 @@ func (f GenesisFlags) ToArgs() []string {
 		b.AppendRaw(*f.ExtraFlags...)
 	}
 
-	return b.ToArgs()
+	return b.Args()
 }

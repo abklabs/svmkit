@@ -16,7 +16,7 @@ type ShutdownPolicy struct {
 	MinIdleTime          *int  `pulumi:"minIdleTime,optional"`
 }
 
-func (s *ShutdownPolicy) ToFlags() *runner.FlagBuilder {
+func (s *ShutdownPolicy) Flags() *runner.FlagBuilder {
 	f := &runner.FlagBuilder{}
 
 	f.AppendBoolP("force", s.Force)
