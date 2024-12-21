@@ -24,7 +24,7 @@ step::004::create-sol-user() {
 }
 
 step::005::configure-firewall() {
-    $SUDO ufw allow $FAUCET_PORT/tcp
+    $SUDO ufw allow "$FAUCET_PORT/tcp"
     $SUDO ufw allow 22/tcp
     $SUDO ufw --force enable
     $SUDO ufw reload
