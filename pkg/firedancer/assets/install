@@ -41,10 +41,10 @@ step::75::setup-solana-cli() {
     [[ -v SOLANA_CLI_CONFIG_FLAGS ]] || return 0
 
     # First setup the login user.
-    solana config set $SOLANA_CLI_CONFIG_FLAGS
+    solana config set "${SOLANA_CLI_CONFIG_FLAGS[@]}"
 
     # Setup the sol user.
-    $SUDO -u "$VALIDATOR_USER" -i solana config set $SOLANA_CLI_CONFIG_FLAGS
+    $SUDO -u "$VALIDATOR_USER" -i solana config set "${SOLANA_CLI_CONFIG_FLAGS[@]}"
 }
 
 step::80::setup-validator() {
