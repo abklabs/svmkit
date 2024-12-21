@@ -2,6 +2,11 @@ package firedancer
 
 import (
 	"github.com/abklabs/svmkit/pkg/runner"
+	"github.com/abklabs/svmkit/pkg/solana"
+)
+
+const (
+	identityKeyPairPath = "/home/sol/validator-keypair.json"
 )
 
 type KeyPairs struct {
@@ -10,6 +15,9 @@ type KeyPairs struct {
 }
 
 type Firedancer struct {
+	Environment *solana.Environment `pulumi:"environment,optional"`
+	Version     *string             `pulumi:"version,optional"`
+
 	KeyPairs KeyPairs `pulumi:"keyPairs"`
 	Config   Config   `pulumi:"config"`
 }
@@ -30,6 +38,22 @@ func (c *InstallCommand) Check() error {
 
 func (c *InstallCommand) Env() *runner.EnvBuilder {
 	e := runner.NewEnvBuilder()
+
+	{
+		s := identityKeyPairPath
+		conf := solana.CLIConfig{
+			KeyPair: &s,
+		}
+
+		if senv := c.Environment; senv != nil {
+			conf.URL = senv.RPCURL
+		}
+
+		e.SetArray("SOLANA_CLI_CONFIG_FLAGS", conf.Flags().Args())
+	}
+
+	e.SetP("VALIDATOR_VERSION", c.Version)
+
 	return e
 }
 
