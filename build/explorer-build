@@ -1,0 +1,180 @@
+#!/usr/bin/env bash
+
+#
+# Builds a deb package for SVMKit Solana Explorer
+#
+
+set -euo pipefail
+
+export LC_ALL=en_US.UTF-8
+
+if [[ $# -lt 1 ]]; then
+    echo "Usage: $0 <branch>"
+    echo "Example: $0 master"
+    exit 1
+fi
+
+EXPLORER_BRANCH="$1"
+EXPLORER_PACKAGE_NAME="svmkit-solana-explorer"
+EXPLORER_GITHUB_REPO="https://github.com/abklabs/svmkit-solana-explorer"
+
+log::generic() {
+    local level=$1
+    shift
+    printf "%s\t%s\n" "$level" "$*"
+}
+
+log::info() {
+    log::generic INFO "$@"
+}
+
+log::fatal() {
+    log::generic FATAL "$@"
+    exit 1
+}
+
+log::success() {
+    log::generic SUCCESS "✅ $*"
+}
+
+install-pkg() {
+    local package install_cmd
+    package=$1
+    shift
+    install_cmd=$1
+    shift
+
+    log::info "Checking for $package..."
+    if ! command -v "$package" >/dev/null 2>&1; then
+        eval "$install_cmd"
+        if ! command -v "$package" >/dev/null 2>&1; then
+            log::fatal "Failed to install $package."
+        fi
+    else
+        log::success "Found $package!"
+    fi
+}
+
+install-deps() {
+    if [[ "$(uname)" == "Darwin" ]]; then
+        # macOS
+        if ! command -v brew >/dev/null 2>&1; then
+            log::fatal "Homebrew not found. Please install it."
+        fi
+        brew update -q
+
+        install-pkg "dpkg-deb" "brew install dpkg -q"
+        install-pkg "pnpm" "brew install pnpm -q"
+        install-pkg "git" "brew install git -q"
+
+    else
+        # Attempt Debian/Ubuntu
+        if [[ -f /etc/os-release ]]; then
+            # shellcheck disable=SC1091
+            . /etc/os-release
+            if [[ "$ID" == "debian" || "$ID" == "ubuntu" ]]; then
+                sudo apt-get update -qq
+
+                install-pkg "dpkg-deb" "sudo apt-get install -y dpkg >/dev/null 2>&1"
+                install-pkg "pnpm" "sudo apt-get install -y pnpm >/dev/null 2>&1"
+                install-pkg "git" "sudo apt-get install -y git  >/dev/null 2>&1"
+
+            else
+                log::fatal "Unsupported OS '$ID'. Please install dependencies manually."
+            fi
+        else
+            log::fatal "Unsupported OS. Please install dependencies manually."
+        fi
+    fi
+}
+
+build-nextjs() {
+    if ! command -v pnpm >/dev/null 2>&1; then
+        log::fatal "pnpm not found, please install it."
+    fi
+
+    local version
+    version=$(git describe --tags --dirty 2>/dev/null || git rev-parse --short HEAD)
+
+    local arch
+    arch="amd64"
+
+    pnpm install
+    pnpm build
+
+    mkdir -p "$buildpath/deb/DEBIAN" "$buildpath/deb/opt/$pkgname"
+
+    cp -r .next "$buildpath/deb/opt/$pkgname/"
+    cp package.json "$buildpath/deb/opt/$pkgname/"
+    cp pnpm-lock.yaml "$buildpath/deb/opt/$pkgname/"
+
+    debname="${pkgname}_${version}_${arch}.deb"
+
+    cat <<EOF >"$buildpath/deb/DEBIAN/control"
+Package: $pkgname
+Version: $version
+Section: web
+Priority: optional
+Architecture: $arch
+Maintainer: Engineering <engineering@abklabs.com>
+Description: $pkgname
+Depends: nodejs (>= 18.0.0), npm (>= 9.0.0)
+EOF
+
+    (
+        cd "$buildpath/deb"
+        dpkg-deb -v --build . "$debname"
+    )
+
+    # check if deb was built
+    if [[ ! -f "$buildpath/deb/$debname" ]]; then
+        rm -rf "$buildpath"
+        log::fatal "Failed to build deb package."
+    fi
+}
+
+build-deb() {
+    local ref target
+    pkgname=$1
+    shift
+    ref=$1
+    shift
+    target=$1
+    shift
+    buildfunc=$1
+    shift
+
+    install-deps
+
+    log::info "Preparing build for '$pkgname' -> ref '$ref' from '$target'..."
+
+    buildpath=$(mktemp -d)
+    trap 'rm -rf "$buildpath"' EXIT
+
+    if [[ ! -d "$buildpath/repo" ]]; then
+        git clone "$target" "$buildpath/repo"
+    fi
+
+    pushd "$buildpath/repo" >/dev/null
+    git checkout -f "$ref"
+    git clean -f -d -x
+    git submodule update --init
+
+    $buildfunc
+
+    srcdeb=$(realpath "$buildpath/deb/"*".deb")
+
+    if [[ ! -f $srcdeb ]]; then
+        log::fatal "Failed to build deb package."
+    else
+        cp "$srcdeb" "$OLDPWD"
+    fi
+
+    destdeb=$(realpath "$OLDPWD/"*".deb")
+    log::success "Successfully built deb package: '$destdeb'"
+
+    rm -rf "$buildpath"
+    popd >/dev/null
+}
+
+build-deb "$EXPLORER_PACKAGE_NAME" "$EXPLORER_BRANCH" "$EXPLORER_GITHUB_REPO" "build-nextjs"
