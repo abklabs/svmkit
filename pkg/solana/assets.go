@@ -13,4 +13,5 @@ const (
 	assetsTransferScript     = "assets/transfer.sh"
 	assetsVoteAccountScript  = "assets/vote-account.sh"
 	assetsFaucetScript       = "assets/faucet.sh"
+	assetsExplorerScript     = "assets/explorer.sh"
 )
