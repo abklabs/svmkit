@@ -9,12 +9,12 @@ set -euo pipefail
 export LC_ALL=en_US.UTF-8
 
 if [[ $# -lt 1 ]]; then
-    echo "Usage: $0 <branch>"
-    echo "Example: $0 master"
+    echo "Usage: $0 <ref>"
+    echo "Example: ./$0 master or ./$0 v1.0.0"
     exit 1
 fi
 
-EXPLORER_BRANCH="$1"
+EXPLORER_REF="$1"
 EXPLORER_PACKAGE_NAME="svmkit-solana-explorer"
 EXPLORER_GITHUB_REPO="https://github.com/abklabs/svmkit-solana-explorer"
 
@@ -178,4 +178,4 @@ build-deb() {
     popd >/dev/null
 }
 
-build-deb "$EXPLORER_PACKAGE_NAME" "$EXPLORER_BRANCH" "$EXPLORER_GITHUB_REPO" "build-nextjs"
+build-deb "$EXPLORER_PACKAGE_NAME" "$EXPLORER_REF" "$EXPLORER_GITHUB_REPO" "build-nextjs"
