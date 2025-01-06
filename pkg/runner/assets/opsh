@@ -2,6 +2,7 @@
 
 #- SECTION 00-header
 set -euo pipefail
+IFS=''
 
 if [ -z "$BASH_VERSION" ]; then
     echo "FATAL: $0 requires bash to function properly!"
@@ -13,22 +14,26 @@ if [[ ${BASH_VERSINFO[0]} -lt 4 ]]; then
     exit 1
 fi
 
+shopt -s inherit_errexit
+set -o errtrace
+
 OPSHROOTDIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")"/.. &>/dev/null && pwd)
 
-_OPSH_LIB_BUNDLED=()
+_OPSH_VERSION="0.6.0"
+_OPSH_LIB_IMPORTED=()
 EXIT_FUNCS=()
 
 exit::trap() {
     local i
     for ((i = ${#EXIT_FUNCS[@]} - 1; i >= 0; i--)); do
-        ${EXIT_FUNCS[$i]}
+        eval "${EXIT_FUNCS[$i]}"
     done
 }
 
 trap exit::trap EXIT
 
 exit::trigger() {
-    EXIT_FUNCS+=("$*")
+    EXIT_FUNCS+=("$@")
 }
 
 TMPDIR=$(mktemp -d)
@@ -60,7 +65,7 @@ CNONE=''
 if [[ -t 1 ]]; then
     CRED='\033[0;31m'
     CGRN='\033[0;32m'
-    CYEL='\033[0;32m'
+    CYEL='\033[0;33m'
     CBLU='\033[0;34m'
     CNONE='\033[0m'
 fi
@@ -96,12 +101,12 @@ log::fatal() {
     exit 1
 }
 
-lib::import::is-bundled() {
+lib::import::is-imported() {
     local libfile i
     libfile=$1
     shift
 
-    for i in "${_OPSH_LIB_BUNDLED[@]}"; do
+    for i in "${_OPSH_LIB_IMPORTED[@]}"; do
         if [[ $libfile == "$i" ]]; then
             return 0
         fi
@@ -113,24 +118,65 @@ lib::import::is-bundled() {
 lib::import() {
     local libfile
     for libname in "$@"; do
-        if lib::import::is-bundled "$libname"; then
+        if lib::import::is-imported "$libname"; then
             continue
         fi
 
-        libfile="$OPSHROOTDIR/share/opsh/$libname.bash"
+        libfile="$OPSHROOTDIR/share/opsh/$libname.opsh"
         [[ -f $libfile ]] || log::fatal "library '$libname' not found!"
 
         # shellcheck disable=SC1090
         source "$libfile"
+        _OPSH_LIB_IMPORTED+=("$libname")
     done
 }
-_OPSH_LIB_BUNDLED+=(apt)
-_OPSH_LIB_BUNDLED+=(cloud-init)
-_OPSH_LIB_BUNDLED+=(command)
-_OPSH_LIB_BUNDLED+=(git)
-_OPSH_LIB_BUNDLED+=(ssh)
-_OPSH_LIB_BUNDLED+=(step-runner)
-_OPSH_LIB_BUNDLED+=(test-harness)
+
+array::join() {
+    local IFS=$1
+    shift
+    echo "$*"
+}
+
+array::split() {
+    local -n name=$1
+    shift
+    local IFS=$1
+    shift
+
+    # shellcheck disable=SC2034,SC2206
+    name=($@)
+}
+
+opsh::version() {
+    if [[ -v _OPSH_VERSION ]]; then
+        echo "$_OPSH_VERSION"
+        return 0
+    fi
+
+    lib::import git
+
+    git::repo::version
+}
+
+opsh::version::require() {
+    local minver=$1
+    shift
+
+    local thisver
+    thisver=$(opsh::version) || log::fatal "couldn't retrieve installed opsh version!"
+
+    lib::import semver
+
+    semver::test "$thisver" -ge "$minver" || log::fatal "opsh ($thisver) is older than required ($minver)!"
+}
+_OPSH_LIB_IMPORTED+=(apt)
+_OPSH_LIB_IMPORTED+=(cloud-init)
+_OPSH_LIB_IMPORTED+=(command)
+_OPSH_LIB_IMPORTED+=(git)
+_OPSH_LIB_IMPORTED+=(semver)
+_OPSH_LIB_IMPORTED+=(ssh)
+_OPSH_LIB_IMPORTED+=(step-runner)
+_OPSH_LIB_IMPORTED+=(test-harness)
 apt::env() {
     # Disable interactive frontends by default.
     DEBIAN_FRONTEND=noninteractive
@@ -181,6 +227,141 @@ command::exists() {
 }
 git::repo::version() {
     git describe --tags --dirty 2>/dev/null || git rev-parse --short HEAD
+}
+
+git::repo::current-branch() {
+    git rev-parse --abbrev-ref HEAD
+}
+
+git::repo::is-clean() {
+    [[ $(git status --porcelain | wc -c) -eq 0 ]] || return 1
+}
+
+git::tag::exists() {
+    local tag=$1
+    shift
+
+    [[ $(git tag -l "$tag") == "$tag" ]] || return 1
+}
+_OPSH_SEMVER_NUM='0|[1-9][0-9]*'
+_OPSH_SEMVER_REGEX="^[vV]?($_OPSH_SEMVER_NUM)\\.($_OPSH_SEMVER_NUM)\\.($_OPSH_SEMVER_NUM)((\+|-).+)?\$"
+
+OPSH_SEMVER=()
+
+semver::parse() {
+    local ver=$1
+    shift
+
+    # shellcheck disable=SC2319
+    [[ "$ver" =~ $_OPSH_SEMVER_REGEX ]] || return "$?"
+
+    OPSH_SEMVER=("${BASH_REMATCH[@]:1:3}")
+
+    if [[ -n ${BASH_REMATCH[4]} ]]; then
+        OPSH_SEMVER+=("${BASH_REMATCH[4]}")
+    fi
+}
+
+# Note: This is a very naive version of a semver test.  It can be
+# extended in future to support a full set of expressions.
+
+semver::test() {
+    semver::parse "$1" || return 1
+    # shellcheck disable=SC2034
+    local left=("${OPSH_SEMVER[@]}")
+    shift
+
+    local op=$1
+    shift
+
+    semver::parse "$1" || return 1
+    # shellcheck disable=SC2034
+    local right=("${OPSH_SEMVER[@]}")
+    shift
+
+    [[ $# -eq 0 ]] || return 1
+
+    local gtret ltret eqret
+
+    case "$op" in
+    -eq)
+        gtret=1 ltret=1 eqret=0
+        ;;
+    -gt)
+        gtret=0 ltret=1 eqret=1
+        ;;
+    -lt)
+        gtret=1 ltret=0 eqret=1
+        ;;
+    -ge)
+        gtret=0 ltret=1 eqret=0
+        ;;
+    -le)
+        gtret=1 ltret=0 eqret=0
+        ;;
+    *)
+        log::fatal "unknown semver expression comparison operator '$op'!"
+        ;;
+    esac
+
+    for i in {0..2}; do
+        if [[ ${left[$i]} -gt ${right[$i]} ]]; then
+            return $gtret
+        fi
+        if [[ ${left[$i]} -lt ${right[$i]} ]]; then
+            return $ltret
+        fi
+    done
+
+    return $eqret
+
+}
+
+semver::bump() {
+    local -l pos=$1
+    shift
+
+    local ver=$1
+    shift
+
+    local prefix=""
+
+    if [[ "$ver" =~ ^([vV]) ]]; then
+        prefix="${BASH_REMATCH[0]}"
+    fi
+
+    semver::parse "$ver" || return 1
+
+    local idx
+
+    case "$pos" in
+    major)
+        idx=0
+        ;;
+    minor)
+        idx=1
+        ;;
+    patch)
+        idx=2
+        ;;
+    *)
+        return 1
+        ;;
+    esac
+
+    OPSH_SEMVER[idx]=$((OPSH_SEMVER[idx] + 1))
+
+    for ((idx = idx + 1; idx < 3; idx++)); do
+        OPSH_SEMVER[idx]=0
+    done
+
+    prefix="$prefix$(array::join . "${OPSH_SEMVER[@]:0:3}")"
+
+    if [[ ${#OPSH_SEMVER[@]} -eq 4 ]]; then
+        prefix="$prefix${OPSH_SEMVER[3]}"
+    fi
+
+    echo "$prefix"
 }
 export _OPSH_SSH_CONTEXT
 
@@ -315,7 +496,13 @@ testing::run() {
 }
 
 testing::fail() {
-    log::fatal "$*"
+    local msg=""
+
+    if [[ $# -gt 0 ]]; then
+        msg=": $*"
+    fi
+
+    log::fatal "${BASH_SOURCE[1]}:${BASH_LINENO[0]} inside ${FUNCNAME[1]}${msg}"
 }
 #- SECTION 20-command
 if [[ $# -lt 1 ]]; then
@@ -333,4 +520,3 @@ BASH_ARGV0=$SCRIPTFILE
 # shellcheck disable=SC1090
 source "$SCRIPTFILE"
 #- SECTION 30-end
-
