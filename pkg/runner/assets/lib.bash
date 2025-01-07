@@ -1,3 +1,6 @@
+# XXX - We currently depend on this IFS for apt and sudo to work.
+IFS=$' \t\n'
+
 apt::setup-abk-apt-source() {
     $APT update
     $APT install curl gnupg
