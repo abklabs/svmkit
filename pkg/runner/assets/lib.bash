@@ -1,6 +1,3 @@
-# XXX - We currently depend on this IFS for apt and sudo to work.
-IFS=$' \t\n'
-
 svmkit::sudo () {
     sudo "$@"
 }
