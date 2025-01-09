@@ -74,9 +74,7 @@ step::020::fetch-all-programs() {
 
 step::030::write-primordial-accounts-file() {
     if [[ -z "$PRIMORDIAL_PUBKEYS" || -z "$PRIMORDIAL_LAMPORTS" ]]; then
-        log::info "PRIMORDIAL_PUBKEYS or PRIMORDIAL_LAMPORTS variable is not set or empty. Primordial file will be empty."
-        svmkit::sudo -u sol tee /home/sol/primordial.yaml </dev/null >/dev/null
-        return 0
+        log::fatal "PRIMORDIAL_PUBKEYS or PRIMORDIAL_LAMPORTS variable is not set or empty!"
     fi
 
     local pubkeys=(${PRIMORDIAL_PUBKEYS//,/ })
