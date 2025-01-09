@@ -42,8 +42,8 @@ step::05::setup-abklabs-apt() {
 }
 
 step::10::install-base-software() {
-    $SUDO apt-get update
-    $APT install logrotate ufw
+    svmkit::sudo apt-get update
+    svmkit::apt::get install logrotate ufw
 }
 
 step::20::create-sol-user() {
@@ -51,12 +51,12 @@ step::20::create-sol-user() {
 }
 
 step::30::copy-validator-keys() {
-    $SUDO cp validator-keypair.json vote-account-keypair.json /home/sol
-    $SUDO chown sol:sol /home/sol/{validator-keypair,vote-account-keypair}.json
+    svmkit::sudo cp validator-keypair.json vote-account-keypair.json /home/sol
+    svmkit::sudo chown sol:sol /home/sol/{validator-keypair,vote-account-keypair}.json
 }
 
 step::40::configure-sysctl() {
-    cat <<EOF | $SUDO tee /etc/sysctl.d/21-solana-validator.conf >/dev/null
+    cat <<EOF | svmkit::sudo tee /etc/sysctl.d/21-solana-validator.conf >/dev/null
 # Increase UDP buffer sizes
 net.core.rmem_default = 134217728
 net.core.rmem_max = 134217728
@@ -69,24 +69,24 @@ fs.nr_open = 1000000
 vm.swappiness=1
 EOF
 
-    $SUDO sysctl -p /etc/sysctl.d/21-solana-validator.conf
+    svmkit::sudo sysctl -p /etc/sysctl.d/21-solana-validator.conf
 }
 
 step::50::configure-firewall() {
-    $SUDO ufw allow 53
-    $SUDO ufw allow ssh
-    $SUDO ufw allow 8000:8020/tcp
-    $SUDO ufw allow 8000:8020/udp
+    svmkit::sudo ufw allow 53
+    svmkit::sudo ufw allow ssh
+    svmkit::sudo ufw allow 8000:8020/tcp
+    svmkit::sudo ufw allow 8000:8020/udp
     # TODO: Only open for RPC nodes
-    $SUDO ufw allow 8899/tcp
-    $SUDO ufw allow 8899/udp
-    $SUDO ufw allow 8900/tcp
+    svmkit::sudo ufw allow 8899/tcp
+    svmkit::sudo ufw allow 8899/udp
+    svmkit::sudo ufw allow 8900/tcp
 
-    $SUDO ufw --force enable
+    svmkit::sudo ufw --force enable
 }
 
 step::60::setup-logrotate() {
-    cat <<EOF | $SUDO tee /etc/logrotate.d/solana >/dev/null
+    cat <<EOF | svmkit::sudo tee /etc/logrotate.d/solana >/dev/null
 /home/sol/log {
 su sol sol
 daily
@@ -98,14 +98,14 @@ endscript
 }
 EOF
 
-    $SUDO systemctl restart logrotate
+    svmkit::sudo systemctl restart logrotate
 }
 
 step::70::install-validator() {
     if [[ -v VALIDATOR_VERSION ]]; then
-        $APT --allow-downgrades install "${VALIDATOR_PACKAGE}=$VALIDATOR_VERSION" "svmkit-solana-cli=$VALIDATOR_VERSION"
+        svmkit::apt::get --allow-downgrades install "${VALIDATOR_PACKAGE}=$VALIDATOR_VERSION" "svmkit-solana-cli=$VALIDATOR_VERSION"
     else
-        $APT --allow-downgrades install "${VALIDATOR_PACKAGE}" "svmkit-solana-cli"
+        svmkit::apt::get --allow-downgrades install "${VALIDATOR_PACKAGE}" "svmkit-solana-cli"
     fi
 }
 
@@ -116,36 +116,36 @@ step::75::setup-solana-cli() {
     solana config set "${SOLANA_CLI_CONFIG_FLAGS[@]}"
 
     # Setup the sol user.
-    $SUDO -u sol -i solana config set "${SOLANA_CLI_CONFIG_FLAGS[@]}"
+    svmkit::sudo -u sol -i solana config set "${SOLANA_CLI_CONFIG_FLAGS[@]}"
 }
 
 step::80::setup-validator-startup() {
-    $APT install jq
+    svmkit::apt::get install jq
 
     if systemctl list-unit-files "${VALIDATOR_SERVICE}" >/dev/null; then
-        $SUDO systemctl stop "${VALIDATOR_SERVICE}" || true
+        svmkit::sudo systemctl stop "${VALIDATOR_SERVICE}" || true
     fi
 
-    cat <<EOF | $SUDO tee /home/sol/stop-validator >/dev/null
+    cat <<EOF | svmkit::sudo tee /home/sol/stop-validator >/dev/null
 #!/usr/bin/env bash
 
 $VALIDATOR_ENV exec $VALIDATOR_PROCESS --ledger $LEDGER_PATH exit ${VALIDATOR_EXIT_FLAGS[@]@Q}
 EOF
 
-    cat <<EOF | $SUDO tee /home/sol/run-validator >/dev/null
+    cat <<EOF | svmkit::sudo tee /home/sol/run-validator >/dev/null
 #!/usr/bin/env bash
 
 $VALIDATOR_ENV exec $VALIDATOR_PROCESS $VALIDATOR_FLAGS
 EOF
 
-    $SUDO cp check-validator /home/sol/.
+    svmkit::sudo cp check-validator /home/sol/.
 
     for i in run-validator check-validator stop-validator ; do
-	$SUDO chmod 755 /home/sol/$i
-	$SUDO chown sol:sol /home/sol/$i
+	svmkit::sudo chmod 755 /home/sol/$i
+	svmkit::sudo chown sol:sol /home/sol/$i
     done
 
-    cat <<EOF | $SUDO tee /etc/systemd/system/"${VALIDATOR_SERVICE}" >/dev/null
+    cat <<EOF | svmkit::sudo tee /etc/systemd/system/"${VALIDATOR_SERVICE}" >/dev/null
 [Unit]
 Description=SVMkit $VALIDATOR_VARIANT validator
 
@@ -161,9 +161,9 @@ LimitNOFILE=1000000
 [Install]
 WantedBy=default.target
 EOF
-    $SUDO systemctl daemon-reload
-    $SUDO systemctl enable "${VALIDATOR_SERVICE}"
-    $SUDO systemctl start "${VALIDATOR_SERVICE}"
+    svmkit::sudo systemctl daemon-reload
+    svmkit::sudo systemctl enable "${VALIDATOR_SERVICE}"
+    svmkit::sudo systemctl start "${VALIDATOR_SERVICE}"
 }
 
 step::90::setup-validator-info() {
@@ -183,5 +183,5 @@ step::90::setup-validator-info() {
 	args+=(--details "$VALIDATOR_INFO_DETAILS")
     fi
 
-    $SUDO -u sol -i solana validator-info publish "${args[@]}" "$VALIDATOR_INFO_NAME"
+    svmkit::sudo -u sol -i solana validator-info publish "${args[@]}" "$VALIDATOR_INFO_NAME"
 }

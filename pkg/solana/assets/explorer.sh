@@ -13,11 +13,11 @@ step::001::setup-abklabs-api() {
 
 step::003::install-explorer() {
     if [[ -v EXPLORER_VERSION ]]; then
-        $APT install ufw nodejs npm "svmkit-solana-explorer=$EXPLORER_VERSION"
+        svmkit::apt::get install ufw nodejs npm "svmkit-solana-explorer=$EXPLORER_VERSION"
     else
-        $APT install ufw nodejs npm svmkit-solana-explorer
+        svmkit::apt::get install ufw nodejs npm svmkit-solana-explorer
     fi
-    $SUDO npm install -g pnpm
+    svmkit::sudo npm install -g pnpm
 }
 
 step::004::create-sol-user() {
@@ -25,33 +25,33 @@ step::004::create-sol-user() {
 }
 
 step::005::configure-firewall() {
-    $SUDO ufw allow "$EXPLORER_PORT/tcp"
-    $SUDO ufw allow 22/tcp
-    $SUDO ufw --force enable
-    $SUDO ufw reload
+    svmkit::sudo ufw allow "$EXPLORER_PORT/tcp"
+    svmkit::sudo ufw allow 22/tcp
+    svmkit::sudo ufw --force enable
+    svmkit::sudo ufw reload
 }
 
 step::006::setup-explorer() {
-    $SUDO chown -R sol:sol /opt/svmkit-solana-explorer
-    $SUDO -i -u sol bash -c 'cd /opt/svmkit-solana-explorer && pnpm install'
+    svmkit::sudo chown -R sol:sol /opt/svmkit-solana-explorer
+    svmkit::sudo -i -u sol bash -c 'cd /opt/svmkit-solana-explorer && pnpm install'
 }
 
 step::007::setup-explorer-startup() {
     if systemctl list-unit-files "${EXPLORER_SERVICE}" >/dev/null; then
-        $SUDO systemctl stop "${EXPLORER_SERVICE}" || true
+        svmkit::sudo systemctl stop "${EXPLORER_SERVICE}" || true
     fi
 
-    cat <<EOF | $SUDO tee /opt/svmkit-solana-explorer/run-explorer >/dev/null
+    cat <<EOF | svmkit::sudo tee /opt/svmkit-solana-explorer/run-explorer >/dev/null
 #!/usr/bin/env bash
 
 cd /opt/svmkit-solana-explorer
 $EXPLORER_ENV exec pnpm start /opt/svmkit-solana-explorer $EXPLORER_FLAGS
 EOF
 
-    $SUDO chmod 755 /opt/svmkit-solana-explorer/run-explorer
-    $SUDO chown sol:sol /opt/svmkit-solana-explorer/run-explorer
+    svmkit::sudo chmod 755 /opt/svmkit-solana-explorer/run-explorer
+    svmkit::sudo chown sol:sol /opt/svmkit-solana-explorer/run-explorer
 
-    cat <<EOF | $SUDO tee /etc/systemd/system/"${EXPLORER_SERVICE}" >/dev/null
+    cat <<EOF | svmkit::sudo tee /etc/systemd/system/"${EXPLORER_SERVICE}" >/dev/null
 [Unit]
 Description=SVMkit Solana Explorer
 
@@ -64,7 +64,7 @@ ExecStart=/opt/svmkit-solana-explorer/run-explorer
 [Install]
 WantedBy=default.target
 EOF
-    $SUDO systemctl daemon-reload
-    $SUDO systemctl enable "${EXPLORER_SERVICE}"
-    $SUDO systemctl start "${EXPLORER_SERVICE}"
+    svmkit::sudo systemctl daemon-reload
+    svmkit::sudo systemctl enable "${EXPLORER_SERVICE}"
+    svmkit::sudo systemctl start "${EXPLORER_SERVICE}"
 }

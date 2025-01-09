@@ -14,7 +14,7 @@ step::05::setup-abklabs-apt() {
 }
 
 step::10::install-dependencies() {
-    $APT install svmkit-agave-watchtower
+    svmkit::apt::get install svmkit-agave-watchtower
 }
 
 step::20::create-sol-user() {
@@ -23,19 +23,19 @@ step::20::create-sol-user() {
 
 step::30::setup-watchtower-startup() {
     if systemctl list-unit-files "${WATCHTOWER_SERVICE}" >/dev/null; then
-        $SUDO systemctl stop "${WATCHTOWER_SERVICE}" || true
+        svmkit::sudo systemctl stop "${WATCHTOWER_SERVICE}" || true
     fi
 
-    cat <<EOF | $SUDO tee /home/sol/run-watchtower >/dev/null
+    cat <<EOF | svmkit::sudo tee /home/sol/run-watchtower >/dev/null
 #!/usr/bin/env bash
 
 $WATCHTOWER_ENV exec agave-watchtower $WATCHTOWER_FLAGS
 EOF
 
-    $SUDO chmod 755 /home/sol/run-watchtower
-    $SUDO chown sol:sol /home/sol/run-watchtower
+    svmkit::sudo chmod 755 /home/sol/run-watchtower
+    svmkit::sudo chown sol:sol /home/sol/run-watchtower
 
-    cat <<EOF | $SUDO tee /etc/systemd/system/"${WATCHTOWER_SERVICE}" >/dev/null
+    cat <<EOF | svmkit::sudo tee /etc/systemd/system/"${WATCHTOWER_SERVICE}" >/dev/null
 [Unit]
 Description=SVMkit watchtower
 
@@ -48,7 +48,7 @@ ExecStart=/home/sol/run-watchtower
 [Install]
 WantedBy=default.target
 EOF
-    $SUDO systemctl daemon-reload
-    $SUDO systemctl enable "${WATCHTOWER_SERVICE}"
-    $SUDO systemctl start "${WATCHTOWER_SERVICE}"
+    svmkit::sudo systemctl daemon-reload
+    svmkit::sudo systemctl enable "${WATCHTOWER_SERVICE}"
+    svmkit::sudo systemctl start "${WATCHTOWER_SERVICE}"
 }

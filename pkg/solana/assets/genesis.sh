@@ -57,9 +57,9 @@ step::010::install-dependencies() {
     apt::setup-abk-apt-source
 
     if [[ -v PACKAGE_VERSION ]]; then
-        $APT install bzip2 "svmkit-solana-genesis=$PACKAGE_VERSION" "svmkit-solana-cli=$PACKAGE_VERSION" "svmkit-agave-ledger-tool=$PACKAGE_VERSION"
+        svmkit::apt::get install bzip2 "svmkit-solana-genesis=$PACKAGE_VERSION" "svmkit-solana-cli=$PACKAGE_VERSION" "svmkit-agave-ledger-tool=$PACKAGE_VERSION"
     else
-        $APT install bzip2 svmkit-solana-genesis svmkit-solana-cli svmkit-agave-ledger-tool
+        svmkit::apt::get install bzip2 svmkit-solana-genesis svmkit-solana-cli svmkit-agave-ledger-tool
     fi
 }
 
@@ -75,7 +75,7 @@ step::020::fetch-all-programs() {
 step::030::write-primordial-accounts-file() {
     if [[ -z "$PRIMORDIAL_PUBKEYS" || -z "$PRIMORDIAL_LAMPORTS" ]]; then
         log::info "PRIMORDIAL_PUBKEYS or PRIMORDIAL_LAMPORTS variable is not set or empty. Primordial file will be empty."
-        $SUDO -u sol tee /home/sol/primordial.yaml </dev/null >/dev/null
+        svmkit::sudo -u sol tee /home/sol/primordial.yaml </dev/null >/dev/null
         return 0
     fi
 
@@ -90,7 +90,7 @@ step::030::write-primordial-accounts-file() {
     for i in "${!pubkeys[@]}"; do
         local pubkey=${pubkeys[$i]}
         local lamport=${lamports[$i]}
-        cat <<EOF | $SUDO -u sol tee -a /home/sol/primordial.yaml >/dev/null
+        cat <<EOF | svmkit::sudo -u sol tee -a /home/sol/primordial.yaml >/dev/null
 $pubkey:
   balance: $lamport
   owner: 11111111111111111111111111111111
@@ -101,9 +101,9 @@ EOF
 }
 
 step::040::execute-solana-genesis() {
-    $SUDO -u sol "${GENESIS_ENV[@]}" solana-genesis "${GENESIS_FLAGS[@]}" "${genesis_args[@]}"
+    svmkit::sudo -u sol "${GENESIS_ENV[@]}" solana-genesis "${GENESIS_FLAGS[@]}" "${genesis_args[@]}"
 }
 
 step::050::create-initial-snapshot() {
-    $SUDO -u sol -i agave-ledger-tool create-snapshot --ignore-ulimit-nofile-error ROOT
+    svmkit::sudo -u sol -i agave-ledger-tool create-snapshot --ignore-ulimit-nofile-error ROOT
 }

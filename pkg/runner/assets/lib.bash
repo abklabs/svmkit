@@ -1,13 +1,21 @@
 # XXX - We currently depend on this IFS for apt and sudo to work.
 IFS=$' \t\n'
 
+svmkit::sudo () {
+    sudo "$@"
+}
+
+svmkit::apt::get() {
+    svmkit::sudo DEBIAN_FRONTEND=noninteractive apt-get -qy "$@"
+}
+
 apt::setup-abk-apt-source() {
-    $APT update
-    $APT install curl gnupg
+    svmkit::apt::get update
+    svmkit::apt::get install curl gnupg
     if ! grep -q "^deb .*/svmkit dev main" /etc/apt/sources.list /etc/apt/sources.list.d/*; then
-        curl -s https://apt.abklabs.com/keys/abklabs-archive-dev.asc | $SUDO apt-key add -
-        echo "deb https://apt.abklabs.com/svmkit dev main" | $SUDO tee /etc/apt/sources.list.d/svmkit.list >/dev/null
-        $APT update
+        curl -s https://apt.abklabs.com/keys/abklabs-archive-dev.asc | svmkit::sudo apt-key add -
+        echo "deb https://apt.abklabs.com/svmkit dev main" | svmkit::sudo  tee /etc/apt/sources.list.d/svmkit.list >/dev/null
+        svmkit::apt::get update
     fi
 }
 
@@ -39,12 +47,10 @@ cloud-init::wait-for-stable-environment() {
 create-sol-user() {
     local username
 
-    id sol >/dev/null 2>&1 || $SUDO adduser --disabled-password --gecos "" sol
-    $SUDO mkdir -p "/home/sol"
-    $SUDO chown -f -R sol:sol "/home/sol"
+    id sol >/dev/null 2>&1 || svmkit::sudo adduser --disabled-password --gecos "" sol
+    svmkit::sudo mkdir -p "/home/sol"
+    svmkit::sudo chown -f -R sol:sol "/home/sol"
 
     username=$(whoami)
-    id -nGz "$username" | grep -qzxF sol || $SUDO adduser "$username" sol
+    id -nGz "$username" | grep -qzxF sol || svmkit::sudo adduser "$username" sol
 }
-
-apt::env
