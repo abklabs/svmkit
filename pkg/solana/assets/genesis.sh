@@ -77,8 +77,10 @@ step::030::write-primordial-accounts-file() {
         log::fatal "PRIMORDIAL_PUBKEYS or PRIMORDIAL_LAMPORTS variable is not set or empty!"
     fi
 
-    local pubkeys=(${PRIMORDIAL_PUBKEYS//,/ })
-    local lamports=(${PRIMORDIAL_LAMPORTS//,/ })
+    local pubkeys lamports
+
+    array::split pubkeys , "${PRIMORDIAL_PUBKEYS}"
+    array::split lamports , "${PRIMORDIAL_LAMPORTS}"
 
     if [[ ${#pubkeys[@]} -ne ${#lamports[@]} ]]; then
         log::error "The number of pubkeys and lamports entries do not match."
