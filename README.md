@@ -29,7 +29,9 @@ Deploy an [SPE on AWS](https://github.com/abklabs/svmkit-examples/tree/main/aws-
 - **Multiple Fork Support**: Run validators for:
   - Solana
   - Agave
+  - Frankendancer
   - Jito
+  - X1
   - Pyth
   - PowerLedger
 - **APT Integration**: Easy installation through our APT repository
