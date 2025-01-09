@@ -16,7 +16,10 @@ ABK Labs maintains an official APT repository at `apt.abklabs.com` for distribut
 | `svmkit-agave-validator`       | Agave validator implementation       |
 | `svmkit-solana-cli`            | Solana CLI tools                     |
 | `svmkit-jito-validator`        | Jito validator implementation        |
+| `svmkit-xen-validator`         | X1 validator implementation          |
+| `svmkit-frankendancer`         | Frankendancer validator implementation|
 | `svmkit-pyth-validator`        | Pyth validator implementation        |
+| `svmkit-mantis-validator`      | Mantis validator implementation      |
 | `svmkit-powerledger-validator` | PowerLedger validator implementation |
 
 ## Installation Guide
