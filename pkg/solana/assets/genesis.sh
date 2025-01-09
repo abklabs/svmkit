@@ -85,6 +85,8 @@ step::030::write-primordial-accounts-file() {
         return 1
     fi
 
+    svmkit::sudo rm -f /home/sol/primordial.yaml
+
     for i in "${!pubkeys[@]}"; do
         local pubkey=${pubkeys[$i]}
         local lamport=${lamports[$i]}
