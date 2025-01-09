@@ -21,19 +21,19 @@ step::20::create-sol-user() {
 }
 
 step::30::copy-assets() {
-    $SUDO cp validator-keypair.json vote-account-keypair.json config.toml "$VALIDATOR_HOME"
-    $SUDO chown "$VALIDATOR_USER:$VALIDATOR_GROUP" "$VALIDATOR_HOME"/{validator-keypair,vote-account-keypair}.json "$VALIDATOR_HOME"/config.toml
+    svmkit::sudo cp validator-keypair.json vote-account-keypair.json config.toml "$VALIDATOR_HOME"
+    svmkit::sudo chown "$VALIDATOR_USER:$VALIDATOR_GROUP" "$VALIDATOR_HOME"/{validator-keypair,vote-account-keypair}.json "$VALIDATOR_HOME"/config.toml
 
-    $SUDO cp *.service /etc/systemd/system/.
-    $SUDO systemctl daemon-reload
+    svmkit::sudo cp *.service /etc/systemd/system/.
+    svmkit::sudo systemctl daemon-reload
 }
 
 step::70::install-validator() {
     if [[ -v VALIDATOR_VERSION ]]; then
         # XXX - This needs to be fixed up to be able to select the right solana CLI major version.
-        $APT --allow-downgrades install "${VALIDATOR_PACKAGE}=$VALIDATOR_VERSION" "svmkit-solana-cli"
+        svmkit::apt::get --allow-downgrades install "${VALIDATOR_PACKAGE}=$VALIDATOR_VERSION" "svmkit-solana-cli"
     else
-        $APT --allow-downgrades install "${VALIDATOR_PACKAGE}" "svmkit-solana-cli"
+        svmkit::apt::get --allow-downgrades install "${VALIDATOR_PACKAGE}" "svmkit-solana-cli"
     fi
 }
 
@@ -44,16 +44,16 @@ step::75::setup-solana-cli() {
     solana config set "${SOLANA_CLI_CONFIG_FLAGS[@]}"
 
     # Setup the sol user.
-    $SUDO -u "$VALIDATOR_USER" -i solana config set "${SOLANA_CLI_CONFIG_FLAGS[@]}"
+    svmkit::sudo -u "$VALIDATOR_USER" -i solana config set "${SOLANA_CLI_CONFIG_FLAGS[@]}"
 }
 
 step::80::setup-validator() {
     if systemctl list-unit-files svmkit-fd.service >/dev/null; then
-        $SUDO systemctl stop svmkit-fd.service || true
+        svmkit::sudo systemctl stop svmkit-fd.service || true
     fi
 
-    $SUDO systemctl enable svmkit-fd-setup.service
-    $SUDO systemctl start svmkit-fd-setup.service
-    $SUDO systemctl enable svmkit-fd-validator.service
-    $SUDO systemctl start svmkit-fd-validator.service
+    svmkit::sudo systemctl enable svmkit-fd-setup.service
+    svmkit::sudo systemctl start svmkit-fd-setup.service
+    svmkit::sudo systemctl enable svmkit-fd-validator.service
+    svmkit::sudo systemctl start svmkit-fd-validator.service
 }
