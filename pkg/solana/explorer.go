@@ -19,7 +19,15 @@ func (cmd *ExplorerCommand) Env() *runner.EnvBuilder {
 
 	explorerEnv := runner.NewEnvBuilder()
 
-	explorerEnv.SetP("CLUSTER_URI", cmd.Environment.RPCURL)
+	if cmd.RPCURL != nil {
+		explorerEnv.SetP("NEXT_PUBLIC_CLUSTER_URI", cmd.RPCURL)
+	} else {
+		explorerEnv.SetP("NEXT_PUBLIC_CLUSTER_URI", cmd.Environment.RPCURL)
+	}
+
+	explorerEnv.SetP("NEXT_PUBLIC_CLUSTER_NAME", cmd.ClusterName)
+	explorerEnv.SetP("NEXT_PUBLIC_EXPLORER_NAME", cmd.Name)
+	explorerEnv.SetP("NEXT_PUBLIC_EXPLORER_SYMBOL", cmd.Symbol)
 
 	b := runner.NewEnvBuilder()
 
@@ -55,6 +63,10 @@ type Explorer struct {
 	Environment Environment   `pulumi:"environment"`
 	Flags       ExplorerFlags `pulumi:"flags"`
 	Version     *string       `pulumi:"version,optional"`
+	Name        *string       `pulumi:"name,optional"`
+	Symbol      *string       `pulumi:"symbol,optional"`
+	ClusterName *string       `pulumi:"clusterName,optional"`
+	RPCURL      *string       `pulumi:"RPCURL,optional"`
 }
 
 func (f *Explorer) Install() runner.Command {
