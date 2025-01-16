@@ -64,6 +64,8 @@ func (m *Metrics) String() string {
 
 type InstallCommand struct {
 	Agave
+
+	packageInfo *PackageInfo
 }
 
 func (cmd *InstallCommand) Check() error {
@@ -72,6 +74,14 @@ func (cmd *InstallCommand) Check() error {
 			return fmt.Errorf("Warning: Invalid metrics URL: %v\n", err)
 		}
 	}
+
+	packageInfo, err := GeneratePackageInfo(cmd.Variant, cmd.Version)
+
+	if err != nil {
+		return err
+	}
+
+	cmd.packageInfo = packageInfo
 
 	return nil
 }
@@ -107,13 +117,10 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 		b.Merge(t.Env())
 	}
 
-	b.SetP("VALIDATOR_VERSION", cmd.Version)
-
-	if cmd.Variant != nil {
-		b.Set("VALIDATOR_VARIANT", string(*cmd.Variant))
-	} else {
-		b.Set("VALIDATOR_VARIANT", string(VariantAgave))
-	}
+	b.Set("VALIDATOR_VARIANT", string(cmd.packageInfo.Variant))
+	b.Set("VALIDATOR_PROCESS", cmd.packageInfo.Variant.ProcessName())
+	b.Set("VALIDATOR_PACKAGE", cmd.packageInfo.Variant.PackageName())
+	b.SetArray("PACKAGE_LIST", cmd.packageInfo.PackageGroup().Args())
 
 	b.Set("RPC_BIND_ADDRESS", cmd.Flags.RpcBindAddress)
 	b.SetInt("RPC_PORT", cmd.Flags.RpcPort)
