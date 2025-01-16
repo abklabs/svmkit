@@ -1,6 +1,8 @@
 package agave
 
 import (
+	"fmt"
+
 	"github.com/pulumi/pulumi-go-provider/infer"
 )
 
@@ -54,4 +56,30 @@ func (Variant) Values() []infer.EnumValue[Variant] {
 			Description: "The Xen validator",
 		},
 	}
+}
+
+func (v Variant) Check() error {
+	switch v {
+	case VariantSolana, VariantAgave, VariantPowerledger, VariantJito, VariantPyth, VariantMantis, VariantXen:
+	default:
+		return fmt.Errorf("unknown validator variant '%s'!", v)
+	}
+
+	return nil
+}
+
+func (v Variant) ProcessName() string {
+	switch v {
+	case VariantAgave, VariantJito:
+		return "agave-validator"
+	case VariantMantis, VariantPowerledger, VariantPyth, VariantSolana, VariantXen:
+		return "solana-validator"
+	default:
+		// XXX - Eh, not my favorite, but you should have checked!
+		return ""
+	}
+}
+
+func (v Variant) PackageName() string {
+	return "svmkit-" + string(v) + "-validator"
 }
