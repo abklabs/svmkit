@@ -56,11 +56,7 @@ step::007::check-for-existing-ledger() {
 step::010::install-dependencies() {
     apt::setup-abk-apt-source
 
-    if [[ -v PACKAGE_VERSION ]]; then
-        svmkit::apt::get install bzip2 "svmkit-solana-genesis=$PACKAGE_VERSION" "svmkit-solana-cli=$PACKAGE_VERSION" "svmkit-agave-ledger-tool=$PACKAGE_VERSION"
-    else
-        svmkit::apt::get install bzip2 svmkit-solana-genesis svmkit-solana-cli svmkit-agave-ledger-tool
-    fi
+    svmkit::apt::get install "${PACKAGE_LIST[@]}"
 }
 
 step::020::fetch-all-programs() {
