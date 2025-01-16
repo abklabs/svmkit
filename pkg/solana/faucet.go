@@ -3,6 +3,7 @@ package solana
 import (
 	"strings"
 
+	"github.com/abklabs/svmkit/pkg/deb"
 	"github.com/abklabs/svmkit/pkg/runner"
 )
 
@@ -26,6 +27,13 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 	})
 
 	b.Set("FAUCET_PORT", "9900") // hardcoded in solana-faucet
+
+	{
+		packages := deb.Package{}.MakePackageGroup("ufw")
+		packages.Add(deb.Package{Name: "svmkit-solana-faucet", Version: cmd.Version})
+
+		b.SetArray("PACKAGE_LIST", packages.Args())
+	}
 
 	b.SetP("FAUCET_VERSION", cmd.Version)
 
