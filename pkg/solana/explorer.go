@@ -3,6 +3,7 @@ package solana
 import (
 	"strings"
 
+	"github.com/abklabs/svmkit/pkg/deb"
 	"github.com/abklabs/svmkit/pkg/runner"
 )
 
@@ -29,7 +30,13 @@ func (cmd *ExplorerCommand) Env() *runner.EnvBuilder {
 	})
 
 	b.SetIntP("EXPLORER_PORT", cmd.Flags.Port)
-	b.SetP("EXPLORER_VERSION", cmd.Version)
+
+	{
+		packages := deb.Package{}.MakePackageGroup("ufw", "nodejs", "npm")
+		packages.Add(deb.Package{Name: "svmkit-solana-explorer", Version: cmd.Version})
+
+		b.SetArray("PACKAGE_LIST", packages.Args())
+	}
 
 	return b
 

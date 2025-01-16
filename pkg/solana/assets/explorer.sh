@@ -12,11 +12,7 @@ step::001::setup-abklabs-api() {
 }
 
 step::003::install-explorer() {
-    if [[ -v EXPLORER_VERSION ]]; then
-        svmkit::apt::get install ufw nodejs npm "svmkit-solana-explorer=$EXPLORER_VERSION"
-    else
-        svmkit::apt::get install ufw nodejs npm svmkit-solana-explorer
-    fi
+    svmkit::apt::get install "${PACKAGE_LIST[@]}"
     svmkit::sudo npm install -g pnpm
 }
 
