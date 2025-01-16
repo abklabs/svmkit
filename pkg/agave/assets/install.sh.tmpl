@@ -3,35 +3,7 @@
 
 : "${RPC_SERVICE_TIMEOUT:=60}"
 
-VALIDATOR_PACKAGE=svmkit-${VALIDATOR_VARIANT}-validator
 VALIDATOR_SERVICE=${VALIDATOR_PACKAGE}.service
-
-case $VALIDATOR_VARIANT in
-    agave)
-	VALIDATOR_PROCESS=agave-validator
-	;;
-    jito)
-	VALIDATOR_PROCESS=agave-validator
-	;;
-    mantis)
-	VALIDATOR_PROCESS=solana-validator
-	;;
-    powerledger)
-	VALIDATOR_PROCESS=solana-validator
-	;;
-    pyth)
-	VALIDATOR_PROCESS=solana-validator
-	;;
-    solana)
-	VALIDATOR_PROCESS=solana-validator
-	;;
-    xen)
-	VALIDATOR_PROCESS=solana-validator
-	;;
-    *)
-	log::fatal "unknown validator variant '$VALIDATOR_VARIANT'!"
-	;;
-esac
 
 step::00::wait-for-a-stable-environment() {
     cloud-init::wait-for-stable-environment
@@ -43,13 +15,7 @@ step::05::setup-abklabs-apt() {
 
 step::10::install-packages() {
     svmkit::sudo apt-get update
-    svmkit::apt::get install logrotate ufw jq
-
-    if [[ -v VALIDATOR_VERSION ]]; then
-        svmkit::apt::get --allow-downgrades install "${VALIDATOR_PACKAGE}=$VALIDATOR_VERSION" "svmkit-solana-cli=$VALIDATOR_VERSION"
-    else
-        svmkit::apt::get --allow-downgrades install "${VALIDATOR_PACKAGE}" "svmkit-solana-cli"
-    fi
+    svmkit::apt::get --allow-downgrades install "${PACKAGE_LIST[@]}"
 }
 
 step::20::create-sol-user() {
