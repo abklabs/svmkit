@@ -1,6 +1,7 @@
 package firedancer
 
 import (
+	"github.com/abklabs/svmkit/pkg/deb"
 	"github.com/abklabs/svmkit/pkg/runner"
 	"github.com/abklabs/svmkit/pkg/solana"
 )
@@ -52,7 +53,12 @@ func (c *InstallCommand) Env() *runner.EnvBuilder {
 		e.SetArray("SOLANA_CLI_CONFIG_FLAGS", conf.Flags().Args())
 	}
 
-	e.SetP("VALIDATOR_VERSION", c.Version)
+	{
+		packages := deb.Package{}.MakePackageGroup("svmkit-solana-cli")
+		packages.Add(deb.Package{Name: "svmkit-frankendancer", Version: c.Version})
+		e.SetArray("PACKAGE_LIST", packages.Args())
+		e.Set("VALIDATOR_PACKAGE", "svmkit-frankendancer")
+	}
 
 	return e
 }
