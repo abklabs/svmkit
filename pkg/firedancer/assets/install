@@ -5,7 +5,6 @@ VALIDATOR_USER=sol
 VALIDATOR_GROUP=sol
 VALIDATOR_HOME=/home/$VALIDATOR_USER
 
-VALIDATOR_PACKAGE=svmkit-frankendancer
 VALIDATOR_SERVICE=${VALIDATOR_PACKAGE}.service
 
 step::00::wait-for-a-stable-environment() {
@@ -29,12 +28,7 @@ step::30::copy-assets() {
 }
 
 step::70::install-validator() {
-    if [[ -v VALIDATOR_VERSION ]]; then
-        # XXX - This needs to be fixed up to be able to select the right solana CLI major version.
-        svmkit::apt::get --allow-downgrades install "${VALIDATOR_PACKAGE}=$VALIDATOR_VERSION" "svmkit-solana-cli"
-    else
-        svmkit::apt::get --allow-downgrades install "${VALIDATOR_PACKAGE}" "svmkit-solana-cli"
-    fi
+    svmkit::apt::get --allow-downgrades install "${PACKAGE_LIST[@]}"
 }
 
 step::75::setup-solana-cli() {
