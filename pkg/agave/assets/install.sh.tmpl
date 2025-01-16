@@ -41,9 +41,15 @@ step::05::setup-abklabs-apt() {
     apt::setup-abk-apt-source
 }
 
-step::10::install-base-software() {
+step::10::install-packages() {
     svmkit::sudo apt-get update
-    svmkit::apt::get install logrotate ufw
+    svmkit::apt::get install logrotate ufw jq
+
+    if [[ -v VALIDATOR_VERSION ]]; then
+        svmkit::apt::get --allow-downgrades install "${VALIDATOR_PACKAGE}=$VALIDATOR_VERSION" "svmkit-solana-cli=$VALIDATOR_VERSION"
+    else
+        svmkit::apt::get --allow-downgrades install "${VALIDATOR_PACKAGE}" "svmkit-solana-cli"
+    fi
 }
 
 step::20::create-sol-user() {
@@ -101,14 +107,6 @@ EOF
     svmkit::sudo systemctl restart logrotate
 }
 
-step::70::install-validator() {
-    if [[ -v VALIDATOR_VERSION ]]; then
-        svmkit::apt::get --allow-downgrades install "${VALIDATOR_PACKAGE}=$VALIDATOR_VERSION" "svmkit-solana-cli=$VALIDATOR_VERSION"
-    else
-        svmkit::apt::get --allow-downgrades install "${VALIDATOR_PACKAGE}" "svmkit-solana-cli"
-    fi
-}
-
 step::75::setup-solana-cli() {
     [[ -v SOLANA_CLI_CONFIG_FLAGS ]] || return 0
 
@@ -120,8 +118,6 @@ step::75::setup-solana-cli() {
 }
 
 step::80::setup-validator-startup() {
-    svmkit::apt::get install jq
-
     if systemctl list-unit-files "${VALIDATOR_SERVICE}" >/dev/null; then
         svmkit::sudo systemctl stop "${VALIDATOR_SERVICE}" || true
     fi
