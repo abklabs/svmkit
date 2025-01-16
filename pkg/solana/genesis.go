@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/abklabs/svmkit/pkg/deb"
 	"github.com/abklabs/svmkit/pkg/runner"
 )
 
@@ -46,7 +47,12 @@ func (cmd *CreateCommand) Env() *runner.EnvBuilder {
 	b.Set("LEDGER_PATH", cmd.Flags.LedgerPath)
 	b.Set("PRIMORDIAL_PUBKEYS", primordialPubkeys)
 	b.Set("PRIMORDIAL_LAMPORTS", primordialLamports)
-	b.SetP("PACKAGE_VERSION", cmd.Version)
+
+	{
+		packages := deb.Package{}.MakePackageGroup("bzip2")
+		packages.Add(deb.Package{Version: cmd.Version}.MakePackageGroup("svmkit-solana-genesis", "svmkit-solana-cli", "svmkit-agave-ledger-tool")...)
+		b.SetArray("PACKAGE_LIST", packages.Args())
+	}
 
 	return b
 }
