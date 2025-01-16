@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/abklabs/svmkit/pkg/deb"
 	"github.com/abklabs/svmkit/pkg/runner"
 	"github.com/abklabs/svmkit/pkg/solana"
 )
@@ -43,6 +44,11 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 		"WATCHTOWER_FLAGS": strings.Join(cmd.Args(), " "),
 		"WATCHTOWER_ENV":   watchtowerEnv.String(),
 	})
+
+	{
+		packages := deb.Package{Name: "svmkit-agave-watchtower"}.MakePackageGroup()
+		b.SetArray("PACKAGE_LIST", packages.Args())
+	}
 
 	return b
 

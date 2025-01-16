@@ -14,7 +14,7 @@ step::05::setup-abklabs-apt() {
 }
 
 step::10::install-dependencies() {
-    svmkit::apt::get install svmkit-agave-watchtower
+    svmkit::apt::get install "${PACKAGE_LIST[@]}"
 }
 
 step::20::create-sol-user() {
