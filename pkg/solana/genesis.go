@@ -50,7 +50,7 @@ func (cmd *CreateCommand) Env() *runner.EnvBuilder {
 
 	{
 		packages := deb.Package{}.MakePackageGroup("bzip2")
-		packages.Add(deb.Package{Version: cmd.Version}.MakePackageGroup("svmkit-solana-genesis", "svmkit-solana-cli", "svmkit-agave-ledger-tool")...)
+		packages.Add(deb.Package{Version: cmd.Version}.MakePackages("svmkit-solana-genesis", "svmkit-solana-cli", "svmkit-agave-ledger-tool")...)
 		b.SetArray("PACKAGE_LIST", packages.Args())
 	}
 
