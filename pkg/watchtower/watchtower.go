@@ -70,12 +70,12 @@ func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
 
 type Watchtower struct {
 	Environment   solana.Environment `pulumi:"environment"`
-	Flags         Flags              `pulumi:"flags"`
+	Flags         WatchtowerFlags    `pulumi:"flags"`
 	Notifications NotificationConfig `pulumi:"notifications"`
 }
 
 func (w *Watchtower) Args() []string {
-	return w.Flags.ToArgs(w.Environment.RPCURL)
+	return w.Flags.Args(w.Environment.RPCURL)
 }
 
 func (w *Watchtower) Install() runner.Command {
@@ -84,38 +84,35 @@ func (w *Watchtower) Install() runner.Command {
 	}
 }
 
-type Flags struct {
-	IntervalSeconds     *int     `pulumi:"intervalSeconds,optional"`
-	RPCTimeoutSeconds   *int     `pulumi:"rpcTimeoutSeconds,optional"`
-	UnhealthyThreshold  *int     `pulumi:"unhealthyThreshold,optional"`
-	ValidatorIdentities []string `pulumi:"validatorIdentities"`
-	NameSuffix          *string  `pulumi:"nameSuffix,optional"`
-
-	MonitorActiveStake          *bool `pulumi:"monitorActiveStake,optional"`
-	ActiveStakeAlertThreshold   *int  `pulumi:"activeStakeAlertThreshold,optional"`
-	MinValidatorIdentityBalance *int  `pulumi:"minimumValidatorIdentityBalance,optional"`
-	IgnoreHTTPBadGateway        *bool `pulumi:"ignoreHttpBadGateway,optional"`
+type WatchtowerFlags struct {
+	IgnoreHttpBadGateway             *bool    `pulumi:"ignoreHttpBadGateway,optional"`
+	MonitorActiveStake               *bool    `pulumi:"monitorActiveStake,optional"`
+	ActiveStakeAlertThreshold        *int     `pulumi:"activeStakeAlertThreshold,optional"`
+	Interval                         *int     `pulumi:"interval,optional"`
+	MiniumumValidatorIdentityBalance *int     `pulumi:"minimumValidatorIdentityBalance,optional"`
+	NameSuffix                       *string  `pulumi:"nameSuffix,optional"`
+	RpcTimeout                       *int     `pulumi:"rpcTimeout,optional"`
+	UnhealthyThreshold               *int     `pulumi:"unhealthyThreshold,optional"`
+	ValidatorIdentity                []string `pulumi:"validatorIdentity"`
 }
 
-func (f *Flags) ToArgs(rpcURL *string) []string {
+func (f *WatchtowerFlags) Args(rpcURL *string) []string {
 	b := runner.FlagBuilder{}
 
-	b.AppendArray("validator-identity", f.ValidatorIdentities)
+	b.AppendBoolP("ignore-http-bad-gateway", f.IgnoreHttpBadGateway)
+	b.AppendBoolP("monitor-active-stake", f.MonitorActiveStake)
+	b.AppendIntP("active-stake-alert-threshold", f.ActiveStakeAlertThreshold)
+	b.AppendIntP("interval", f.Interval)
 
 	if rpcURL != nil {
 		b.AppendP("url", rpcURL)
 	}
 
-	b.AppendIntP("interval", f.IntervalSeconds)
-	b.AppendIntP("rpc-timeout", f.RPCTimeoutSeconds)
-	b.AppendIntP("unhealthy-threshold", f.UnhealthyThreshold)
-
+	b.AppendIntP("minimum-validator-identity-balance", f.MiniumumValidatorIdentityBalance)
 	b.AppendP("name-suffix", f.NameSuffix)
-	b.AppendIntP("active-stake-alert-threshold", f.ActiveStakeAlertThreshold)
-	b.AppendIntP("minimum-validator-identity-balance", f.MinValidatorIdentityBalance)
-
-	b.AppendBoolP("monitor-active-stake", f.MonitorActiveStake)
-	b.AppendBoolP("ignore-http-bad-gateway", f.IgnoreHTTPBadGateway)
+	b.AppendIntP("rpc-timeout", f.RpcTimeout)
+	b.AppendIntP("unhealthy-threshold", f.UnhealthyThreshold)
+	b.AppendArray("validator-identity", f.ValidatorIdentity)
 
 	return b.Args()
 }
