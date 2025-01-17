@@ -59,6 +59,9 @@ func (p *PackageGroup) Add(rest ...Package) {
 	}
 }
 
+func (p *PackageGroup) IsIncluded(name string) bool {
+	_, ok := p.locations[name]
+	return ok
 }
 
 func NewPackageGroup(rest ...Package) *PackageGroup {
