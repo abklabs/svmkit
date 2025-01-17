@@ -19,7 +19,7 @@ func (p PackageInfo) Check() error {
 
 func (p PackageInfo) PackageGroup() deb.PackageGroup {
 	packages := deb.Package{}.MakePackageGroup("ufw", "logrotate", "jq")
-	packages.Add(deb.Package{Version: p.Version}.MakePackageGroup("svmkit-solana-cli", p.Variant.PackageName())...)
+	packages.Add(deb.Package{Version: p.Version}.MakePackages("svmkit-solana-cli", p.Variant.PackageName())...)
 
 	return packages
 }
