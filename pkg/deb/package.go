@@ -29,16 +29,18 @@ func (p Package) MakePackages(names ...string) []Package {
 	return pkgs
 }
 
-func (p Package) MakePackageGroup(names ...string) PackageGroup {
+func (p Package) MakePackageGroup(names ...string) *PackageGroup {
 	return NewPackageGroup(p.MakePackages(names...)...)
 }
 
-type PackageGroup []Package
+type PackageGroup struct {
+	packages  []Package
+}
 
-func (p PackageGroup) Args() []string {
-	ret := make([]string, len(p))
+func (p *PackageGroup) Args() []string {
+	ret := make([]string, len(p.packages))
 
-	for i, v := range p {
+	for i, v := range p.packages {
 		ret[i] = v.String()
 	}
 
@@ -49,6 +51,10 @@ func (p *PackageGroup) Add(rest ...Package) {
 	*p = append(*p, rest...)
 }
 
-func NewPackageGroup(rest ...Package) PackageGroup {
-	return PackageGroup(rest)
+func NewPackageGroup(rest ...Package) *PackageGroup {
+	g := &PackageGroup{}
+
+	g.Add(rest...)
+
+	return g
 }
