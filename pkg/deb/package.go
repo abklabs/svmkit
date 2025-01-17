@@ -1,9 +1,9 @@
 package deb
 
 type Package struct {
-	Name          string
-	Version       *string
-	TargetRelease *string
+	Name          string  `pulumi:"name"`
+	Version       *string `pulumi:"version,optional"`
+	TargetRelease *string `pulumi:"targetRelease,optional"`
 }
 
 func (p *Package) String() string {
