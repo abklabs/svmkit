@@ -34,6 +34,7 @@ func (p Package) MakePackageGroup(names ...string) *PackageGroup {
 }
 
 type PackageGroup struct {
+	locations map[string]int
 	packages  []Package
 }
 
@@ -48,11 +49,22 @@ func (p *PackageGroup) Args() []string {
 }
 
 func (p *PackageGroup) Add(rest ...Package) {
-	*p = append(*p, rest...)
+	for _, v := range rest {
+		if pos, ok := p.locations[v.Name]; ok {
+			p.packages[pos] = v
+		} else {
+			p.locations[v.Name] = len(p.packages)
+			p.packages = append(p.packages, v)
+		}
+	}
+}
+
 }
 
 func NewPackageGroup(rest ...Package) *PackageGroup {
-	g := &PackageGroup{}
+	g := &PackageGroup{
+		locations: make(map[string]int),
+	}
 
 	g.Add(rest...)
 
