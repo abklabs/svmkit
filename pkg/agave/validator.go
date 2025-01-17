@@ -120,7 +120,7 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 	b.Set("VALIDATOR_VARIANT", string(cmd.packageInfo.Variant))
 	b.Set("VALIDATOR_PROCESS", cmd.packageInfo.Variant.ProcessName())
 	b.Set("VALIDATOR_PACKAGE", cmd.packageInfo.Variant.PackageName())
-	b.SetArray("PACKAGE_LIST", cmd.packageInfo.PackageGroup().Args())
+	b.SetArray("PACKAGE_LIST", cmd.packageInfo.PackageGroup.Args())
 
 	b.Set("RPC_BIND_ADDRESS", cmd.Flags.RpcBindAddress)
 	b.SetInt("RPC_PORT", cmd.Flags.RpcPort)
