@@ -5,8 +5,9 @@ import (
 )
 
 type PackageInfo struct {
-	Variant Variant
-	Version *string
+	Variant      Variant
+	Version      *string
+	PackageGroup *deb.PackageGroup
 }
 
 func (p PackageInfo) Check() error {
@@ -15,13 +16,6 @@ func (p PackageInfo) Check() error {
 	}
 
 	return nil
-}
-
-func (p PackageInfo) PackageGroup() *deb.PackageGroup {
-	packages := deb.Package{}.MakePackageGroup("ufw", "logrotate", "jq")
-	packages.Add(deb.Package{Version: p.Version}.MakePackages("svmkit-solana-cli", p.Variant.PackageName())...)
-
-	return packages
 }
 
 func GeneratePackageInfo(variant *Variant, version *string) (*PackageInfo, error) {
@@ -36,6 +30,9 @@ func GeneratePackageInfo(variant *Variant, version *string) (*PackageInfo, error
 	if err := info.Check(); err != nil {
 		return nil, err
 	}
+
+	info.PackageGroup = deb.Package{}.MakePackageGroup("ufw", "logrotate", "jq")
+	info.PackageGroup.Add(deb.Package{Version: info.Version}.MakePackages("svmkit-solana-cli", info.Variant.PackageName())...)
 
 	return info, nil
 }
