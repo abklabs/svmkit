@@ -18,8 +18,8 @@ func (p *Package) String() string {
 	return p.Name
 }
 
-func (p Package) MakePackageGroup(names ...string) PackageGroup {
-	pkgs := make(PackageGroup, len(names))
+func (p Package) MakePackages(names ...string) []Package {
+	pkgs := make([]Package, len(names))
 
 	for i, name := range names {
 		pkgs[i] = p
@@ -27,6 +27,10 @@ func (p Package) MakePackageGroup(names ...string) PackageGroup {
 	}
 
 	return pkgs
+}
+
+func (p Package) MakePackageGroup(names ...string) PackageGroup {
+	return NewPackageGroup(p.MakePackages(names...)...)
 }
 
 type PackageGroup []Package
