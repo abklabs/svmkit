@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/abklabs/svmkit/pkg/runner/payload"
 )
 
 type Package struct {
@@ -87,6 +89,26 @@ func (p *PackageGroup) Add(rest ...Package) {
 func (p *PackageGroup) IsIncluded(name string) bool {
 	_, ok := p.locations[name]
 	return ok
+}
+
+func (p *PackageGroup) AddToPayload(payload *payload.Payload) error {
+	for _, pkg := range p.packages {
+		if pkg.LocalPath == nil {
+			continue
+		}
+
+		r, error := pkg.Reader()
+
+		if error != nil {
+			return error
+		}
+
+		// Don't use pkg.String here; that might end
+		// up having additional flags attached to it.
+		payload.AddReader(filepath.Base(*pkg.LocalPath), r)
+	}
+
+	return nil
 }
 
 func NewPackageGroup(rest ...Package) *PackageGroup {
