@@ -1,12 +1,29 @@
 package deb
 
+import (
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+)
+
 type Package struct {
 	Name          string  `pulumi:"name"`
 	Version       *string `pulumi:"version,optional"`
 	TargetRelease *string `pulumi:"targetRelease,optional"`
+	LocalPath     *string `pulumi:"path,optional"`
 }
 
 func (p *Package) String() string {
+	if p.LocalPath != nil {
+		// XXX - We need to be explicit about this leading
+		// . because otherwise apt doesn't realize that it's a
+		// local package.  filepath.Join looks like it removes
+		// this as part of its cleanup.  Feel free to replace
+		// this with something better.
+		return "." + string(os.PathSeparator) + filepath.Base(*p.LocalPath)
+	}
+
 	if p.Version != nil {
 		return p.Name + "=" + *p.Version
 	}
@@ -16,6 +33,14 @@ func (p *Package) String() string {
 	}
 
 	return p.Name
+}
+
+func (p *Package) Reader() (io.Reader, error) {
+	if p.LocalPath == nil {
+		return nil, fmt.Errorf("attempting to get a reader from a package with no local path!")
+	}
+
+	return os.Open(*p.LocalPath)
 }
 
 func (p Package) MakePackages(names ...string) []Package {
