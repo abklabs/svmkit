@@ -156,6 +156,10 @@ func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
 		return err
 	}
 
+	if err := cmd.packageInfo.PackageGroup.AddToPayload(p); err != nil {
+		return err
+	}
+
 	p.AddString("validator-keypair.json", cmd.KeyPairs.Identity)
 	p.AddString("vote-account-keypair.json", cmd.KeyPairs.VoteAccount)
 
