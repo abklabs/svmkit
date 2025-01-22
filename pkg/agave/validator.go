@@ -81,6 +81,12 @@ func (cmd *InstallCommand) Check() error {
 		return err
 	}
 
+	if conf := cmd.RunnerConfig; conf != nil {
+		if err := conf.UpdatePackageGroup(packageInfo.PackageGroup); err != nil {
+			return err
+		}
+	}
+
 	cmd.packageInfo = packageInfo
 
 	return nil
@@ -173,6 +179,7 @@ type Agave struct {
 	KeyPairs       KeyPairs              `pulumi:"keyPairs"`
 	Flags          Flags                 `pulumi:"flags"`
 	Metrics        *Metrics              `pulumi:"metrics,optional"`
+	RunnerConfig   *runner.Config        `pulumi:"runnerConfig,optional"`
 	Info           *solana.ValidatorInfo `pulumi:"info,optional"`
 	TimeoutConfig  *TimeoutConfig        `pulumi:"timeoutConfig,optional"`
 	StartupPolicy  *StartupPolicy        `pulumi:"startupPolicy,optional"`
