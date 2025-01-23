@@ -105,11 +105,14 @@ build-nextjs() {
 
     mkdir -p "$buildpath/deb/DEBIAN" "$buildpath/deb/opt/$pkgname"
 
-    cp -r .next "$buildpath/deb/opt/$pkgname/"
+    log::info "Copying files to deb package..."
+    rsync -aq .next "$buildpath/deb/opt/$pkgname/"
     cp package.json "$buildpath/deb/opt/$pkgname/"
     cp pnpm-lock.yaml "$buildpath/deb/opt/$pkgname/"
+    rsync -aq node_modules "$buildpath/deb/opt/$pkgname/"
 
     debname="${pkgname}_${version}_${arch}.deb"
+    log::info "Creating control file for deb package..."
 
     cat <<EOF >"$buildpath/deb/DEBIAN/control"
 Package: $pkgname
@@ -124,7 +127,7 @@ EOF
 
     (
         cd "$buildpath/deb"
-        dpkg-deb -v --build . "$debname"
+        dpkg-deb -Z xz -S extreme -v --build . "$debname"
     )
 
     # check if deb was built
