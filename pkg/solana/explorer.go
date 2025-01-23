@@ -3,8 +3,8 @@ package solana
 import (
 	"strings"
 
-	"github.com/abklabs/svmkit/pkg/deb"
 	"github.com/abklabs/svmkit/pkg/runner"
+	"github.com/abklabs/svmkit/pkg/runner/deb"
 )
 
 const (
