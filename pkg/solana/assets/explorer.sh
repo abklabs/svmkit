@@ -29,7 +29,6 @@ step::005::configure-firewall() {
 
 step::006::setup-explorer() {
     svmkit::sudo chown -R sol:sol /opt/svmkit-solana-explorer
-    svmkit::sudo -i -u sol bash -c 'cd /opt/svmkit-solana-explorer && pnpm install'
 }
 
 step::007::setup-explorer-startup() {
