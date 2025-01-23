@@ -46,7 +46,7 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 	})
 
 	{
-		packages := deb.Package{Name: "svmkit-agave-watchtower"}.MakePackageGroup()
+		packages := deb.Package{}.MakePackageGroup("svmkit-agave-watchtower")
 		b.SetArray("PACKAGE_LIST", packages.Args())
 	}
 
