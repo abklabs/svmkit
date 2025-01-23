@@ -1,7 +1,7 @@
 package runner
 
 import (
-	"github.com/abklabs/svmkit/pkg/deb"
+	"github.com/abklabs/svmkit/pkg/runner/deb"
 )
 
 type Config struct {
