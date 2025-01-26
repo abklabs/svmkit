@@ -28,20 +28,22 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 
 	b.Set("FAUCET_PORT", "9900") // hardcoded in solana-faucet
 
-	{
-		packages := deb.Package{}.MakePackageGroup("ufw")
-		packages.Add(deb.Package{Name: "svmkit-solana-faucet", Version: cmd.Version})
-
-		b.SetArray("PACKAGE_LIST", packages.Args())
-	}
-
 	b.SetP("FAUCET_VERSION", cmd.Version)
+
+	b.Merge(cmd.RunnerCommand.Env())
 
 	return b
 
 }
 
 func (cmd *InstallCommand) Check() error {
+	pkgGrp := deb.Package{}.MakePackageGroup("ufw")
+	pkgGrp.Add(deb.Package{Name: "svmkit-solana-faucet", Version: cmd.Version})
+
+	if err := cmd.RunnerCommand.UpdatePackageGroup(pkgGrp); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -55,10 +57,16 @@ func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
 	p.AddReader("steps.sh", faucetScript)
 	p.AddString("faucet-keypair.json", cmd.KeyPair)
 
+	if err := cmd.RunnerCommand.AddToPayload(p); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 type Faucet struct {
+	runner.RunnerCommand
+
 	Flags   FaucetFlags `pulumi:"flags"`
 	Version *string     `pulumi:"version,optional"`
 	KeyPair string      `pulumi:"keypair" provider:"secret"`
