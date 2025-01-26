@@ -45,16 +45,19 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 		"WATCHTOWER_ENV":   watchtowerEnv.String(),
 	})
 
-	{
-		packages := deb.Package{}.MakePackageGroup("svmkit-agave-watchtower")
-		b.SetArray("PACKAGE_LIST", packages.Args())
-	}
+	b.Merge(cmd.RunnerCommand.Env())
 
 	return b
 
 }
 
 func (cmd *InstallCommand) Check() error {
+	grp := deb.Package{}.MakePackageGroup("svmkit-agave-watchtower")
+
+	if err := cmd.RunnerCommand.UpdatePackageGroup(grp); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -65,10 +68,16 @@ func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
 		return err
 	}
 
+	if err := cmd.RunnerCommand.AddToPayload(p); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 type Watchtower struct {
+	runner.RunnerCommand
+
 	Environment   solana.Environment `pulumi:"environment"`
 	Flags         WatchtowerFlags    `pulumi:"flags"`
 	Notifications NotificationConfig `pulumi:"notifications"`
