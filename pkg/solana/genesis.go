@@ -48,11 +48,7 @@ func (cmd *CreateCommand) Env() *runner.EnvBuilder {
 	b.Set("PRIMORDIAL_PUBKEYS", primordialPubkeys)
 	b.Set("PRIMORDIAL_LAMPORTS", primordialLamports)
 
-	{
-		packages := deb.Package{}.MakePackageGroup("bzip2")
-		packages.Add(deb.Package{Version: cmd.Version}.MakePackages("svmkit-solana-genesis", "svmkit-solana-cli", "svmkit-agave-ledger-tool")...)
-		b.SetArray("PACKAGE_LIST", packages.Args())
-	}
+	b.Merge(cmd.RunnerCommand.Env())
 
 	return b
 }
@@ -67,6 +63,15 @@ func (cmd *CreateCommand) Check() error {
 			if _, err := strconv.Atoi(value); err != nil {
 				return fmt.Errorf("invalid value for HashesPerTick: %q; must be 'auto', 'sleep' or a number", value)
 			}
+		}
+	}
+
+	{
+		packages := deb.Package{}.MakePackageGroup("bzip2")
+		packages.Add(deb.Package{Version: cmd.Version}.MakePackages("svmkit-solana-genesis", "svmkit-solana-cli", "svmkit-agave-ledger-tool")...)
+
+		if err := cmd.RunnerCommand.UpdatePackageGroup(packages); err != nil {
+			return err
 		}
 	}
 
@@ -86,6 +91,13 @@ func (cmd *CreateCommand) AddToPayload(p *runner.Payload) error {
 	}
 
 	p.AddReader("steps.sh", genesisScript)
+
+	err = cmd.RunnerCommand.AddToPayload(p)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -95,6 +107,8 @@ type PrimorialEntry struct {
 }
 
 type Genesis struct {
+	runner.RunnerCommand
+
 	Flags      GenesisFlags     `pulumi:"flags"`
 	Primordial []PrimorialEntry `pulumi:"primordial"`
 	Version    *string          `pulumi:"version,optional"`
