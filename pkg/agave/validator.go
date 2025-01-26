@@ -81,10 +81,8 @@ func (cmd *InstallCommand) Check() error {
 		return err
 	}
 
-	if conf := cmd.RunnerConfig; conf != nil {
-		if err := conf.UpdatePackageGroup(packageInfo.PackageGroup); err != nil {
-			return err
-		}
+	if err := cmd.RunnerCommand.UpdatePackageGroup(packageInfo.PackageGroup); err != nil {
+		return err
 	}
 
 	cmd.packageInfo = packageInfo
@@ -126,7 +124,7 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 	b.Set("VALIDATOR_VARIANT", string(cmd.packageInfo.Variant))
 	b.Set("VALIDATOR_PROCESS", cmd.packageInfo.Variant.ProcessName())
 	b.Set("VALIDATOR_PACKAGE", cmd.packageInfo.Variant.PackageName())
-	b.SetArray("PACKAGE_LIST", cmd.packageInfo.PackageGroup.Args())
+	b.Merge(cmd.RunnerCommand.Env())
 
 	b.Set("RPC_BIND_ADDRESS", cmd.Flags.RpcBindAddress)
 	b.SetInt("RPC_PORT", cmd.Flags.RpcPort)
@@ -162,7 +160,7 @@ func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
 		return err
 	}
 
-	if err := cmd.packageInfo.PackageGroup.AddToPayload(p); err != nil {
+	if err := cmd.RunnerCommand.AddToPayload(p); err != nil {
 		return err
 	}
 
@@ -173,13 +171,14 @@ func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
 }
 
 type Agave struct {
+	runner.RunnerCommand
+
 	Environment    *solana.Environment   `pulumi:"environment,optional"`
 	Version        *string               `pulumi:"version,optional"`
 	Variant        *Variant              `pulumi:"variant,optional"`
 	KeyPairs       KeyPairs              `pulumi:"keyPairs"`
 	Flags          Flags                 `pulumi:"flags"`
 	Metrics        *Metrics              `pulumi:"metrics,optional"`
-	RunnerConfig   *runner.Config        `pulumi:"runnerConfig,optional"`
 	Info           *solana.ValidatorInfo `pulumi:"info,optional"`
 	TimeoutConfig  *TimeoutConfig        `pulumi:"timeoutConfig,optional"`
 	StartupPolicy  *StartupPolicy        `pulumi:"startupPolicy,optional"`
