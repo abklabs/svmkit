@@ -16,6 +16,8 @@ type KeyPairs struct {
 }
 
 type Firedancer struct {
+	runner.RunnerCommand
+
 	Environment *solana.Environment `pulumi:"environment,optional"`
 	Version     *string             `pulumi:"version,optional"`
 
@@ -34,6 +36,13 @@ type InstallCommand struct {
 }
 
 func (c *InstallCommand) Check() error {
+	pkgGrp := deb.Package{}.MakePackageGroup("svmkit-solana-cli")
+	pkgGrp.Add(deb.Package{Name: "svmkit-frankendancer", Version: c.Version})
+
+	if err := c.RunnerCommand.UpdatePackageGroup(pkgGrp); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -53,12 +62,8 @@ func (c *InstallCommand) Env() *runner.EnvBuilder {
 		e.SetArray("SOLANA_CLI_CONFIG_FLAGS", conf.Flags().Args())
 	}
 
-	{
-		packages := deb.Package{}.MakePackageGroup("svmkit-solana-cli")
-		packages.Add(deb.Package{Name: "svmkit-frankendancer", Version: c.Version})
-		e.SetArray("PACKAGE_LIST", packages.Args())
-		e.Set("VALIDATOR_PACKAGE", "svmkit-frankendancer")
-	}
+	e.Merge(c.RunnerCommand.Env())
+	e.Set("VALIDATOR_PACKAGE", "svmkit-frankendancer")
 
 	return e
 }
@@ -104,6 +109,10 @@ func (c *InstallCommand) AddToPayload(p *runner.Payload) error {
 
 	p.AddString("validator-keypair.json", c.KeyPairs.Identity)
 	p.AddString("vote-account-keypair.json", c.KeyPairs.VoteAccount)
+
+	if err := c.RunnerCommand.AddToPayload(p); err != nil {
+		return err
+	}
 
 	return nil
 }
