@@ -1,4 +1,4 @@
-package solana
+package faucet
 
 import (
 	"strings"
