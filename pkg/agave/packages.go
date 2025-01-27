@@ -27,6 +27,8 @@ func GeneratePackageInfo(variant *Variant, version *string) (*PackageInfo, error
 		info.Variant = *variant
 	}
 
+	info.Version = version
+
 	if err := info.Check(); err != nil {
 		return nil, err
 	}
