@@ -3,15 +3,37 @@ svmkit::sudo() {
 }
 
 svmkit::apt::get() {
-    svmkit::sudo DEBIAN_FRONTEND=noninteractive apt-get -qy "$@"
+    svmkit::sudo DEBIAN_FRONTEND=noninteractive apt-get -qy -o APT::Lock::Timeout="${APT_LOCK_TIMEOUT}" -o DPkg::Lock::Timeout="${APT_LOCK_TIMEOUT}" "$@"
+}
+
+wait-for-update-lock() {
+    # If apt-get update gets called in parallel too closely, it can cause a
+    # lock contention that the Lock::Timeout can't catch. This is a workaround
+    # to wait for the lock to be released.
+    local sleep_time=5
+    local tries=0
+    local max_tries=$(((APT_LOCK_TIMEOUT + sleep_time - 1) / sleep_time))
+    while pgrep -x apt-get >/dev/null; do
+        log::warn "Another instance of apt-get update is running. Waiting..."
+        sleep $sleep_time
+        tries=$((tries + 1))
+        if [[ $tries -gt $max_tries ]]; then
+            log::warn "Waited $((tries * sleep_time)) seconds total, but apt-get is still running. Giving up."
+            break
+        fi
+    done
 }
 
 apt::setup-abk-apt-source() {
+    wait-for-update-lock
     svmkit::apt::get update
+
     svmkit::apt::get install curl gnupg
     if ! grep -q "^deb .*/svmkit dev main" /etc/apt/sources.list /etc/apt/sources.list.d/*; then
         curl -s https://apt.abklabs.com/keys/abklabs-archive-dev.asc | svmkit::sudo apt-key add -
         echo "deb https://apt.abklabs.com/svmkit dev main" | svmkit::sudo tee /etc/apt/sources.list.d/svmkit.list >/dev/null
+
+        wait-for-update-lock
         svmkit::apt::get update
     fi
 }
