@@ -14,7 +14,7 @@ step::05::setup-abklabs-apt() {
 }
 
 step::10::install-packages() {
-    svmkit::sudo apt-get update
+    svmkit::apt::update
     svmkit::apt::get --allow-downgrades install "${PACKAGE_LIST[@]}"
 }
 
