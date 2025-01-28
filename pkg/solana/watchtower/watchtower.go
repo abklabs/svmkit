@@ -52,6 +52,8 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 }
 
 func (cmd *InstallCommand) Check() error {
+	cmd.RunnerCommand.SetConfigDefaults()
+
 	grp := deb.Package{}.MakePackageGroup("svmkit-agave-watchtower")
 
 	if err := cmd.RunnerCommand.UpdatePackageGroup(grp); err != nil {

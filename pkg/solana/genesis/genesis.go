@@ -67,6 +67,8 @@ func (cmd *CreateCommand) Check() error {
 	}
 
 	{
+		cmd.RunnerCommand.SetConfigDefaults()
+
 		packages := deb.Package{}.MakePackageGroup("bzip2")
 		packages.Add(deb.Package{Version: cmd.Version}.MakePackages("svmkit-solana-genesis", "svmkit-solana-cli", "svmkit-agave-ledger-tool")...)
 
