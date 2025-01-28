@@ -1,0 +1,13 @@
+[Unit]
+Description=SVMkit FD Validator
+After=svmkit-fd-setup.service
+Requires=svmkit-fd-setup.service
+
+[Service]
+Type=exec
+User=root
+Group=root
+ExecStart=/opt/frankendancer/bin/fdctl --config /home/sol/config.toml run
+
+[Install]
+WantedBy=default.target

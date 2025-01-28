@@ -1,0 +1,53 @@
+# -*- mode: shell-script -*-
+# shellcheck shell=bash
+
+VALIDATOR_USER=sol
+VALIDATOR_GROUP=sol
+VALIDATOR_HOME=/home/$VALIDATOR_USER
+
+VALIDATOR_SERVICE=${VALIDATOR_PACKAGE}.service
+
+step::00::wait-for-a-stable-environment() {
+    cloud-init::wait-for-stable-environment
+}
+
+step::05::setup-abklabs-apt() {
+    apt::setup-abk-apt-source
+}
+
+step::20::create-sol-user() {
+    create-sol-user
+}
+
+step::30::copy-assets() {
+    svmkit::sudo cp validator-keypair.json vote-account-keypair.json config.toml "$VALIDATOR_HOME"
+    svmkit::sudo chown "$VALIDATOR_USER:$VALIDATOR_GROUP" "$VALIDATOR_HOME"/{validator-keypair,vote-account-keypair}.json "$VALIDATOR_HOME"/config.toml
+
+    svmkit::sudo cp *.service /etc/systemd/system/.
+    svmkit::sudo systemctl daemon-reload
+}
+
+step::70::install-validator() {
+    svmkit::apt::get --allow-downgrades install "${PACKAGE_LIST[@]}"
+}
+
+step::75::setup-solana-cli() {
+    [[ -v SOLANA_CLI_CONFIG_FLAGS ]] || return 0
+
+    # First setup the login user.
+    solana config set "${SOLANA_CLI_CONFIG_FLAGS[@]}"
+
+    # Setup the sol user.
+    svmkit::sudo -u "$VALIDATOR_USER" -i solana config set "${SOLANA_CLI_CONFIG_FLAGS[@]}"
+}
+
+step::80::setup-validator() {
+    if systemctl list-unit-files svmkit-fd.service >/dev/null; then
+        svmkit::sudo systemctl stop svmkit-fd.service || true
+    fi
+
+    svmkit::sudo systemctl enable svmkit-fd-setup.service
+    svmkit::sudo systemctl start svmkit-fd-setup.service
+    svmkit::sudo systemctl enable svmkit-fd-validator.service
+    svmkit::sudo systemctl start svmkit-fd-validator.service
+}

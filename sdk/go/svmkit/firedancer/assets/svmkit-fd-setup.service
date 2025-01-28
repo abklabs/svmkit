@@ -1,0 +1,15 @@
+[Unit]
+Description=SVMkit FD Machine Setup
+After=local-fs.target
+After=network.target
+
+[Service]
+Type=exec
+User=root
+Group=root
+ExecStart=/opt/frankendancer/bin/fdctl --config /home/sol/config.toml configure init all
+RemainAfterExit=true
+Type=oneshot
+
+[Install]
+WantedBy=default.target

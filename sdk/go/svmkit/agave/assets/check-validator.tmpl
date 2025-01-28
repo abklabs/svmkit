@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+{{if .StartupPolicy }}
+WAIT_FOR_RPC_HEALTH={{ or .StartupPolicy.WaitForRPCHealth false }}
+RPC_BIND_ADDRESS={{.Flags.RpcBindAddress}}
+RPC_PORT={{.Flags.RpcPort}}
+{{if .TimeoutConfig}}
+RPC_SERVICE_TIMEOUT={{or .TimeoutConfig.RpcServiceTimeout 120}}
+{{else}}
+RPC_SERVICE_TIMEOUT=120
+{{end}}
+
+$WAIT_FOR_RPC_HEALTH || exit 0
+
+is-rpc-healthy() {
+    local url result
+    url=$1 ; shift
+    result=$(curl $url -s -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","id":1, "method":"getHealth"}' | jq -r .result)
+
+    [[ $result = ok ]]
+}
+
+for i in $(seq 1 $RPC_SERVICE_TIMEOUT) ; do
+    if is-rpc-healthy http://$RPC_BIND_ADDRESS:$RPC_PORT ; then
+        exit 0
+    fi
+    sleep 1
+done
+
+echo "timed out waiting for validator to bring RPC online!" 1>&2
+exit 1
+{{end}}
