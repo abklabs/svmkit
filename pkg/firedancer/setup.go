@@ -36,6 +36,8 @@ type InstallCommand struct {
 }
 
 func (c *InstallCommand) Check() error {
+	c.RunnerCommand.SetConfigDefaults()
+
 	pkgGrp := deb.Package{}.MakePackageGroup("svmkit-solana-cli")
 	pkgGrp.Add(deb.Package{Name: "svmkit-frankendancer", Version: c.Version})
 

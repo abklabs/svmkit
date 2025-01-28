@@ -47,6 +47,8 @@ func (cmd *ExplorerCommand) Env() *runner.EnvBuilder {
 }
 
 func (cmd *ExplorerCommand) Check() error {
+	cmd.RunnerCommand.SetConfigDefaults()
+
 	pkgGrp := deb.Package{}.MakePackageGroup("ufw", "nodejs", "npm")
 	pkgGrp.Add(deb.Package{Name: "svmkit-solana-explorer", Version: cmd.Version})
 
