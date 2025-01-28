@@ -1,4 +1,4 @@
-svmkit::sudo () {
+svmkit::sudo() {
     sudo "$@"
 }
 
@@ -11,7 +11,7 @@ apt::setup-abk-apt-source() {
     svmkit::apt::get install curl gnupg
     if ! grep -q "^deb .*/svmkit dev main" /etc/apt/sources.list /etc/apt/sources.list.d/*; then
         curl -s https://apt.abklabs.com/keys/abklabs-archive-dev.asc | svmkit::sudo apt-key add -
-        echo "deb https://apt.abklabs.com/svmkit dev main" | svmkit::sudo  tee /etc/apt/sources.list.d/svmkit.list >/dev/null
+        echo "deb https://apt.abklabs.com/svmkit dev main" | svmkit::sudo tee /etc/apt/sources.list.d/svmkit.list >/dev/null
         svmkit::apt::get update
     fi
 }
@@ -25,15 +25,15 @@ cloud-init::wait-for-stable-environment() {
             cloud-init status --wait || ret=$?
 
             case "$ret" in
-                0)
-                    log::info "cloud-init has finished, continuing on"
-                    ;;
-                2)
-                    log::warn "cloud-init had a recoverable error; we're continuing anyway"
-                    ;;
-                *)
-                    log::error "cloud-init status exited with status $ret; continuing but you should investigate"
-                    ;;
+            0)
+                log::info "cloud-init has finished, continuing on"
+                ;;
+            2)
+                log::warn "cloud-init had a recoverable error; we're continuing anyway"
+                ;;
+            *)
+                log::error "cloud-init status exited with status $ret; continuing but you should investigate"
+                ;;
             esac
         else
             log::warn "cloud-init.service in a failed state; not waiting for completion"
