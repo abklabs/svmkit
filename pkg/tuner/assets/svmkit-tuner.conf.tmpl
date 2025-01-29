@@ -1,0 +1,101 @@
+{{- /* svmkit-tuner.conf.tmpl */ -}}
+
+{{- /* -------- Net sysctl parameters -------- */ -}}
+{{- if .Net}}
+    {{- if .Net.NetIpv4TcpRmem }}
+net.ipv4.tcp_rmem = {{ .Net.NetIpv4TcpRmem }}
+    {{- end }}
+    {{- if .Net.NetIpv4TcpWmem }}
+net.ipv4.tcp_wmem = {{ .Net.NetIpv4TcpWmem }}
+    {{- end }}
+    {{- if .Net.NetIpv4TcpCongestionControl }}
+net.ipv4.tcp_congestion_control = {{ .Net.NetIpv4TcpCongestionControl }}
+    {{- end }}
+    {{- if .Net.NetIpv4TcpFastopen }}
+net.ipv4.tcp_fastopen = {{ .Net.NetIpv4TcpFastopen }}
+    {{- end }}
+    {{- if .Net.NetIpv4TcpTimestamps }}
+net.ipv4.tcp_timestamps = {{ .Net.NetIpv4TcpTimestamps }}
+    {{- end }}
+    {{- if .Net.NetIpv4TcpSack }}
+net.ipv4.tcp_sack = {{ .Net.NetIpv4TcpSack }}
+    {{- end }}
+    {{- if .Net.NetIpv4TcpLowLatency }}
+net.ipv4.tcp_low_latency = {{ .Net.NetIpv4TcpLowLatency }}
+    {{- end }}
+    {{- if .Net.NetIpv4TcpTwReuse }}
+net.ipv4.tcp_tw_reuse = {{ .Net.NetIpv4TcpTwReuse }}
+    {{- end }}
+    {{- if .Net.NetIpv4TcpNoMetricsSave }}
+net.ipv4.tcp_no_metrics_save = {{ .Net.NetIpv4TcpNoMetricsSave }}
+    {{- end }}
+    {{- if .Net.NetIpv4TcpModerateRcvbuf }}
+net.ipv4.tcp_moderate_rcvbuf = {{ .Net.NetIpv4TcpModerateRcvbuf }}
+    {{- end }}
+
+    {{- if .Net.NetCoreRmemMax }}
+net.core.rmem_max = {{ .Net.NetCoreRmemMax }}
+    {{- end }}
+    {{- if .Net.NetCoreRmemDefault }}
+net.core.rmem_default = {{ .Net.NetCoreRmemDefault }}
+    {{- end }}
+    {{- if .Net.NetCoreWmemMax }}
+net.core.wmem_max = {{ .Net.NetCoreWmemMax }}
+    {{- end }}
+    {{- if .Net.NetCoreWmemDefault }}
+net.core.wmem_default = {{ .Net.NetCoreWmemDefault }}
+    {{- end }}
+{{- end }}
+
+{{- /* -------- Kernel sysctl parameters -------- */ -}}
+{{- if .Kernel}}
+    {{- if .Kernel.KernelTimerMigration }}
+kernel.timer_migration = {{ .Kernel.KernelTimerMigration }}
+    {{- end }}
+    {{- if .Kernel.KernelNmiWatchdog }}
+kernel.nmi_watchdog = {{ .Kernel.KernelNmiWatchdog }}
+    {{- end }}
+    {{- if .Kernel.KernelSchedMinGranularityNs }}
+kernel.sched_min_granularity_ns = {{ .Kernel.KernelSchedMinGranularityNs }}
+    {{- end }}
+    {{- if .Kernel.KernelSchedWakeupGranularityNs }}
+kernel.sched_wakeup_granularity_ns = {{ .Kernel.KernelSchedWakeupGranularityNs }}
+    {{- end }}
+    {{- if .Kernel.KernelHungTaskTimeoutSecs }}
+kernel.hung_task_timeout_secs = {{ .Kernel.KernelHungTaskTimeoutSecs }}
+    {{- end }}
+    {{- if .Kernel.KernelPidMax }}
+kernel.pid_max = {{ .Kernel.KernelPidMax }}
+    {{- end }}
+{{- end }}
+
+{{- /* -------- VM sysctl parameters -------- */ -}}
+{{- if .Vm}}
+    {{- if .Vm.VmSwappiness }}
+vm.swappiness = {{ .Vm.VmSwappiness }}
+    {{- end }}
+    {{- if .Vm.VmMaxMapCount }}
+vm.max_map_count = {{ .Vm.VmMaxMapCount }}
+    {{- end }}
+    {{- if .Vm.VmStatInterval }}
+vm.stat_interval = {{ .Vm.VmStatInterval }}
+    {{- end }}
+    {{- if .Vm.VmDirtyRatio }}
+vm.dirty_ratio = {{ .Vm.VmDirtyRatio }}
+    {{- end }}
+    {{- if .Vm.VmDirtyBackgroundRatio }}
+vm.dirty_background_ratio = {{ .Vm.VmDirtyBackgroundRatio }}
+    {{- end }}
+    {{- if .Vm.VmMinFreeKbytes }}
+vm.min_free_kbytes = {{ .Vm.VmMinFreeKbytes }}
+    {{- end }}
+    {{- if .Vm.VmDirtyExpireCentisecs }}
+vm.dirty_expire_centisecs = {{ .Vm.VmDirtyExpireCentisecs }}
+    {{- end }}
+    {{- if .Vm.VmDirtyWritebackCentisecs }}
+vm.dirty_writeback_centisecs = {{ .Vm.VmDirtyWritebackCentisecs }}
+    {{- end }}
+    {{- if .Vm.VmDirtytimeExpireSeconds }}
+vm.dirtytime_expire_seconds = {{ .Vm.VmDirtytimeExpireSeconds }}
+    {{- end }}
+{{- end }}
