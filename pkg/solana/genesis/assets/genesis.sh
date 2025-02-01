@@ -48,8 +48,8 @@ step::005::create-sol-user() {
 }
 
 step::007::check-for-existing-ledger() {
-    if [[ -d $LEDGER_PATH/rocksdb ]] ; then
-	log::fatal "Ledger directory '$LEDGER_PATH' already appears populated!"
+    if [[ -d $LEDGER_PATH/rocksdb ]]; then
+        log::fatal "Ledger directory '$LEDGER_PATH' already appears populated!"
     fi
 }
 
