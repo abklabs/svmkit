@@ -191,4 +191,4 @@ build-ref svmkit-mantis-validator mantis/mantis/diet-validator-rpc solana-valida
 
 build-ref svmkit-xen-validator xen/dyn_fees_v1 solana-validator
 
-build-ref svmkit-xen-validator tachyon/dyn_fees_v2 solana-validator
+build-ref svmkit-tachyon-validator tachyon/dyn_fees_v2 tachyon-validator
