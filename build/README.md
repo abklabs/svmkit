@@ -33,6 +33,9 @@
 [remote "xen"]
 	url = git@github.com:FairCrypto/solanalabs.git
 	fetch = +refs/heads/*:refs/remotes/xen/*
+[remote "tachyon"]
+	url = git@github.com:x1-labs/tachyon.git
+	fetch = +refs/heads/*:refs/remotes/tachyon/*
 ```
 
 Once that's in place, you can run `solana-build` and get something like the following:
