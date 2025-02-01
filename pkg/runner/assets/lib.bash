@@ -2,41 +2,101 @@ svmkit::sudo() {
     sudo "$@"
 }
 
-svmkit::apt::get() {
-    svmkit::sudo DEBIAN_FRONTEND=noninteractive apt-get -qy -o APT::Lock::Timeout="${APT_LOCK_TIMEOUT}" -o DPkg::Lock::Timeout="${APT_LOCK_TIMEOUT}" "$@"
+APT_LOCKFILE="/var/lib/dpkg/apt-svmkit.lock"
+
+svmkit::sudo touch "$APT_LOCKFILE"
+svmkit::sudo chown "$(id -u):$(id -g)" "$APT_LOCKFILE"
+svmkit::sudo chmod 600 "$APT_LOCKFILE"
+
+svmkit::flock::start() {
+    if [[ -n "${lock_fd:-}" ]]; then
+        log::error "Cannot reacquire svmkit lock: lock_fd=$lock_fd is already set."
+        return 1
+    fi
+
+    log::info "Acquiring svmkit lock..."
+
+    # shellcheck disable=SC2093,SC1083
+    exec {lock_fd}>>"${APT_LOCKFILE}"
+    flock -x -w "${APT_LOCK_TIMEOUT}" "${lock_fd}" || {
+        log::error "Could not acquire svmkit lock within ${APT_LOCK_TIMEOUT}"
+        exit 1
+    }
 }
 
-wait-for-update-lock() {
-    # If apt-get update gets called in parallel too closely, it can cause a
-    # lock contention that the Lock::Timeout can't catch. This is a workaround
-    # to wait for the lock to be released.
-    local sleep_time=5
-    local tries=0
-    local max_tries=$(((APT_LOCK_TIMEOUT + sleep_time - 1) / sleep_time))
-    while pgrep -x apt-get >/dev/null; do
-        log::warn "Another instance of apt-get update is running. Waiting..."
-        sleep $sleep_time
-        tries=$((tries + 1))
-        if [[ $tries -gt $max_tries ]]; then
-            log::warn "Waited $((tries * sleep_time)) seconds total, but apt-get is still running. Giving up."
-            break
-        fi
-    done
+svmkit::flock::end() {
+    if [[ -z "${lock_fd:-}" ]]; then
+        log::warn "Svmkit lock already released, nothing to do."
+        return 0
+    fi
+
+    log::info "Releasing svmkit lock..."
+
+    flock -u "${lock_fd}"
+    exec {lock_fd}>&-
+    unset lock_fd
+}
+
+svmkit::flock::cleanup() {
+    [[ -v lock_fd ]] || return 0
+
+    svmkit::flock::end
+}
+
+exit::trigger svmkit::flock::cleanup
+
+svmkit::flock::run() {
+    if [[ -n "${lock_fd:-}" ]]; then
+        log::error "Cannot run flock::run while flock::start holds the lock_fd=$lock_fd"
+        return 1
+    fi
+
+    local rc=0
+    flock -x -E 199 -w "$APT_LOCK_TIMEOUT" "$APT_LOCKFILE" "$@" || rc=$?
+
+    case "$rc" in
+    0)
+        return 0
+        ;;
+    199)
+        log::error "failed to acquire svmkit lock within $APT_LOCK_TIMEOUT seconds while running: $(array::join " " "$@")"
+        return 199
+        ;;
+    *)
+        log::error "failed to get svmkit lock with exit code $rc while running: $(array::join " " "$@")"
+        return "$rc"
+        ;;
+    esac
+}
+
+svmkit::apt::get() {
+    log::info "Acquiring svmkit lock and running apt-get..."
+
+    DEBIAN_FRONTEND=noninteractive svmkit::flock::run sudo -E apt-get -qy \
+        -o APT::Lock::Timeout="$APT_LOCK_TIMEOUT" \
+        -o DPkg::Lock::Timeout="$APT_LOCK_TIMEOUT" \
+        "$@"
 }
 
 svmkit::apt::update() {
-    wait-for-update-lock
     svmkit::apt::get update
 }
 
 apt::setup-abk-apt-source() {
     svmkit::apt::update
-
     svmkit::apt::get install curl gnupg
+
+    svmkit::flock::start
+    local did_add_key=false
     if ! grep -q "^deb .*/svmkit dev main" /etc/apt/sources.list /etc/apt/sources.list.d/*; then
         curl -s https://apt.abklabs.com/keys/abklabs-archive-dev.asc | svmkit::sudo apt-key add -
-        echo "deb https://apt.abklabs.com/svmkit dev main" | svmkit::sudo tee /etc/apt/sources.list.d/svmkit.list >/dev/null
+        echo "deb https://apt.abklabs.com/svmkit dev main" |
+            svmkit::sudo tee /etc/apt/sources.list.d/svmkit.list >/dev/null
+        did_add_key=true
+    fi
+    svmkit::flock::end
 
+    if $did_add_key; then
         svmkit::apt::update
     fi
 }
