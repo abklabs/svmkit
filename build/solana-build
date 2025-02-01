@@ -2,89 +2,94 @@
 
 set -euo pipefail
 
-log::generic () {
+log::generic() {
     local level
-    level=$1 ; shift
+    level=$1
+    shift
 
     printf "%s\t%s\n" "$level" "$*"
 }
 
-log::info () {
+log::info() {
     log::generic INFO "$@"
 }
 
-log::fatal () {
+log::fatal() {
     log::generic FATAL "$@"
     exit 1
 }
 
-lookup-remote-tag () {
+lookup-remote-tag() {
     local remote tag tagfile tagcount
-    remote=$1 ; shift
-    tag=$1 ; shift
+    remote=$1
+    shift
+    tag=$1
+    shift
 
     tagfile=$(mktemp)
 
-    git ls-remote --tags "$remote" "$tag" > "$tagfile"
+    git ls-remote --tags "$remote" "$tag" >"$tagfile"
 
-    tagcount=$(wc -l < "$tagfile")
+    tagcount=$(wc -l <"$tagfile")
 
-    if [[ $tagcount -lt 1 ]] ; then
-	log::fatal "no tags found on $remote for $tag!"
+    if [[ $tagcount -lt 1 ]]; then
+        log::fatal "no tags found on $remote for $tag!"
     fi
 
-    if [[ $tagcount -gt 1 ]] ; then
-	log::fatal "found more than one tag matching $tag on $remote.  cowardly giving up!"
+    if [[ $tagcount -gt 1 ]]; then
+        log::fatal "found more than one tag matching $tag on $remote.  cowardly giving up!"
     fi
 
-    awk '{ print $1;}' < "$tagfile"
+    awk '{ print $1;}' <"$tagfile"
     rm "$tagfile"
 }
 
-fetch-remote () {
+fetch-remote() {
     local remote
-    remote=$1 ; shift
+    remote=$1
+    shift
     log::info "git fetching remote $remote..."
     git fetch "$remote"
 }
 
-default-build () {
+default-build() {
     # shellcheck disable=SC2154,SC1091
-    ( set +u && source ci/rust-version.sh stable && env | grep rust_ && cargo +"$rust_stable" deb -p "$target" )
+    (set +u && source ci/rust-version.sh stable && env | grep rust_ && cargo +"$rust_stable" deb -p "$target")
     mv target/debian/*.deb "../build/$ref/."
 }
 
-generate-replacement-metadata () {
+generate-replacement-metadata() {
     local name
-    name=$1 ; shift
-cat <<EOF
+    name=$1
+    shift
+    cat <<EOF
 name = "$name"
 maintainer = "Engineering <engineering@abklabs.com>"
 EOF
 }
 
-anza-build-extra () {
-    cat <<EOF >> genesis/Cargo.toml
+anza-build-extra() {
+    cat <<EOF >>genesis/Cargo.toml
 [package.metadata.deb]
 $(generate-replacement-metadata svmkit-solana-genesis)
 EOF
 
-    cat <<EOF >> faucet/Cargo.toml
+    cat <<EOF >>faucet/Cargo.toml
 [package.metadata.deb]
 $(generate-replacement-metadata svmkit-solana-faucet)
 EOF
 
-    cat <<EOF >> cli/Cargo.toml
+    cat <<EOF >>cli/Cargo.toml
 [package.metadata.deb]
 $(generate-replacement-metadata svmkit-solana-cli)
 EOF
 
-    cat <<EOF >> ledger-tool/Cargo.toml
+    cat <<EOF >>ledger-tool/Cargo.toml
 [package.metadata.deb]
 $(generate-replacement-metadata svmkit-agave-ledger-tool)
 EOF
 
-    cat <<EOF >> watchtower/Cargo.toml
+    cat <<EOF >>watchtower/Cargo.toml
 [package.metadata.deb]
 $(generate-replacement-metadata svmkit-agave-watchtower)
 EOF
@@ -104,15 +109,19 @@ EOF
     default-build
 }
 
-build-ref () {
+build-ref() {
     local ref target
     buildfunc=default-build
-    package_name=$1 ; shift
-    ref=$1 ; shift
-    target=$1 ; shift
+    package_name=$1
+    shift
+    ref=$1
+    shift
+    target=$1
+    shift
 
-    if [[ $# -gt 0 ]] ; then
-	buildfunc=$1 ; shift
+    if [[ $# -gt 0 ]]; then
+        buildfunc=$1
+        shift
     fi
 
     log::info "building $ref -> $target..."
@@ -120,7 +129,7 @@ build-ref () {
     git clean -f -d -x
     git checkout -f "$ref"
     git submodule update --init
-    cat <<EOF >> validator/Cargo.toml
+    cat <<EOF >>validator/Cargo.toml
 [package.metadata.deb]
 name = "$package_name"
 maintainer = "Engineering <engineering@abklabs.com>"
@@ -133,14 +142,14 @@ EOF
     git checkout -f master
 }
 
-build-with-other-clang () {
+build-with-other-clang() {
     local tmpdir llvmroot
 
     tmpdir=$(mktemp -d)
     llvmroot=/usr/lib/llvm-14
 
     # This is a massive hack to work around lack of configurability inside crates.
-    cat <<'EOF' > "$tmpdir/c++"
+    cat <<'EOF' >"$tmpdir/c++"
 #!/usr/bin/env bash
 
 if echo "$@" | grep ROCKSDB > /dev/null ; then
@@ -160,19 +169,19 @@ EOF
     rm -rf "$tmpdir"
 }
 
-for remote in solana-labs anza-xyz PowerLedger jito-foundation pyth-network mantis xen ; do
+for remote in solana-labs anza-xyz PowerLedger jito-foundation pyth-network mantis xen; do
     fetch-remote $remote
 done
 
 build-ref svmkit-solana-validator solana-labs/master solana-validator
 
-for tag in v1.18.25 v1.18.26 v2.0.18 v2.0.20 v2.0.21 v2.0.22 v2.0.24 v2.1.4 v2.1.6 v2.1.7 v2.1.8 v2.1.9 ; do
+for tag in v1.18.25 v1.18.26 v2.0.18 v2.0.20 v2.0.21 v2.0.22 v2.0.24 v2.1.4 v2.1.6 v2.1.7 v2.1.8 v2.1.9; do
     build-ref svmkit-agave-validator "$(lookup-remote-tag anza-xyz $tag)" agave-validator anza-build-extra
 done
 
 build-ref svmkit-powerledger-validator PowerLedger/upgrade_to_v1.16.28 solana-validator
 
-for tag in v2.0.18-jito v2.0.19-jito v2.0.21-jito v2.0.22-jito v2.1.7-jito ; do
+for tag in v2.0.18-jito v2.0.19-jito v2.0.21-jito v2.0.22-jito v2.1.7-jito; do
     build-ref svmkit-jito-validator "$(lookup-remote-tag jito-foundation $tag)" agave-validator
 done
 
