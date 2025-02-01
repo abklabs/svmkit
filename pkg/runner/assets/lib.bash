@@ -75,4 +75,12 @@ create-sol-user() {
 
     username=$(whoami)
     id -nGz "$username" | grep -qzxF sol || svmkit::sudo adduser "$username" sol
+
+    cat <<EOF | svmkit::sudo tee /etc/security/limits.d/50-sol.conf >/dev/null
+sol    soft    nofile    1000000
+sol    hard    nofile    1000000
+EOF
+
+    svmkit::sudo chown root:root /etc/security/limits.d/50-sol.conf
+    svmkit::sudo chmod 644 /etc/security/limits.d/50-sol.conf
 }
