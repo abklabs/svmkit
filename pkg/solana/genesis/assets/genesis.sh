@@ -103,5 +103,5 @@ step::040::execute-solana-genesis() {
 }
 
 step::050::create-initial-snapshot() {
-    svmkit::sudo -u sol -i agave-ledger-tool create-snapshot --ignore-ulimit-nofile-error ROOT
+    svmkit::sudo -u sol -i agave-ledger-tool create-snapshot ROOT
 }
