@@ -129,6 +129,7 @@ cloud-init::wait-for-stable-environment() {
 create-sol-user() {
     local username
 
+    svmkit::flock::start
     id sol >/dev/null 2>&1 || svmkit::sudo adduser --disabled-password --gecos "" sol
     svmkit::sudo mkdir -p "/home/sol"
     svmkit::sudo chown -f -R sol:sol "/home/sol"
@@ -143,4 +144,6 @@ EOF
 
     svmkit::sudo chown root:root /etc/security/limits.d/50-sol.conf
     svmkit::sudo chmod 644 /etc/security/limits.d/50-sol.conf
+
+    svmkit::flock::end
 }
