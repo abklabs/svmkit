@@ -133,6 +133,7 @@ create-sol-user() {
     id sol >/dev/null 2>&1 || svmkit::sudo adduser --disabled-password --gecos "" sol
     svmkit::sudo mkdir -p "/home/sol"
     svmkit::sudo chown -f -R sol:sol "/home/sol"
+    svmkit::sudo chmod 750 "/home/sol"
 
     username=$(whoami)
     id -nGz "$username" | grep -qzxF sol || svmkit::sudo adduser "$username" sol
