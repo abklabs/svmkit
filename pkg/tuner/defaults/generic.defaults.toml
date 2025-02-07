@@ -1,0 +1,34 @@
+[net]
+netIpv4TcpRmem = "10240 87380 12582912"
+netIpv4TcpWmem = "10240 87380 12582912"
+netIpv4TcpCongestionControl = "westwood"
+netIpv4TcpFastopen = 3
+netIpv4TcpTimestamps = 0
+netIpv4TcpSack = 1
+netIpv4TcpLowLatency = 1
+netIpv4TcpTwReuse = 1
+netIpv4TcpNoMetricsSave = 1
+netIpv4TcpModerateRcvbuf = 1
+netCoreRmemMax = 134217728
+netCoreRmemDefault = 134217728
+netCoreWmemMax = 134217728
+netCoreWmemDefault = 134217728
+
+[kernel]
+kernelTimerMigration = 0
+kernelNmiWatchdog = 0
+kernelSchedMinGranularityNs = 10000000
+kernelSchedWakeupGranularityNs = 15000000
+kernelHungTaskTimeoutSecs = 600
+kernelPidMax = 65536
+
+[vm]
+vmSwappiness = 30
+vmMaxMapCount = 700000
+vmStatInterval = 10
+vmDirtyRatio = 40
+vmDirtyBackgroundRatio = 10
+vmMinFreeKbytes = 3000000
+vmDirtyExpireCentisecs = 36000
+vmDirtyWritebackCentisecs = 3000
+vmDirtytimeExpireSeconds = 43200

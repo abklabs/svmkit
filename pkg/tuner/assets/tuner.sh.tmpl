@@ -36,6 +36,11 @@ step::004::setup-tuner() {
     svmkit::sudo chown root:root /etc/sysctl.d/zzz-svmkit-tuner.conf
 
     echo "# Tuning parameters enabled by SVMKit" | write-to-tuner-log
+
+    if [[ -n "${TUNER_VARIANT:-}" ]]; then
+        echo "# Using Tuner variant: ${TUNER_VARIANT}" | write-to-tuner-log
+    fi
+
     while IFS= read -r line; do
         [[ -z "${line}" || "${line}" =~ ^# ]] && continue
 
