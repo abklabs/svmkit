@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	aptLockTimeout = 120
+	aptLockTimeout = 300
 )
 
 type Config struct {
