@@ -63,7 +63,7 @@ svmkit::flock::run() {
         return 199
         ;;
     *)
-        log::error "failed to get svmkit lock with exit code $rc while running: $(array::join " " "$@")"
+        log::error "Command under svmkit lock failed with exit code $rc while running: $(array::join " " "$@")"
         return "$rc"
         ;;
     esac
