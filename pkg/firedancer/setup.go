@@ -31,6 +31,12 @@ func (fd *Firedancer) Install() runner.Command {
 	}
 }
 
+func (fd *Firedancer) Uninstall() runner.Command {
+	return &UninstallCommand{
+		Firedancer: *fd,
+	}
+}
+
 type InstallCommand struct {
 	Firedancer
 }
@@ -117,4 +123,33 @@ func (c *InstallCommand) AddToPayload(p *runner.Payload) error {
 	}
 
 	return nil
+}
+
+type UninstallCommand struct {
+	Firedancer
+}
+
+// Check implements runner.Command.
+func (u *UninstallCommand) Check() error {
+	return nil
+}
+
+// Env implements runner.Command.
+// Subtle: this method shadows the method (Firedancer).Env of UninstallCommand.Firedancer.
+func (u *UninstallCommand) Env() *runner.EnvBuilder {
+	return u.RunnerCommand.Env()
+}
+
+// AddToPayload implements runner.Command.
+// Subtle: this method shadows the method (Firedancer).AddToPayload of UninstallCommand.Firedancer.
+func (u *UninstallCommand) AddToPayload(p *runner.Payload) error {
+	{
+		r, err := assets.Open(assetsUninstall)
+
+		if err != nil {
+			return err
+		}
+
+		p.AddReader("steps.sh", r)
+	}
 }

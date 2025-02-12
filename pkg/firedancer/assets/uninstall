@@ -1,0 +1,6 @@
+# -*- mode: shell-script -*-
+# shellcheck shell=bash
+
+log::info 'hello!'
+
+# vim:set ft=sh:
