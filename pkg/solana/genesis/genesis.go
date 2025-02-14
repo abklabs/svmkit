@@ -103,17 +103,17 @@ func (cmd *CreateCommand) AddToPayload(p *runner.Payload) error {
 	return nil
 }
 
-type PrimorialEntry struct {
-	Pubkey   string `pulumi:"pubkey"`
-	Lamports string `pulumi:"lamports"`
+type PrimordialAccount struct {
+	Pubkey     string `pulumi:"pubkey"`
+	Lamports   string `pulumi:"lamports"`
 }
 
 type Genesis struct {
 	runner.RunnerCommand
 
-	Flags      GenesisFlags     `pulumi:"flags"`
-	Primordial []PrimorialEntry `pulumi:"primordial"`
-	Version    *string          `pulumi:"version,optional"`
+	Flags      GenesisFlags        `pulumi:"flags"`
+	Primordial []PrimordialAccount `pulumi:"primordial"`
+	Version    *string             `pulumi:"version,optional"`
 }
 
 type GenesisFlags struct {
