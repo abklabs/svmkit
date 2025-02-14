@@ -2,15 +2,17 @@ package genesis
 
 import (
 	"fmt"
+	"io"
 	"strconv"
-	"strings"
 
 	"github.com/abklabs/svmkit/pkg/runner"
 	"github.com/abklabs/svmkit/pkg/runner/deb"
+	"gopkg.in/yaml.v3"
 )
 
 const (
-	primordialAccountPath = "/home/sol/primordial.yaml"
+	primordialAccountPath  = "/home/sol/primordial.yaml"
+	primordialDefaultOwner = "11111111111111111111111111111111"
 
 	defaultClusterType                = "development"
 	defaultFaucetLamports             = 1000
@@ -31,22 +33,7 @@ func (cmd *CreateCommand) Env() *runner.EnvBuilder {
 
 	b.SetArray("GENESIS_FLAGS", cmd.Flags.Args())
 	b.SetArray("GENESIS_ENV", genesisEnv.Args())
-
-	// Primordial accounts as environment variables
-	var primordialPubkeys, primordialLamports string
-	if cmd.Primordial != nil {
-		var pubkeys, lamports []string
-		for _, entry := range cmd.Primordial {
-			pubkeys = append(pubkeys, entry.Pubkey)
-			lamports = append(lamports, entry.Lamports)
-		}
-		primordialPubkeys = strings.Join(pubkeys, ",")
-		primordialLamports = strings.Join(lamports, ",")
-	}
-
 	b.Set("LEDGER_PATH", cmd.Flags.LedgerPath)
-	b.Set("PRIMORDIAL_PUBKEYS", primordialPubkeys)
-	b.Set("PRIMORDIAL_LAMPORTS", primordialLamports)
 
 	b.Merge(cmd.RunnerCommand.Env())
 
@@ -87,6 +74,14 @@ func (g *Genesis) Create() runner.Command {
 }
 
 func (cmd *CreateCommand) AddToPayload(p *runner.Payload) error {
+	err := cmd.BuildPrimordialYaml(p.NewWriter(runner.PayloadFile{
+		Path: "primordial.yaml",
+	}))
+
+	if err != nil {
+		return err
+	}
+
 	genesisScript, err := assets.Open(assetsGenesisScript)
 	if err != nil {
 		return err
@@ -103,9 +98,31 @@ func (cmd *CreateCommand) AddToPayload(p *runner.Payload) error {
 	return nil
 }
 
+func (cmd *CreateCommand) BuildPrimordialYaml(w io.Writer) error {
+	enc := yaml.NewEncoder(w)
+	defer enc.Close()
+
+	resultMap := make(map[string]PrimordialAccount)
+	for _, acc := range cmd.Primordial {
+		if acc.Owner == "" {
+			acc.Owner = primordialDefaultOwner
+		}
+		resultMap[acc.Pubkey] = acc
+	}
+
+	if err := enc.Encode(resultMap); err != nil {
+		return fmt.Errorf("failed to encode primordial YAML: %w", err)
+	}
+
+	return nil
+}
+
 type PrimordialAccount struct {
-	Pubkey     string `pulumi:"pubkey"`
-	Lamports   int64  `pulumi:"lamports"`
+	Pubkey     string `pulumi:"pubkey" yaml:"-"`
+	Lamports   int64  `pulumi:"lamports" yaml:"balance"`
+	Owner      string `pulumi:"owner,optional" yaml:"owner"`
+	Executable bool   `pulumi:"executable,optional" yaml:"executable"`
+	Data       string `pulumi:"data,optional" yaml:"data"`
 }
 
 type Genesis struct {
