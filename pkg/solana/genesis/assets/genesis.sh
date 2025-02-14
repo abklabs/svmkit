@@ -69,33 +69,8 @@ step::020::fetch-all-programs() {
 }
 
 step::030::write-primordial-accounts-file() {
-    if [[ -z "$PRIMORDIAL_PUBKEYS" || -z "$PRIMORDIAL_LAMPORTS" ]]; then
-        log::fatal "PRIMORDIAL_PUBKEYS or PRIMORDIAL_LAMPORTS variable is not set or empty!"
-    fi
-
-    local pubkeys lamports
-
-    array::split pubkeys , "${PRIMORDIAL_PUBKEYS}"
-    array::split lamports , "${PRIMORDIAL_LAMPORTS}"
-
-    if [[ ${#pubkeys[@]} -ne ${#lamports[@]} ]]; then
-        log::error "The number of pubkeys and lamports entries do not match."
-        return 1
-    fi
-
-    svmkit::sudo rm -f /home/sol/primordial.yaml
-
-    for i in "${!pubkeys[@]}"; do
-        local pubkey=${pubkeys[$i]}
-        local lamport=${lamports[$i]}
-        cat <<EOF | svmkit::sudo -u sol tee -a /home/sol/primordial.yaml >/dev/null
-$pubkey:
-  balance: $lamport
-  owner: 11111111111111111111111111111111
-  executable: false
-  data:
-EOF
-    done
+    svmkit::sudo cp -f primordial.yaml /home/sol/primordial.yaml
+    svmkit::sudo chown sol:sol /home/sol/primordial.yaml
 }
 
 step::040::execute-solana-genesis() {
