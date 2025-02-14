@@ -105,7 +105,7 @@ func (cmd *CreateCommand) AddToPayload(p *runner.Payload) error {
 
 type PrimordialAccount struct {
 	Pubkey     string `pulumi:"pubkey"`
-	Lamports   string `pulumi:"lamports"`
+	Lamports   int64  `pulumi:"lamports"`
 }
 
 type Genesis struct {
