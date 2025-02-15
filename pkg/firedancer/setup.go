@@ -131,6 +131,14 @@ type UninstallCommand struct {
 
 // Check implements runner.Command.
 func (u *UninstallCommand) Check() error {
+	u.RunnerCommand.SetConfigDefaults()
+
+	pkgGrp := deb.Package{}.MakePackageGroup("svmkit-solana-cli")
+
+	if err := u.RunnerCommand.UpdatePackageGroup(pkgGrp); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -152,4 +160,6 @@ func (u *UninstallCommand) AddToPayload(p *runner.Payload) error {
 
 		p.AddReader("steps.sh", r)
 	}
+
+	return nil
 }
