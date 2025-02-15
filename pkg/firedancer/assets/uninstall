@@ -1,0 +1,15 @@
+# -*- mode: shell-script -*-
+# shellcheck shell=bash
+
+step::00::wait-for-a-stable-environment() {
+    cloud-init::wait-for-stable-environment
+}
+
+step::10::stop-services() {
+  svmkit::sudo systemctl stop svmkit-fd-validator.service
+  svmkit::sudo systemctl disable svmkit-fd-validator.service
+  svmkit::sudo systemctl stop svmkit-fd-setup.service
+  svmkit::sudo systemctl disable svmkit-fd-setup.service
+}
+
+# vim:set ft=sh:
