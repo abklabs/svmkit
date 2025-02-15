@@ -129,7 +129,6 @@ type UninstallCommand struct {
 	Firedancer
 }
 
-// Check implements runner.Command.
 func (u *UninstallCommand) Check() error {
 	u.RunnerCommand.SetConfigDefaults()
 
@@ -142,14 +141,10 @@ func (u *UninstallCommand) Check() error {
 	return nil
 }
 
-// Env implements runner.Command.
-// Subtle: this method shadows the method (Firedancer).Env of UninstallCommand.Firedancer.
 func (u *UninstallCommand) Env() *runner.EnvBuilder {
 	return u.RunnerCommand.Env()
 }
 
-// AddToPayload implements runner.Command.
-// Subtle: this method shadows the method (Firedancer).AddToPayload of UninstallCommand.Firedancer.
 func (u *UninstallCommand) AddToPayload(p *runner.Payload) error {
 	{
 		r, err := assets.Open(assetsUninstall)
