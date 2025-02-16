@@ -1,8 +1,9 @@
 package firedancer
 
 import (
-	"github.com/BurntSushi/toml"
 	"io"
+
+	"github.com/BurntSushi/toml"
 )
 
 type ConfigLog struct {
