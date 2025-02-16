@@ -107,7 +107,7 @@ type Config struct {
 	Layout    *ConfigLayout    `toml:"layout,omitempty" pulumi:"layout,optional"`
 	HugeTLBFS *ConfigHugeTLBFS `toml:"hugetlbfs,omitempty" pulumi:"hugetlbfs,optional"`
 
-	ExtraConfig *[]string `pulumi:"extraConfig,optional"`
+	ExtraConfig *[]string `toml:"-" pulumi:"extraConfig,optional"`
 }
 
 func (c *Config) Encode(w io.Writer) error {
