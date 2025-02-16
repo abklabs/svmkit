@@ -26,30 +26,30 @@ type ConfigLedger struct {
 	AccountIndexExcludeKeys *[]string `toml:"account_index_exclude_keys,omitempty" pulumi:"accountIndexExcludeKeys,optional"`
 	AccountIndexIncludeKeys *[]string `toml:"account_index_include_keys,omitempty" pulumi:"accountIndexIncludeKeys,optional"`
 	SnapshotArchiveFormat   *string   `toml:"snapshot_archive_format,omitempty" pulumi:"snapshotArchiveFormat,optional"`
-	RequireTower            *bool     `toml:"require_tower,omitempty" pulumi:"requireTower,optional"`
+	RequireTower            *bool     `toml:"require_tower" pulumi:"requireTower,optional"`
 }
 
 type ConfigGossip struct {
 	Entrypoints *[]string `toml:"entrypoints,omitempty" pulumi:"entrypoints,optional"`
-	PortCheck   *bool     `toml:"port_check,omitempty" pulumi:"portCheck,optional"`
+	PortCheck   *bool     `toml:"port_check" pulumi:"portCheck,optional"`
 	Port        *int      `toml:"port,omitempty" pulumi:"port,optional"`
 	Host        *string   `toml:"host,omitempty" pulumi:"host,optional"`
 }
 
 type ConfigRPC struct {
 	Port                          *int  `toml:"port,omitempty" pulumi:"port,optional"`
-	FullAPI                       *bool `toml:"full_api,omitempty" pulumi:"fullApi,optional"`
-	Private                       *bool `toml:"private,omitempty" pulumi:"private,optional"`
-	TransactionHistory            *bool `toml:"transaction_history,omitempty" pulumi:"transactionHistory,optional"`
-	ExtendedTxMetadataStorage     *bool `toml:"extended_tx_metadata_storage,omitempty" pulumi:"extendedTxMetadataStorage,optional"`
-	OnlyKnown                     *bool `toml:"only_known,omitempty" pulumi:"onlyKnown,optional"`
-	PubsubEnableBlockSubscription *bool `toml:"pubsub_enable_block_subscription,omitempty" pulumi:"pubsubEnableBlockSubscription,optional"`
-	PubsubEnableVoteSubscription  *bool `toml:"pubsub_enable_vote_subscription,omitempty" pulumi:"pubsubEnableVoteSubscription,optional"`
-	BigtableLedgerStorage         *bool `toml:"bigtable_ledger_storage,omitempty" pulumi:"bigtableLedgerStorage,optional"`
+	FullAPI                       *bool `toml:"full_api" pulumi:"fullApi,optional"`
+	Private                       *bool `toml:"private" pulumi:"private,optional"`
+	TransactionHistory            *bool `toml:"transaction_history" pulumi:"transactionHistory,optional"`
+	ExtendedTxMetadataStorage     *bool `toml:"extended_tx_metadata_storage" pulumi:"extendedTxMetadataStorage,optional"`
+	OnlyKnown                     *bool `toml:"only_known" pulumi:"onlyKnown,optional"`
+	PubsubEnableBlockSubscription *bool `toml:"pubsub_enable_block_subscription" pulumi:"pubsubEnableBlockSubscription,optional"`
+	PubsubEnableVoteSubscription  *bool `toml:"pubsub_enable_vote_subscription" pulumi:"pubsubEnableVoteSubscription,optional"`
+	BigtableLedgerStorage         *bool `toml:"bigtable_ledger_storage" pulumi:"bigtableLedgerStorage,optional"`
 }
 
 type ConfigSnapshots struct {
-	IncrementalSnapshots                *bool   `toml:"incremental_snapshots,omitempty" pulumi:"incrementalSnapshots,optional"`
+	IncrementalSnapshots                *bool   `toml:"incremental_snapshots" pulumi:"incrementalSnapshots,optional"`
 	FullSnapshotIntervalSlots           *int    `toml:"full_snapshot_interval_slots,omitempty" pulumi:"fullSnapshotIntervalSlots,optional"`
 	IncrementalSnapshotIntervalSlots    *int    `toml:"incremental_snapshot_interval_slots,omitempty" pulumi:"incrementalSnapshotIntervalSlots,optional"`
 	MaximumFullSnapshotsToRetain        *int    `toml:"maximum_full_snapshots_to_retain,omitempty" pulumi:"maximumFullSnapshotsToRetain,optional"`
@@ -63,15 +63,15 @@ type ConfigConsensus struct {
 	IdentityPath               *string   `toml:"identity_path,omitempty" pulumi:"identityPath,optional"`
 	VoteAccountPath            *string   `toml:"vote_account_path,omitempty" pulumi:"voteAccountPath,optional"`
 	AuthorizedVoterPaths       *[]string `toml:"authorized_voter_paths,omitempty" pulumi:"authorizedVoterPaths,optional"`
-	SnapshotFetch              *bool     `toml:"snapshot_fetch,omitempty" pulumi:"snapshotFetch,optional"`
-	GenesisFetch               *bool     `toml:"genesis_fetch,omitempty" pulumi:"genesisFetch,optional"`
-	PohSpeedTest               *bool     `toml:"poh_speed_test,omitempty" pulumi:"pohSpeedTest,optional"`
+	SnapshotFetch              *bool     `toml:"snapshot_fetch" pulumi:"snapshotFetch,optional"`
+	GenesisFetch               *bool     `toml:"genesis_fetch" pulumi:"genesisFetch,optional"`
+	PohSpeedTest               *bool     `toml:"poh_speed_test" pulumi:"pohSpeedTest,optional"`
 	ExpectedGenesisHash        *string   `toml:"expected_genesis_hash,omitempty" pulumi:"expectedGenesisHash,optional"`
 	WaitForSupermajorityAtSlot *int      `toml:"wait_for_supermajority_at_slot,omitempty" pulumi:"waitForSupermajorityAtSlot,optional"`
 	ExpectedBankHash           *string   `toml:"expected_bank_hash,omitempty" pulumi:"expectedBankHash,optional"`
 	ExpectedShredVersion       *int      `toml:"expected_shred_version,omitempty" pulumi:"expectedShredVersion,optional"`
-	WaitForVoteToStartLeader   *bool     `toml:"wait_for_vote_to_start_leader,omitempty" pulumi:"waitForVoteToStartLeader,optional"`
-	OsNetworkLimitsTest        *bool     `toml:"os_network_limits_test,omitempty" pulumi:"osNetworkLimitsTest,optional"`
+	WaitForVoteToStartLeader   *bool     `toml:"wait_for_vote_to_start_leader" pulumi:"waitForVoteToStartLeader,optional"`
+	OsNetworkLimitsTest        *bool     `toml:"os_network_limits_test" pulumi:"osNetworkLimitsTest,optional"`
 	HardForkAtSlots            *[]string `toml:"hard_fork_at_slots,omitempty" pulumi:"hardForkAtSlots,optional"`
 	KnownValidators            *[]string `toml:"known_validators,omitempty" pulumi:"knownValidators,optional"`
 }
