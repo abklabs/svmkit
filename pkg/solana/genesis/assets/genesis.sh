@@ -73,6 +73,13 @@ step::030::write-primordial-accounts-file() {
     svmkit::sudo chown sol:sol /home/sol/primordial.yaml
 }
 
+step::035::write-validator-accounts-file() {
+    if [[ -f validator_accounts.yaml ]]; then
+        svmkit::sudo cp -f validator_accounts.yaml /home/sol/validator_accounts.yaml
+        svmkit::sudo chown sol:sol /home/sol/validator_accounts.yaml
+    fi
+}
+
 step::040::execute-solana-genesis() {
     svmkit::sudo -u sol "${GENESIS_ENV[@]}" solana-genesis "${GENESIS_FLAGS[@]}" "${genesis_args[@]}"
 }

@@ -13,6 +13,7 @@ import (
 const (
 	primordialAccountPath  = "/home/sol/primordial.yaml"
 	primordialDefaultOwner = "11111111111111111111111111111111"
+	validatorAccountsPath  = "/home/sol/validator_accounts.yaml"
 
 	defaultClusterType                = "development"
 	defaultFaucetLamports             = 1000
@@ -31,7 +32,7 @@ func (cmd *CreateCommand) Env() *runner.EnvBuilder {
 
 	b := runner.NewEnvBuilder()
 
-	b.SetArray("GENESIS_FLAGS", cmd.Flags.Args())
+	b.SetArray("GENESIS_FLAGS", cmd.Flags.Args(cmd.Accounts))
 	b.SetArray("GENESIS_ENV", genesisEnv.Args())
 	b.Set("LEDGER_PATH", cmd.Flags.LedgerPath)
 
@@ -82,6 +83,16 @@ func (cmd *CreateCommand) AddToPayload(p *runner.Payload) error {
 		return err
 	}
 
+	if len(cmd.Accounts) > 0 {
+		err = cmd.BuildAccountsYaml(p.NewWriter(runner.PayloadFile{
+			Path: "validator_accounts.yaml",
+		}))
+
+		if err != nil {
+			return err
+		}
+	}
+
 	genesisScript, err := assets.Open(assetsGenesisScript)
 	if err != nil {
 		return err
@@ -95,6 +106,20 @@ func (cmd *CreateCommand) AddToPayload(p *runner.Payload) error {
 		return err
 	}
 
+	return nil
+}
+
+func (cmd *CreateCommand) BuildAccountsYaml(w io.Writer) error {
+	enc := yaml.NewEncoder(w)
+	defer enc.Close()
+
+	output := map[string][]BootstrapAccount{
+		"validator_accounts": cmd.Accounts,
+	}
+
+	if err := enc.Encode(output); err != nil {
+		return fmt.Errorf("failed to encode accounts YAML: %w", err)
+	}
 	return nil
 }
 
@@ -117,6 +142,15 @@ func (cmd *CreateCommand) BuildPrimordialYaml(w io.Writer) error {
 	return nil
 }
 
+// maps to --validator-accounts-file
+type BootstrapAccount struct {
+	IdentityPubkey  string `pulumi:"identityPubkey" yaml:"identity_account"`
+	VotePubkey      string `pulumi:"votePubkey" yaml:"vote_account"`
+	StakePubkey     string `pulumi:"stakePubkey" yaml:"stake_account"`
+	BalanceLamports *int   `pulumi:"balanceLamports,optional" yaml:"balance_lamports"`
+	StakeLamports   *int   `pulumi:"stakeLamports,optional" yaml:"stake_lamports"`
+}
+
 type PrimordialAccount struct {
 	Pubkey     string `pulumi:"pubkey" yaml:"-"`
 	Lamports   int64  `pulumi:"lamports" yaml:"balance"`
@@ -130,12 +164,15 @@ type Genesis struct {
 
 	Flags      GenesisFlags        `pulumi:"flags"`
 	Primordial []PrimordialAccount `pulumi:"primordial"`
+	Accounts   []BootstrapAccount  `pulumi:"accounts,optional"`
 	Version    *string             `pulumi:"version,optional"`
 }
 
 type GenesisFlags struct {
+	LedgerPath string `pulumi:"ledgerPath"`
+
+	// maps to --bootstrap-validator
 	IdentityPubkey string `pulumi:"identityPubkey"`
-	LedgerPath     string `pulumi:"ledgerPath"`
 	VotePubkey     string `pulumi:"votePubkey"`
 	StakePubkey    string `pulumi:"stakePubkey"`
 
@@ -165,7 +202,7 @@ type GenesisFlags struct {
 	ExtraFlags                      *[]string `pulumi:"extraFlags,optional"`
 }
 
-func (f GenesisFlags) Args() []string {
+func (f GenesisFlags) Args(accounts []BootstrapAccount) []string {
 	b := runner.FlagBuilder{}
 
 	// Note: --upgradeable-program, --bpf-program are hard-coded in the install
@@ -173,7 +210,13 @@ func (f GenesisFlags) Args() []string {
 
 	// Required flags
 	b.Append("primordial-accounts-file", primordialAccountPath)
+
 	b.AppendRaw("--bootstrap-validator", f.IdentityPubkey, f.VotePubkey, f.StakePubkey)
+
+	if len(accounts) > 0 {
+		b.Append("validator-accounts-file", validatorAccountsPath)
+	}
+
 	b.Append("ledger", f.LedgerPath)
 
 	// Optional flags
