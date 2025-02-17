@@ -31,7 +31,7 @@ func (cmd *CreateCommand) Env() *runner.EnvBuilder {
 
 	b := runner.NewEnvBuilder()
 
-	b.SetArray("GENESIS_FLAGS", cmd.Flags.Args())
+	b.SetArray("GENESIS_FLAGS", cmd.Flags.Args(cmd.Accounts))
 	b.SetArray("GENESIS_ENV", genesisEnv.Args())
 	b.Set("LEDGER_PATH", cmd.Flags.LedgerPath)
 
@@ -41,6 +41,12 @@ func (cmd *CreateCommand) Env() *runner.EnvBuilder {
 }
 
 func (cmd *CreateCommand) Check() error {
+
+	if cmd.Flags.IdentityPubkey == "" || cmd.Flags.VotePubkey == "" || cmd.Flags.StakePubkey == "" {
+		if len(cmd.Accounts) == 0 {
+			return fmt.Errorf("must provide at least one bootstrap validator account either through flags or accounts")
+		}
+	}
 
 	if cmd.Flags.HashesPerTick != nil {
 		value := *cmd.Flags.HashesPerTick
@@ -117,6 +123,27 @@ func (cmd *CreateCommand) BuildPrimordialYaml(w io.Writer) error {
 	return nil
 }
 
+/*
+ * These will be serialized to a yaml file and passed to the
+ * --validator-accounts-file flag when the flag is available in Agave.
+ *
+ * For now, these will be merged with the GenesisFlag's IdentityPubkey,
+ * VotePubkey and StakePubkey and passed to --bootstrap-validator.
+ *
+ * --bootstrap-validator-lamports and --bootstrap-validator-stake-lamports
+ * apply to all validators passed to --bootstrap-validator. Until we can set
+ * these values per bootstrap account through the yaml file, these values will
+ * be commented out.
+ *
+ */
+type BootstrapAccount struct {
+	IdentityPubkey string `pulumi:"identityPubkey"`
+	VotePubkey     string `pulumi:"votePubkey"`
+	StakePubkey    string `pulumi:"stakePubkey"`
+	// BalanceLamports *int   `pulumi:"balanceLamports",optional`
+	// StakeLamports   *int   `pulumi:"stakeLamports",optional`
+}
+
 type PrimordialAccount struct {
 	Pubkey     string `pulumi:"pubkey" yaml:"-"`
 	Lamports   int64  `pulumi:"lamports" yaml:"balance"`
@@ -130,14 +157,17 @@ type Genesis struct {
 
 	Flags      GenesisFlags        `pulumi:"flags"`
 	Primordial []PrimordialAccount `pulumi:"primordial"`
+	Accounts   []BootstrapAccount  `pulumi:"accounts,optional"`
 	Version    *string             `pulumi:"version,optional"`
 }
 
 type GenesisFlags struct {
-	IdentityPubkey string `pulumi:"identityPubkey"`
-	LedgerPath     string `pulumi:"ledgerPath"`
-	VotePubkey     string `pulumi:"votePubkey"`
-	StakePubkey    string `pulumi:"stakePubkey"`
+	LedgerPath string `pulumi:"ledgerPath"`
+
+	// passed to --bootstrap-validator for backwards compatibility
+	IdentityPubkey string `pulumi:"identityPubkey,optional"`
+	VotePubkey     string `pulumi:"votePubkey,optional"`
+	StakePubkey    string `pulumi:"stakePubkey,optional"`
 
 	BootstrapStakeAuthorizedPubkey  *string   `pulumi:"bootstrapStakeAuthorizedPubkey,optional"`
 	BootstrapValidatorLamports      *int      `pulumi:"bootstrapValidatorLamports,optional"`
@@ -165,7 +195,7 @@ type GenesisFlags struct {
 	ExtraFlags                      *[]string `pulumi:"extraFlags,optional"`
 }
 
-func (f GenesisFlags) Args() []string {
+func (f *GenesisFlags) Args(accounts []BootstrapAccount) []string {
 	b := runner.FlagBuilder{}
 
 	// Note: --upgradeable-program, --bpf-program are hard-coded in the install
@@ -173,7 +203,15 @@ func (f GenesisFlags) Args() []string {
 
 	// Required flags
 	b.Append("primordial-accounts-file", primordialAccountPath)
-	b.AppendRaw("--bootstrap-validator", f.IdentityPubkey, f.VotePubkey, f.StakePubkey)
+
+	if f.IdentityPubkey != "" && f.VotePubkey != "" && f.StakePubkey != "" {
+		b.AppendRaw("--bootstrap-validator", f.IdentityPubkey, f.VotePubkey, f.StakePubkey)
+	}
+
+	for _, acc := range accounts {
+		b.AppendRaw("--bootstrap-validator", acc.IdentityPubkey, acc.VotePubkey, acc.StakePubkey)
+	}
+
 	b.Append("ledger", f.LedgerPath)
 
 	// Optional flags
