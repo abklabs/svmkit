@@ -10,6 +10,9 @@ func TestGenesisFlags(t *testing.T) {
 	identityPubkey := "identity_key"
 	votePubkey := "vote_key"
 	stakePubkey := "stake_key"
+	identityPubkey2 := "identity_key2"
+	votePubkey2 := "vote_key2"
+	stakePubkey2 := "stake_key2"
 	ledgerPath := "ledger_path"
 	bootstrapStakeAuthorizedPubkey := "bootstrap_auth_key"
 	bootstrapValidatorLamports := 5000000000
@@ -67,12 +70,21 @@ func TestGenesisFlags(t *testing.T) {
 		ExtraFlags:                      &extraFlags,
 	}
 
-	actualArgs := f.Args()
+	bootstrapAccounts := []BootstrapAccount{
+		{
+			IdentityPubkey: identityPubkey2,
+			VotePubkey:     votePubkey2,
+			StakePubkey:    stakePubkey2,
+		},
+	}
+
+	actualArgs := f.Args(bootstrapAccounts)
 
 	// Construct the expected argument list
 	expectedArgs := []string{
 		"--primordial-accounts-file", primordialAccountPath,
 		"--bootstrap-validator", identityPubkey, votePubkey, stakePubkey,
+		"--validator-accounts-file", validatorAccountsPath,
 		"--ledger", ledgerPath,
 		"--bootstrap-stake-authorized-pubkey", "bootstrap_auth_key",
 		"--bootstrap-validator-lamports", "5000000000",
