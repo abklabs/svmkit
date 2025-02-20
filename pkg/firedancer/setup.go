@@ -31,6 +31,12 @@ func (fd *Firedancer) Install() runner.Command {
 	}
 }
 
+func (fd *Firedancer) Uninstall() runner.Command {
+	return &UninstallCommand{
+		Firedancer: *fd,
+	}
+}
+
 type InstallCommand struct {
 	Firedancer
 }
@@ -114,6 +120,40 @@ func (c *InstallCommand) AddToPayload(p *runner.Payload) error {
 
 	if err := c.RunnerCommand.AddToPayload(p); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+type UninstallCommand struct {
+	Firedancer
+}
+
+func (u *UninstallCommand) Check() error {
+	u.RunnerCommand.SetConfigDefaults()
+
+	pkgGrp := deb.Package{}.MakePackageGroup()
+
+	if err := u.RunnerCommand.UpdatePackageGroup(pkgGrp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *UninstallCommand) Env() *runner.EnvBuilder {
+	return u.RunnerCommand.Env()
+}
+
+func (u *UninstallCommand) AddToPayload(p *runner.Payload) error {
+	{
+		r, err := assets.Open(assetsUninstall)
+
+		if err != nil {
+			return err
+		}
+
+		p.AddReader("steps.sh", r)
 	}
 
 	return nil
