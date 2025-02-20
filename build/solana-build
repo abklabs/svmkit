@@ -94,6 +94,11 @@ EOF
 $(generate-replacement-metadata svmkit-agave-watchtower)
 EOF
 
+    cat <<EOF >>bench-tps/Cargo.toml
+[package.metadata.deb]
+$(generate-replacement-metadata svmkit-solana-bench-tps)
+EOF
+
     # shellcheck disable=SC2154,SC1091
     (
         set +u
@@ -104,6 +109,7 @@ EOF
         cargo +"$rust_stable" deb -p solana-cli
         cargo +"$rust_stable" deb -p agave-ledger-tool
         cargo +"$rust_stable" deb -p agave-watchtower
+        cargo +"$rust_stable" deb -p solana-bench-tps
     )
 
     default-build
