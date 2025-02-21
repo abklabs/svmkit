@@ -100,16 +100,16 @@ step::80::setup-validator-info() {
 
     [[ -v VALIDATOR_INFO_NAME ]] || return 0
 
-    if [[ -v VALIDATOR_INFO_WEBSITE ]] ; then
-	args+=(--website "$VALIDATOR_INFO_WEBSITE")
+    if [[ -v VALIDATOR_INFO_WEBSITE ]]; then
+        args+=(--website "$VALIDATOR_INFO_WEBSITE")
     fi
 
-    if [[ -v VALIDATOR_INFO_ICON_URL ]] ; then
-	args+=(--icon-url "$VALIDATOR_INFO_ICON_URL")
+    if [[ -v VALIDATOR_INFO_ICON_URL ]]; then
+        args+=(--icon-url "$VALIDATOR_INFO_ICON_URL")
     fi
 
-    if [[ -v VALIDATOR_INFO_DETAILS ]] ; then
-	args+=(--details "$VALIDATOR_INFO_DETAILS")
+    if [[ -v VALIDATOR_INFO_DETAILS ]]; then
+        args+=(--details "$VALIDATOR_INFO_DETAILS")
     fi
 
     svmkit::sudo -u sol -i solana validator-info publish "${args[@]}" "$VALIDATOR_INFO_NAME"
