@@ -27,24 +27,7 @@ step::30::copy-validator-keys() {
     svmkit::sudo chown sol:sol /home/sol/{validator-keypair,vote-account-keypair}.json
 }
 
-step::40::configure-sysctl() {
-    cat <<EOF | svmkit::sudo tee /etc/sysctl.d/21-solana-validator.conf >/dev/null
-# Increase UDP buffer sizes
-net.core.rmem_default = 134217728
-net.core.rmem_max = 134217728
-net.core.wmem_default = 134217728
-net.core.wmem_max = 134217728
-# Increase memory mapped files limit
-vm.max_map_count = 1000000
-# Increase number of allowed open file descriptors
-fs.nr_open = 1000000
-vm.swappiness=1
-EOF
-
-    svmkit::sudo sysctl -p /etc/sysctl.d/21-solana-validator.conf
-}
-
-step::50::configure-firewall() {
+step::40::configure-firewall() {
     svmkit::sudo ufw allow 53
     svmkit::sudo ufw allow ssh
     svmkit::sudo ufw allow 8000:8020/tcp
@@ -57,7 +40,7 @@ step::50::configure-firewall() {
     svmkit::sudo ufw --force enable
 }
 
-step::60::setup-logrotate() {
+step::50::setup-logrotate() {
     cat <<EOF | svmkit::sudo tee /etc/logrotate.d/solana >/dev/null
 /home/sol/log {
 su sol sol
@@ -73,7 +56,7 @@ EOF
     svmkit::sudo systemctl restart logrotate
 }
 
-step::75::setup-solana-cli() {
+step::60::setup-solana-cli() {
     [[ -v SOLANA_CLI_CONFIG_FLAGS ]] || return 0
 
     # First setup the login user.
@@ -83,7 +66,7 @@ step::75::setup-solana-cli() {
     svmkit::sudo -u sol -i solana config set "${SOLANA_CLI_CONFIG_FLAGS[@]}"
 }
 
-step::80::setup-validator-startup() {
+step::70::setup-validator-startup() {
     if systemctl list-unit-files "${VALIDATOR_SERVICE}" >/dev/null; then
         svmkit::sudo systemctl stop "${VALIDATOR_SERVICE}" || true
     fi
@@ -128,7 +111,7 @@ EOF
     svmkit::sudo systemctl start "${VALIDATOR_SERVICE}"
 }
 
-step::90::setup-validator-info() {
+step::80::setup-validator-info() {
     local args
 
     [[ -v VALIDATOR_INFO_NAME ]] || return 0
