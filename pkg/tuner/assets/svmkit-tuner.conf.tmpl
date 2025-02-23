@@ -99,3 +99,10 @@ vm.dirty_writeback_centisecs = {{ .Vm.VmDirtyWritebackCentisecs }}
 vm.dirtytime_expire_seconds = {{ .Vm.VmDirtytimeExpireSeconds }}
     {{- end }}
 {{- end }}
+
+{{- /* -------- FS sysctl parameters -------- */ -}}
+{{- if .Fs}}
+    {{- if .Fs.FsNrOpen }}
+fs.nr_open = {{ .Fs.FsNrOpen }}
+    {{- end }}
+{{- end }}

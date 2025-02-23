@@ -91,4 +91,11 @@ func TestNewDefaultTuner(t *testing.T) {
 	require.Equal(t, 3000, *tuner.Params.Vm.VmDirtyWritebackCentisecs)
 	require.NotNil(t, tuner.Params.Vm.VmDirtytimeExpireSeconds)
 	require.Equal(t, 43200, *tuner.Params.Vm.VmDirtytimeExpireSeconds)
+
+	// --------------------------------------------------------------------
+	// FS defaults
+	// --------------------------------------------------------------------
+	require.NotNil(t, tuner.Params.Fs, "tuner.Params.Fs should not be nil")
+	require.NotNil(t, tuner.Params.Fs.FsNrOpen)
+	require.Equal(t, 1000000, *tuner.Params.Fs.FsNrOpen)
 }
