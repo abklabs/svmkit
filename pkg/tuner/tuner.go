@@ -106,6 +106,7 @@ type TunerParams struct {
 	Net         *TunerNetParams    `pulumi:"net,optional" toml:"net,omitempty"`
 	Kernel      *TunerKernelParams `pulumi:"kernel,optional" toml:"kernel,omitempty"`
 	Vm          *TunerVmParams     `pulumi:"vm,optional" toml:"vm,omitempty"`
+	Fs          *TunerFsParams     `pulumi:"fs,optional" toml:"fs,omitempty"`
 }
 
 type Tuner struct {
@@ -210,6 +211,11 @@ type TunerVmParams struct {
 
 	// vm.dirtytime_expire_seconds => 43200
 	VmDirtytimeExpireSeconds *int `pulumi:"vmDirtytimeExpireSeconds,optional" toml:"vmDirtytimeExpireSeconds,omitempty"`
+}
+
+type TunerFsParams struct {
+	// fs.nr_open => 1000000
+	FsNrOpen *int `pulumi:"fsNrOpen,optional" toml:"fsNrOpen,omitempty"`
 }
 
 func (t *Tuner) Merge(other *Tuner) error {

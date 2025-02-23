@@ -35,3 +35,6 @@ vmMinFreeKbytes = 3000000
 vmDirtyExpireCentisecs = 36000
 vmDirtyWritebackCentisecs = 3000
 vmDirtytimeExpireSeconds = 43200
+
+[params.fs]
+fsNrOpen = 1000000
