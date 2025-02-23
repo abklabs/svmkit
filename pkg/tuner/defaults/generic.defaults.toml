@@ -26,8 +26,8 @@ kernelHungTaskTimeoutSecs = 600
 kernelPidMax = 65536
 
 [params.vm]
-vmSwappiness = 30
-vmMaxMapCount = 700000
+vmSwappiness = 1
+vmMaxMapCount = 1000000
 vmStatInterval = 10
 vmDirtyRatio = 40
 vmDirtyBackgroundRatio = 10
