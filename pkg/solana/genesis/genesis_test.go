@@ -30,7 +30,7 @@ func TestGenesisFlags(t *testing.T) {
 	maxGenesisArchiveUnpackedSize := 1073741824
 	rentBurnPercentage := 5
 	rentExemptionThreshold := 10
-	slotPerEpoch := 432000
+	slotsPerEpoch := 432000
 	targetLamportsPerSignature := 42
 	targetSignaturesPerSlot := 250000
 	targetTickDuration := 400
@@ -60,7 +60,7 @@ func TestGenesisFlags(t *testing.T) {
 		MaxGenesisArchiveUnpackedSize:   &maxGenesisArchiveUnpackedSize,
 		RentBurnPercentage:              &rentBurnPercentage,
 		RentExemptionThreshold:          &rentExemptionThreshold,
-		SlotPerEpoch:                    &slotPerEpoch,
+		SlotsPerEpoch:                   &slotsPerEpoch,
 		TargetLamportsPerSignature:      &targetLamportsPerSignature,
 		TargetSignaturesPerSlot:         &targetSignaturesPerSlot,
 		TargetTickDuration:              &targetTickDuration,

@@ -20,7 +20,7 @@ const (
 	defaultTargetLamportsPerSignature = 0
 	defaultInflation                  = "none"
 	defaultLamportsPerByteYear        = 1
-	defaultSlotPerEpoch               = 150
+	defaultSlotsPerEpoch              = 150
 )
 
 type CreateCommand struct {
@@ -192,7 +192,7 @@ type GenesisFlags struct {
 	MaxGenesisArchiveUnpackedSize   *int      `pulumi:"maxGenesisArchiveUnpackedSize,optional"`
 	RentBurnPercentage              *int      `pulumi:"rentBurnPercentage,optional"`
 	RentExemptionThreshold          *int      `pulumi:"rentExemptionThreshold,optional"`
-	SlotPerEpoch                    *int      `pulumi:"slotPerEpoch,optional"`
+	SlotsPerEpoch                   *int      `pulumi:"slotsPerEpoch,optional"`
 	TargetLamportsPerSignature      *int      `pulumi:"targetLamportsPerSignature,optional"`
 	TargetSignaturesPerSlot         *int      `pulumi:"targetSignaturesPerSlot,optional"`
 	TargetTickDuration              *int      `pulumi:"targetTickDuration,optional"`
@@ -264,10 +264,10 @@ func (f GenesisFlags) Args(accounts []BootstrapAccount) []string {
 	b.AppendIntP("rent-burn-percentage", f.RentBurnPercentage)
 	b.AppendIntP("rent-exemption-threshold", f.RentExemptionThreshold)
 
-	if f.SlotPerEpoch != nil {
-		b.AppendIntP("slots-per-epoch", f.SlotPerEpoch)
+	if f.SlotsPerEpoch != nil {
+		b.AppendIntP("slots-per-epoch", f.SlotsPerEpoch)
 	} else {
-		value := defaultSlotPerEpoch
+		value := defaultSlotsPerEpoch
 		b.AppendIntP("slots-per-epoch", &value)
 	}
 
