@@ -74,9 +74,9 @@ func TestNewDefaultTuner(t *testing.T) {
 	// --------------------------------------------------------------------
 	require.NotNil(t, tuner.Params.Vm, "tuner.Params.Vm should not be nil")
 	require.NotNil(t, tuner.Params.Vm.VmSwappiness)
-	require.Equal(t, 30, *tuner.Params.Vm.VmSwappiness)
+	require.Equal(t, 1, *tuner.Params.Vm.VmSwappiness)
 	require.NotNil(t, tuner.Params.Vm.VmMaxMapCount)
-	require.Equal(t, 700000, *tuner.Params.Vm.VmMaxMapCount)
+	require.Equal(t, 1000000, *tuner.Params.Vm.VmMaxMapCount)
 	require.NotNil(t, tuner.Params.Vm.VmStatInterval)
 	require.Equal(t, 10, *tuner.Params.Vm.VmStatInterval)
 	require.NotNil(t, tuner.Params.Vm.VmDirtyRatio)
