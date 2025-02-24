@@ -35,7 +35,9 @@ type StakeAccountState struct {
 	StakeAccountArgs `pulumi:"stakeAccountArgs"`
 }
 
-type StakeAccountClient struct{}
+// ------------------------------------------------------------
+// StakeAccount Command Types
+// ------------------------------------------------------------
 
 type StakeAccountCreate struct {
 	StakeAccountArgs
@@ -49,6 +51,11 @@ type StakeAccountUpdate struct {
 type StakeAccountDelete struct {
 	StakeAccountState
 }
+
+// ------------------------------------------------------------
+// StakeAccount Client
+// ------------------------------------------------------------
+type StakeAccountClient struct{}
 
 func (v *StakeAccountClient) Create(args StakeAccountArgs) runner.Command {
 	return &StakeAccountCreate{
