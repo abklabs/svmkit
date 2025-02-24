@@ -31,12 +31,31 @@ stake-account-delete () {
     solana withdraw "${SOLANA_CLI_TXN_FLAGS[@]}" stake_account.json $WITHDRAW_PUBKEY "$STAKE_AMOUNT" "${args[@]}"
 }
 
+stake-account-update () {
+    local args=()
+    if [[ -v STAKE_AUTHORITY ]]; then
+      args+=(--stake-authority stake_authority.json)
+    fi
+
+    case "$STAKE_ACCOUNT_UPDATE_ACTION" in
+        DEACTIVATE)
+            solana deactivate-stake "${SOLANA_CLI_TXN_FLAGS[@]}" stake_account.json "${args[@]}"
+            ;;
+        *)
+            log::fatal "unknown update action provided '$STAKE_ACCOUNT_UPDATE_ACTION'!"
+            ;;
+    esac
+}
+
 case "$STAKE_ACCOUNT_ACTION" in
     CREATE)
 	stake-account-create
 	;;
     DELETE)
 	stake-account-delete
+	;;
+    UPDATE)
+	stake-account-update
 	;;
     *)
 	log::fatal "unknown action provided '$STAKE_ACCOUNT_ACTION'!"

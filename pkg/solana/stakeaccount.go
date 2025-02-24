@@ -42,8 +42,8 @@ type StakeAccountCreate struct {
 }
 
 type StakeAccountUpdate struct {
-	StakeAccountArgs
-	StakeAccountState
+	newArgs StakeAccountArgs
+	state   StakeAccountState
 }
 
 type StakeAccountDelete struct {
@@ -56,10 +56,10 @@ func (v *StakeAccountClient) Create(args StakeAccountArgs) runner.Command {
 	}
 }
 
-func (v *StakeAccountClient) Update(oldState StakeAccountState, newArgs StakeAccountArgs) runner.Command {
+func (v *StakeAccountClient) Update(state StakeAccountState, newArgs StakeAccountArgs) runner.Command {
 	return &StakeAccountUpdate{
-		StakeAccountArgs:  newArgs,
-		StakeAccountState: oldState,
+		newArgs,
+		state,
 	}
 }
 
@@ -213,12 +213,40 @@ func (v *StakeAccountDelete) AddToPayload(p *runner.Payload) error {
 // ------------------------------------------------------------
 
 func (v *StakeAccountUpdate) Check() error {
+	if v.state.StakeAccountKeyPairs != v.newArgs.StakeAccountKeyPairs {
+		// In future this is how redelgation will be signaled
+		return errors.New("rotation of any keypair is not supported")
+	}
+
+	if v.newArgs.Amount != v.state.Amount {
+		// This will trigger a split in the future
+		return errors.New("cannot change stake amount; operation not currently supported")
+	}
+
+	if v.state.StakeState == StakeStateCooldown || v.state.StakeState == StakeStateWarmup {
+		return errors.New("cannot update while in warmup/cooldown")
+	}
+
+	if v.state.WithdrawAddress == nil && v.newArgs.WithdrawAddress != nil {
+		if v.state.StakeState != StakeStateUnstaked {
+			return errors.New("cannot initiate a withdraw unless fully staked")
+		}
+	}
+
 	return nil
 }
 
 func (v *StakeAccountUpdate) Env() *runner.EnvBuilder {
-	e := env(v.StakeAccountArgs)
-	e.Set("STAKE_ACCOUNT_ACTION", "CREATE")
+	e := env(v.newArgs)
+	e.Set("STAKE_ACCOUNT_ACTION", "UPDATE")
+
+	if v.state.WithdrawAddress == nil && v.newArgs.WithdrawAddress != nil {
+		e.Set("STAKE_ACCOUNT_UPDATE_ACTION", "DEACTIVATE")
+	}
+
+	if v.state.StakeAccountKeyPairs.StakeAuthority != nil {
+		e.SetBool("STAKE_AUTHORITY", true)
+	}
 
 	return e
 }
@@ -232,18 +260,25 @@ func (v *StakeAccountUpdate) AddToPayload(p *runner.Payload) error {
 
 	p.AddReader("steps.sh", stakeAccountScript)
 
-	// 	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
-	// 	p.AddString("vote_account.json", v.StakeAccountKeyPairs.VoteAccount)
+	p.AddString("stake_account.json", v.state.StakeAccountKeyPairs.StakeAccount)
+	p.AddString("vote_account.json", v.state.StakeAccountKeyPairs.VoteAccount)
 
-	// 	if opt := v.TransactionOptions; opt != nil {
-	// 		cli := CLITxnOptions{*opt}
+	if v.state.StakeAccountKeyPairs.StakeAuthority != nil {
+		p.AddString("stake_authority.json", *v.state.StakeAccountKeyPairs.StakeAuthority)
+	}
+	// if v.StakeAccountKeyPairs.WithdrawAuthority != nil {
+	// 	p.AddString("withdraw_authority.json", *v.StakeAccountKeyPairs.WithdrawAuthority)
+	// }
 
-	// 		err := cli.AddToPayload(p)
+	if opt := v.newArgs.TransactionOptions; opt != nil {
+		cli := CLITxnOptions{*opt}
 
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	}
+		err := cli.AddToPayload(p)
+
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
