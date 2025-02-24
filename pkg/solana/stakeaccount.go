@@ -6,10 +6,6 @@ import (
 	"github.com/abklabs/svmkit/pkg/runner"
 )
 
-type WithdrawArgs struct {
-	Destination string `pulumi:"destination"`
-}
-
 type StakeAccountKeyPairs struct {
 	StakeAccount      string  `pulumi:"stakeAccount" provider:"secret"`
 	VoteAccount       string  `pulumi:"voteAccount" provider:"secret"`
@@ -155,9 +151,9 @@ func (v *StakeAccountDelete) Check() error {
 		return errors.New("must provide withdraw address or set force delete to true")
 	}
 
-  if v.WithdrawAddress != nil && v.StakeState != StakeStateUnstaked {
-    return errors.New("stake not fully deactivated, cannot delete")
-  }
+	if v.WithdrawAddress != nil && v.StakeState != StakeStateUnstaked {
+		return errors.New("stake not fully deactivated, cannot delete")
+	}
 
 	return nil
 }
