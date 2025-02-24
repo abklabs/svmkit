@@ -31,8 +31,8 @@ const (
 )
 
 type StakeAccountState struct {
-	StakeState       StakeState       `pulumi:"stakeState"`
-	StakeAccountArgs StakeAccountArgs `pulumi:"stakeAccountArgs"`
+	StakeState       `pulumi:"stakeState"`
+	StakeAccountArgs `pulumi:"stakeAccountArgs"`
 }
 
 type StakeAccountClient struct{}
@@ -47,7 +47,6 @@ type StakeAccountUpdate struct {
 }
 
 type StakeAccountDelete struct {
-	StakeAccountArgs
 	StakeAccountState
 }
 
@@ -64,9 +63,8 @@ func (v *StakeAccountClient) Update(oldState StakeAccountState, newArgs StakeAcc
 	}
 }
 
-func (v *StakeAccountClient) Delete(oldState StakeAccountState, newArgs StakeAccountArgs) runner.Command {
+func (v *StakeAccountClient) Delete(oldState StakeAccountState) runner.Command {
 	return &StakeAccountDelete{
-		StakeAccountArgs:  newArgs,
 		StakeAccountState: oldState,
 	}
 }
