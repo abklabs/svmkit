@@ -151,6 +151,11 @@ func (v *StakeAccountDelete) Check() error {
 		return errors.New("must provide withdraw address or set force delete to true")
 	}
 
+	if v.WithdrawAddress != nil && v.ForceDelete {
+		// You must not have a withdraw address set if you forcibly delete
+		return errors.New("cannot provide withdraw address and set force delete to true")
+	}
+
 	if v.WithdrawAddress != nil && v.StakeState != StakeStateUnstaked {
 		return errors.New("stake not fully deactivated, cannot delete")
 	}
@@ -166,9 +171,13 @@ func (v *StakeAccountDelete) Env() *runner.EnvBuilder {
 		e.SetBool("ADD_WITHDRAW_AUTHORITY", true)
 	}
 
-	// if v.ForceDelete {
-	// 	e.SetBool("FORCE_DELETE", true)
-	// }
+	if v.WithdrawAddress != nil {
+		e.Set("WITHDRAW_ADDRESS", *v.WithdrawAddress)
+	}
+
+	if v.ForceDelete {
+		e.SetBool("FORCE_DELETE", true)
+	}
 
 	return e
 }
@@ -184,19 +193,19 @@ func (v *StakeAccountDelete) AddToPayload(p *runner.Payload) error {
 
 	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
 
-	// if v.StakeAccountKeyPairs.WithdrawAuthority != nil {
-	// 	p.AddString("withdraw_authority.json", *v.StakeAccountKeyPairs.WithdrawAuthority)
-	// }
+	if v.StakeAccountKeyPairs.WithdrawAuthority != nil {
+		p.AddString("withdraw_authority.json", *v.StakeAccountKeyPairs.WithdrawAuthority)
+	}
 
-	// if opt := v.TransactionOptions; opt != nil {
-	// 	cli := CLITxnOptions{*opt}
+	if opt := v.TransactionOptions; opt != nil {
+		cli := CLITxnOptions{*opt}
 
-	// 	err := cli.AddToPayload(p)
+		err := cli.AddToPayload(p)
 
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
