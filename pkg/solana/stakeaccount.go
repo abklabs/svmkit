@@ -1,6 +1,8 @@
 package solana
 
 import (
+	"fmt"
+
 	"github.com/abklabs/svmkit/pkg/runner"
 )
 
@@ -60,6 +62,48 @@ func (v *StakeAccountCreate) AddToPayload(p *runner.Payload) error {
 
 	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
 	p.AddString("vote_account.json", v.StakeAccountKeyPairs.VoteAccount)
+
+	if opt := v.TransactionOptions; opt != nil {
+		cli := CLITxnOptions{*opt}
+
+		err := cli.AddToPayload(p)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+type StakeAccountDeactivate struct {
+	StakeAccount
+}
+
+func (v *StakeAccountDeactivate) Check() error {
+	if v.Amount != 0 {
+		return fmt.Errorf("stake amount must be 0 for deactivation, got %f", v.Amount)
+	}
+	return nil
+}
+
+func (v *StakeAccountDeactivate) Env() *runner.EnvBuilder {
+	e := v.StakeAccount.Env()
+	e.Set("STAKE_ACCOUNT_ACTION", "DEACTIVATE")
+
+	return e
+}
+
+func (v *StakeAccountDeactivate) AddToPayload(p *runner.Payload) error {
+	stakeAccountScript, err := assets.Open(assetsStakeAccountScript)
+
+	if err != nil {
+		return err
+	}
+
+	p.AddReader("steps.sh", stakeAccountScript)
+
+	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
 
 	if opt := v.TransactionOptions; opt != nil {
 		cli := CLITxnOptions{*opt}
