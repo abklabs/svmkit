@@ -136,6 +136,7 @@ maintainer = "Engineering <engineering@abklabs.com>"
 provides = "svmkit-validator"
 conflicts = "svmkit-validator"
 replaces = "svmkit-validator"
+recommends = "svmkit-agave-ledger-tool"
 EOF
     $buildfunc
     git submodule deinit --all
