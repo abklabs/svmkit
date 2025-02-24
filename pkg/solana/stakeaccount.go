@@ -94,13 +94,23 @@ func env(newArgs StakeAccountArgs) *runner.EnvBuilder {
 // ------------------------------------------------------------
 
 func (v *StakeAccountCreate) Check() error {
+	if v.StakeAccountArgs.WithdrawAddress != nil {
+		return errors.New("cannot withdraw on create")
+	}
 	return nil
 }
 
 func (v *StakeAccountCreate) Env() *runner.EnvBuilder {
 	e := env(v.StakeAccountArgs)
 	e.Set("STAKE_ACCOUNT_ACTION", "CREATE")
+	e.SetFloat64("STAKE_AMOUNT", v.Amount)
 
+	if v.StakeAccountKeyPairs.StakeAuthority != nil {
+		e.SetBool("STAKE_AUTHORITY", true)
+	}
+	if v.StakeAccountKeyPairs.WithdrawAuthority != nil {
+		e.SetBool("WITHDRAW_AUTHORITY", true)
+	}
 	return e
 }
 
@@ -113,18 +123,25 @@ func (v *StakeAccountCreate) AddToPayload(p *runner.Payload) error {
 
 	p.AddReader("steps.sh", stakeAccountScript)
 
-	// 	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
-	// 	p.AddString("vote_account.json", v.StakeAccountKeyPairs.VoteAccount)
+	p.AddString("stake_account.json", v.StakeAccountArgs.StakeAccountKeyPairs.StakeAccount)
+	p.AddString("vote_account.json", v.StakeAccountArgs.StakeAccountKeyPairs.VoteAccount)
 
-	// 	if opt := v.TransactionOptions; opt != nil {
-	// 		cli := CLITxnOptions{*opt}
+	if v.StakeAccountKeyPairs.StakeAuthority != nil {
+		p.AddString("stake_authority.json", *v.StakeAccountKeyPairs.StakeAuthority)
+	}
+	if v.StakeAccountKeyPairs.WithdrawAuthority != nil {
+		p.AddString("withdraw_authority.json", *v.StakeAccountKeyPairs.WithdrawAuthority)
+	}
 
-	// 		err := cli.AddToPayload(p)
+	if opt := v.TransactionOptions; opt != nil {
+		cli := CLITxnOptions{*opt}
 
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	}
+		err := cli.AddToPayload(p)
+
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
@@ -137,6 +154,11 @@ func (v *StakeAccountDelete) Check() error {
 	if v.WithdrawAddress == nil && !v.ForceDelete {
 		return errors.New("must provide withdraw address or set force delete to true")
 	}
+
+  if v.WithdrawAddress != nil && v.StakeState != StakeStateUnstaked {
+    return errors.New("stake not fully deactivated, cannot delete")
+  }
+
 	return nil
 }
 
@@ -144,9 +166,9 @@ func (v *StakeAccountDelete) Env() *runner.EnvBuilder {
 	e := env(v.StakeAccountArgs)
 	e.Set("STAKE_ACCOUNT_ACTION", "DELETE")
 
-	// if v.StakeAccount.StakeAccountKeyPairs.WithdrawAuthority != nil {
-	// 	e.SetBool("ADD_WITHDRAW_AUTHORITY", true)
-	// }
+	if v.StakeAccountKeyPairs.WithdrawAuthority != nil {
+		e.SetBool("ADD_WITHDRAW_AUTHORITY", true)
+	}
 
 	// if v.ForceDelete {
 	// 	e.SetBool("FORCE_DELETE", true)
@@ -164,7 +186,7 @@ func (v *StakeAccountDelete) AddToPayload(p *runner.Payload) error {
 
 	p.AddReader("steps.sh", stakeAccountScript)
 
-	// p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
+	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
 
 	// if v.StakeAccountKeyPairs.WithdrawAuthority != nil {
 	// 	p.AddString("withdraw_authority.json", *v.StakeAccountKeyPairs.WithdrawAuthority)
