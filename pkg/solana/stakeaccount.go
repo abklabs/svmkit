@@ -6,6 +6,10 @@ import (
 	"github.com/abklabs/svmkit/pkg/runner"
 )
 
+type WithdrawArgs struct {
+	Destination string `pulumi:"destination"`
+}
+
 type StakeAccountKeyPairs struct {
 	StakeAccount      string  `pulumi:"stakeAccount" provider:"secret"`
 	VoteAccount       string  `pulumi:"voteAccount" provider:"secret"`
@@ -13,7 +17,7 @@ type StakeAccountKeyPairs struct {
 	WithdrawAuthority *string `pulumi:"withdrawAuthority,optional"`
 }
 
-type StakeAccount struct {
+type StakeAccountArgs struct {
 	TransactionOptions   *TxnOptions          `pulumi:"transactionOptions"`
 	StakeAccountKeyPairs StakeAccountKeyPairs `pulumi:"keyPairs"`
 	Amount               float64              `pulumi:"amount"`
@@ -21,24 +25,63 @@ type StakeAccount struct {
 	ForceDelete          bool                 `pulumi:"forceDelete"`
 }
 
-func (v *StakeAccount) Create() runner.Command {
+type StakeState int
+
+const (
+	StakeStateWarmup StakeState = iota
+	StakeStateStaked
+	StakeStateCooldown
+	StakeStateUnstaked
+)
+
+type StakeAccountState struct {
+	StakeState       StakeState       `pulumi:"stakeState"`
+	StakeAccountArgs StakeAccountArgs `pulumi:"stakeAccountArgs"`
+}
+
+type StakeAccountClient struct{}
+
+type StakeAccountCreate struct {
+	StakeAccountArgs
+}
+
+type StakeAccountUpdate struct {
+	StakeAccountArgs
+	StakeAccountState
+}
+
+type StakeAccountDelete struct {
+	StakeAccountArgs
+	StakeAccountState
+}
+
+func (v *StakeAccountClient) Create(args StakeAccountArgs) runner.Command {
 	return &StakeAccountCreate{
-		StakeAccount: *v,
+		args,
 	}
 }
 
-func (v *StakeAccount) Delete() runner.Command {
+func (v *StakeAccountClient) Update(oldState StakeAccountState, newArgs StakeAccountArgs) runner.Command {
+	return &StakeAccountUpdate{
+		StakeAccountArgs:  newArgs,
+		StakeAccountState: oldState,
+	}
+}
+
+func (v *StakeAccountClient) Delete(oldState StakeAccountState, newArgs StakeAccountArgs) runner.Command {
 	return &StakeAccountDelete{
-		StakeAccount: *v,
+		StakeAccountArgs:  newArgs,
+		StakeAccountState: oldState,
 	}
 }
 
-func (v *StakeAccount) Env() *runner.EnvBuilder {
+func env(newArgs StakeAccountArgs) *runner.EnvBuilder {
+	// Sets default env for all stake Commands
 	b := runner.NewEnvBuilder()
 
-	b.SetFloat64("STAKE_AMOUNT", v.Amount)
+	b.SetFloat64("STAKE_AMOUNT", newArgs.Amount)
 
-	if opt := v.TransactionOptions; opt != nil {
+	if opt := newArgs.TransactionOptions; opt != nil {
 		cli := CLITxnOptions{*opt}
 		b.SetArray("SOLANA_CLI_TXN_FLAGS", cli.Flags().Args())
 	}
@@ -46,16 +89,16 @@ func (v *StakeAccount) Env() *runner.EnvBuilder {
 	return b
 }
 
-type StakeAccountCreate struct {
-	StakeAccount
-}
+// ------------------------------------------------------------
+// StakeAccount Create Command
+// ------------------------------------------------------------
 
 func (v *StakeAccountCreate) Check() error {
 	return nil
 }
 
 func (v *StakeAccountCreate) Env() *runner.EnvBuilder {
-	e := v.StakeAccount.Env()
+	e := env(v.StakeAccountArgs)
 	e.Set("STAKE_ACCOUNT_ACTION", "CREATE")
 
 	return e
@@ -70,25 +113,25 @@ func (v *StakeAccountCreate) AddToPayload(p *runner.Payload) error {
 
 	p.AddReader("steps.sh", stakeAccountScript)
 
-	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
-	p.AddString("vote_account.json", v.StakeAccountKeyPairs.VoteAccount)
+	// 	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
+	// 	p.AddString("vote_account.json", v.StakeAccountKeyPairs.VoteAccount)
 
-	if opt := v.TransactionOptions; opt != nil {
-		cli := CLITxnOptions{*opt}
+	// 	if opt := v.TransactionOptions; opt != nil {
+	// 		cli := CLITxnOptions{*opt}
 
-		err := cli.AddToPayload(p)
+	// 		err := cli.AddToPayload(p)
 
-		if err != nil {
-			return err
-		}
-	}
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 	}
 
 	return nil
 }
 
-type StakeAccountDelete struct {
-	StakeAccount
-}
+// ------------------------------------------------------------
+// StakeAccount Delete Command
+// ------------------------------------------------------------
 
 func (v *StakeAccountDelete) Check() error {
 	if v.WithdrawAddress == nil && !v.ForceDelete {
@@ -98,16 +141,16 @@ func (v *StakeAccountDelete) Check() error {
 }
 
 func (v *StakeAccountDelete) Env() *runner.EnvBuilder {
-	e := v.StakeAccount.Env()
+	e := env(v.StakeAccountArgs)
 	e.Set("STAKE_ACCOUNT_ACTION", "DELETE")
 
-	if v.StakeAccount.StakeAccountKeyPairs.WithdrawAuthority != nil {
-		e.SetBool("ADD_WITHDRAW_AUTHORITY", true)
-	}
+	// if v.StakeAccount.StakeAccountKeyPairs.WithdrawAuthority != nil {
+	// 	e.SetBool("ADD_WITHDRAW_AUTHORITY", true)
+	// }
 
-	if v.ForceDelete {
-		e.SetBool("FORCE_DELETE", true)
-	}
+	// if v.ForceDelete {
+	// 	e.SetBool("FORCE_DELETE", true)
+	// }
 
 	return e
 }
@@ -121,21 +164,61 @@ func (v *StakeAccountDelete) AddToPayload(p *runner.Payload) error {
 
 	p.AddReader("steps.sh", stakeAccountScript)
 
-	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
+	// p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
 
-	if v.StakeAccountKeyPairs.WithdrawAuthority != nil {
-		p.AddString("withdraw_authority.json", *v.StakeAccountKeyPairs.WithdrawAuthority)
+	// if v.StakeAccountKeyPairs.WithdrawAuthority != nil {
+	// 	p.AddString("withdraw_authority.json", *v.StakeAccountKeyPairs.WithdrawAuthority)
+	// }
+
+	// if opt := v.TransactionOptions; opt != nil {
+	// 	cli := CLITxnOptions{*opt}
+
+	// 	err := cli.AddToPayload(p)
+
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
+
+	return nil
+}
+
+// ------------------------------------------------------------
+// StakeAccount Update Command
+// ------------------------------------------------------------
+
+func (v *StakeAccountUpdate) Check() error {
+	return nil
+}
+
+func (v *StakeAccountUpdate) Env() *runner.EnvBuilder {
+	e := env(v.StakeAccountArgs)
+	e.Set("STAKE_ACCOUNT_ACTION", "CREATE")
+
+	return e
+}
+
+func (v *StakeAccountUpdate) AddToPayload(p *runner.Payload) error {
+	stakeAccountScript, err := assets.Open(assetsStakeAccountScript)
+
+	if err != nil {
+		return err
 	}
 
-	if opt := v.TransactionOptions; opt != nil {
-		cli := CLITxnOptions{*opt}
+	p.AddReader("steps.sh", stakeAccountScript)
 
-		err := cli.AddToPayload(p)
+	// 	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
+	// 	p.AddString("vote_account.json", v.StakeAccountKeyPairs.VoteAccount)
 
-		if err != nil {
-			return err
-		}
-	}
+	// 	if opt := v.TransactionOptions; opt != nil {
+	// 		cli := CLITxnOptions{*opt}
+
+	// 		err := cli.AddToPayload(p)
+
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 	}
 
 	return nil
 }
