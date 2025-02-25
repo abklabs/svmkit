@@ -40,22 +40,6 @@ step::40::configure-firewall() {
     svmkit::sudo ufw --force enable
 }
 
-step::50::setup-logrotate() {
-    cat <<EOF | svmkit::sudo tee /etc/logrotate.d/solana >/dev/null
-/home/sol/log {
-su sol sol
-daily
-rotate 1
-missingok
-postrotate
-    systemctl kill -s USR1 "${VALIDATOR_SERVICE}"
-endscript
-}
-EOF
-
-    svmkit::sudo systemctl restart logrotate
-}
-
 step::60::setup-solana-cli() {
     [[ -v SOLANA_CLI_CONFIG_FLAGS ]] || return 0
 
