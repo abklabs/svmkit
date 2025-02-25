@@ -74,6 +74,7 @@ func TestValidatorFlags(t *testing.T) {
 	initCompleteFile := "/path/to/init_complete"
 	knownValidator := []string{"validatorA", "validatorB"}
 	limitLedgerSize := 62
+	log := "/home/sol/log"
 	logMessagesBytesLimit := 1048576
 	maxGenesisArchiveUnpackedSize := 10485760
 	maximumFullSnapshotsToRetain := 2
@@ -194,6 +195,7 @@ func TestValidatorFlags(t *testing.T) {
 		InitCompleteFile:                    &initCompleteFile,
 		KnownValidator:                      &knownValidator,
 		LimitLedgerSize:                     &limitLedgerSize,
+		Log:                                 &log,
 		LogMessagesBytesLimit:               &logMessagesBytesLimit,
 		MaxGenesisArchiveUnpackedSize:       &maxGenesisArchiveUnpackedSize,
 		MaximumFullSnapshotsToRetain:        &maximumFullSnapshotsToRetain,
@@ -264,7 +266,6 @@ func TestValidatorFlags(t *testing.T) {
 	expectedArgs := []string{
 		"--identity", "/home/sol/validator-keypair.json",
 		"--vote-account", "/home/sol/vote-account-keypair.json",
-		"--log", "/home/sol/log",
 		"--accounts", "/home/sol/accounts",
 		"--ledger", "/home/sol/ledger",
 		"--account-index", "program-id",
@@ -333,6 +334,7 @@ func TestValidatorFlags(t *testing.T) {
 		"--known-validator", "validatorA",
 		"--known-validator", "validatorB",
 		"--limit-ledger-size", "62",
+		"--log", "/home/sol/log",
 		"--log-messages-bytes-limit", "1048576",
 		"--max-genesis-archive-unpacked-size", "10485760",
 		"--maximum-full-snapshots-to-retain", "2",
