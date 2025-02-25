@@ -58,6 +58,7 @@ type Flags struct {
 	InitCompleteFile                    *string   `pulumi:"initCompleteFile,optional"`
 	KnownValidator                      *[]string `pulumi:"knownValidator,optional"`
 	LimitLedgerSize                     *int      `pulumi:"limitLedgerSize,optional"`
+	Log                                 *string   `pulumi:"log,optional"`
 	LogMessagesBytesLimit               *int      `pulumi:"logMessagesBytesLimit,optional"`
 	MaxGenesisArchiveUnpackedSize       *int      `pulumi:"maxGenesisArchiveUnpackedSize,optional"`
 	MaximumFullSnapshotsToRetain        *int      `pulumi:"maximumFullSnapshotsToRetain,optional"`
@@ -131,7 +132,6 @@ func (f Flags) Args() []string {
 	// Note: These locations are hard coded inside asset-builder.
 	b.Append("identity", identityKeyPairPath)
 	b.Append("vote-account", voteAccountKeyPairPath)
-	b.Append("log", logPath)
 	b.Append("accounts", accountsPath)
 	b.Append("ledger", ledgerPath)
 	b.AppendArrayP("account-index", f.AccountIndex)
@@ -200,6 +200,7 @@ func (f Flags) Args() []string {
 	b.AppendP("init-complete-file", f.InitCompleteFile)
 	b.AppendArrayP("known-validator", f.KnownValidator)
 	b.AppendIntP("limit-ledger-size", f.LimitLedgerSize)
+	b.AppendP("log", f.Log)
 	b.AppendIntP("log-messages-bytes-limit", f.LogMessagesBytesLimit)
 	b.AppendIntP("max-genesis-archive-unpacked-size", f.MaxGenesisArchiveUnpackedSize)
 	b.AppendIntP("maximum-full-snapshots-to-retain", f.MaximumFullSnapshotsToRetain)

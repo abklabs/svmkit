@@ -12,7 +12,6 @@ import (
 const (
 	accountsPath = "/home/sol/accounts"
 	ledgerPath   = "/home/sol/ledger"
-	logPath      = "/home/sol/log"
 
 	identityKeyPairPath    = "/home/sol/validator-keypair.json"
 	voteAccountKeyPairPath = "/home/sol/vote-account-keypair.json"
