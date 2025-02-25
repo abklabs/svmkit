@@ -91,6 +91,48 @@ func env(newArgs StakeAccountArgs) *runner.EnvBuilder {
 }
 
 // ------------------------------------------------------------
+// Common Helper Functions
+// ------------------------------------------------------------
+
+func setupPayload(p *runner.Payload, opt *TxnOptions) error {
+	stakeAccountScript, err := assets.Open(assetsStakeAccountScript)
+	if err != nil {
+		return err
+	}
+	p.AddReader("steps.sh", stakeAccountScript)
+
+	if opt != nil {
+		cli := CLITxnOptions{*opt}
+		if err := cli.AddToPayload(p); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func addKeyPairsToPayload(p *runner.Payload, pairs StakeAccountKeyPairs, includeVoteAccount bool) {
+	p.AddString("stake_account.json", pairs.StakeAccount)
+	if includeVoteAccount {
+		p.AddString("vote_account.json", pairs.VoteAccount)
+	}
+	if pairs.StakeAuthority != nil {
+		p.AddString("stake_authority.json", *pairs.StakeAuthority)
+	}
+	if pairs.WithdrawAuthority != nil {
+		p.AddString("withdraw_authority.json", *pairs.WithdrawAuthority)
+	}
+}
+
+func setupEnvWithAuthorities(e *runner.EnvBuilder, pairs StakeAccountKeyPairs) {
+	if pairs.StakeAuthority != nil {
+		e.SetBool("STAKE_AUTHORITY", true)
+	}
+	if pairs.WithdrawAuthority != nil {
+		e.SetBool("WITHDRAW_AUTHORITY", true)
+	}
+}
+
+// ------------------------------------------------------------
 // StakeAccount Create Command
 // ------------------------------------------------------------
 
@@ -104,46 +146,15 @@ func (v *StakeAccountCreate) Check() error {
 func (v *StakeAccountCreate) Env() *runner.EnvBuilder {
 	e := env(v.StakeAccountArgs)
 	e.Set("STAKE_ACCOUNT_ACTION", "CREATE")
-	e.SetFloat64("STAKE_AMOUNT", v.Amount)
-
-	if v.StakeAccountKeyPairs.StakeAuthority != nil {
-		e.SetBool("STAKE_AUTHORITY", true)
-	}
-	if v.StakeAccountKeyPairs.WithdrawAuthority != nil {
-		e.SetBool("WITHDRAW_AUTHORITY", true)
-	}
+	setupEnvWithAuthorities(e, v.StakeAccountKeyPairs)
 	return e
 }
 
 func (v *StakeAccountCreate) AddToPayload(p *runner.Payload) error {
-	stakeAccountScript, err := assets.Open(assetsStakeAccountScript)
-
-	if err != nil {
+	if err := setupPayload(p, v.TransactionOptions); err != nil {
 		return err
 	}
-
-	p.AddReader("steps.sh", stakeAccountScript)
-
-	p.AddString("stake_account.json", v.StakeAccountArgs.StakeAccountKeyPairs.StakeAccount)
-	p.AddString("vote_account.json", v.StakeAccountArgs.StakeAccountKeyPairs.VoteAccount)
-
-	if v.StakeAccountKeyPairs.StakeAuthority != nil {
-		p.AddString("stake_authority.json", *v.StakeAccountKeyPairs.StakeAuthority)
-	}
-	if v.StakeAccountKeyPairs.WithdrawAuthority != nil {
-		p.AddString("withdraw_authority.json", *v.StakeAccountKeyPairs.WithdrawAuthority)
-	}
-
-	if opt := v.TransactionOptions; opt != nil {
-		cli := CLITxnOptions{*opt}
-
-		err := cli.AddToPayload(p)
-
-		if err != nil {
-			return err
-		}
-	}
-
+	addKeyPairsToPayload(p, v.StakeAccountKeyPairs, true)
 	return nil
 }
 
@@ -188,30 +199,10 @@ func (v *StakeAccountDelete) Env() *runner.EnvBuilder {
 }
 
 func (v *StakeAccountDelete) AddToPayload(p *runner.Payload) error {
-	stakeAccountScript, err := assets.Open(assetsStakeAccountScript)
-
-	if err != nil {
+	if err := setupPayload(p, v.TransactionOptions); err != nil {
 		return err
 	}
-
-	p.AddReader("steps.sh", stakeAccountScript)
-
-	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
-
-	if v.StakeAccountKeyPairs.WithdrawAuthority != nil {
-		p.AddString("withdraw_authority.json", *v.StakeAccountKeyPairs.WithdrawAuthority)
-	}
-
-	if opt := v.TransactionOptions; opt != nil {
-		cli := CLITxnOptions{*opt}
-
-		err := cli.AddToPayload(p)
-
-		if err != nil {
-			return err
-		}
-	}
-
+	addKeyPairsToPayload(p, v.StakeAccountKeyPairs, false)
 	return nil
 }
 
@@ -251,41 +242,14 @@ func (v *StakeAccountUpdate) Env() *runner.EnvBuilder {
 		e.Set("STAKE_ACCOUNT_UPDATE_ACTION", "DEACTIVATE")
 	}
 
-	if v.state.StakeAccountKeyPairs.StakeAuthority != nil {
-		e.SetBool("STAKE_AUTHORITY", true)
-	}
-
+	setupEnvWithAuthorities(e, v.state.StakeAccountKeyPairs)
 	return e
 }
 
 func (v *StakeAccountUpdate) AddToPayload(p *runner.Payload) error {
-	stakeAccountScript, err := assets.Open(assetsStakeAccountScript)
-
-	if err != nil {
+	if err := setupPayload(p, v.newArgs.TransactionOptions); err != nil {
 		return err
 	}
-
-	p.AddReader("steps.sh", stakeAccountScript)
-
-	p.AddString("stake_account.json", v.state.StakeAccountKeyPairs.StakeAccount)
-	p.AddString("vote_account.json", v.state.StakeAccountKeyPairs.VoteAccount)
-
-	if v.state.StakeAccountKeyPairs.StakeAuthority != nil {
-		p.AddString("stake_authority.json", *v.state.StakeAccountKeyPairs.StakeAuthority)
-	}
-	// if v.StakeAccountKeyPairs.WithdrawAuthority != nil {
-	// 	p.AddString("withdraw_authority.json", *v.StakeAccountKeyPairs.WithdrawAuthority)
-	// }
-
-	if opt := v.newArgs.TransactionOptions; opt != nil {
-		cli := CLITxnOptions{*opt}
-
-		err := cli.AddToPayload(p)
-
-		if err != nil {
-			return err
-		}
-	}
-
+	addKeyPairsToPayload(p, v.state.StakeAccountKeyPairs, true)
 	return nil
 }
