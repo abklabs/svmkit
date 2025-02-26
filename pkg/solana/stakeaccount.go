@@ -2,23 +2,31 @@ package solana
 
 import (
 	"errors"
+	"fmt"
+	"slices"
 
 	"github.com/abklabs/svmkit/pkg/runner"
 )
 
 type StakeAccountKeyPairs struct {
 	StakeAccount      string  `pulumi:"stakeAccount" provider:"secret"`
-	VoteAccount       string  `pulumi:"voteAccount" provider:"secret"`
-	StakeAuthority    *string `pulumi:"stakeAuthority,optional"`
-	WithdrawAuthority *string `pulumi:"withdrawAuthority,optional"`
+	VoteAccount       *string `pulumi:"voteAccount, optional" provider:"secret"`
+	StakeAuthority    *string `pulumi:"stakeAuthority,optional" provider:"secret"`
+	WithdrawAuthority *string `pulumi:"withdrawAuthority,optional" provider:"secret"`
+}
+
+type StakeAccountLockup struct {
+	EpochAvailable  uint64 `pulumi:"epochAvailable"`
+	CustodianPubkey string `pulumi:"custodianPubkey"`
 }
 
 type StakeAccountArgs struct {
-	TransactionOptions   *TxnOptions          `pulumi:"transactionOptions"`
 	StakeAccountKeyPairs StakeAccountKeyPairs `pulumi:"keyPairs"`
 	Amount               float64              `pulumi:"amount"`
 	WithdrawAddress      *string              `pulumi:"withdrawAddress,optional"`
+	TransactionOptions   *TxnOptions          `pulumi:"transactionOptions"`
 	ForceDelete          bool                 `pulumi:"forceDelete"`
+	LockupArgs           *StakeAccountLockup  `pulumi:"lockupArgs"`
 }
 
 type StakeState int
@@ -110,16 +118,16 @@ func setupPayload(p *runner.Payload, opt *TxnOptions) error {
 	return nil
 }
 
-func addKeyPairsToPayload(p *runner.Payload, pairs StakeAccountKeyPairs, includeVoteAccount bool) {
-	p.AddString("stake_account.json", pairs.StakeAccount)
-	if includeVoteAccount {
-		p.AddString("vote_account.json", pairs.VoteAccount)
+func addKeyPairsToPayload(p *runner.Payload, keys StakeAccountKeyPairs) {
+	p.AddString("stake_account.json", keys.StakeAccount)
+	if keys.VoteAccount != nil {
+		p.AddString("vote_account.json", *keys.VoteAccount)
 	}
-	if pairs.StakeAuthority != nil {
-		p.AddString("stake_authority.json", *pairs.StakeAuthority)
+	if keys.StakeAuthority != nil {
+		p.AddString("stake_authority.json", *keys.StakeAuthority)
 	}
-	if pairs.WithdrawAuthority != nil {
-		p.AddString("withdraw_authority.json", *pairs.WithdrawAuthority)
+	if keys.WithdrawAuthority != nil {
+		p.AddString("withdraw_authority.json", *keys.WithdrawAuthority)
 	}
 }
 
@@ -137,9 +145,13 @@ func setupEnvWithAuthorities(e *runner.EnvBuilder, pairs StakeAccountKeyPairs) {
 // ------------------------------------------------------------
 
 func (v *StakeAccountCreate) Check() error {
+	if v.StakeAccountKeyPairs.VoteAccount == nil {
+		return errors.New("cannot create stake account without specifying delegate address")
+	}
 	if v.StakeAccountArgs.WithdrawAddress != nil {
 		return errors.New("cannot withdraw on create")
 	}
+
 	return nil
 }
 
@@ -154,7 +166,7 @@ func (v *StakeAccountCreate) AddToPayload(p *runner.Payload) error {
 	if err := setupPayload(p, v.TransactionOptions); err != nil {
 		return err
 	}
-	addKeyPairsToPayload(p, v.StakeAccountKeyPairs, true)
+	addKeyPairsToPayload(p, v.StakeAccountKeyPairs)
 	return nil
 }
 
@@ -202,27 +214,57 @@ func (v *StakeAccountDelete) AddToPayload(p *runner.Payload) error {
 	if err := setupPayload(p, v.TransactionOptions); err != nil {
 		return err
 	}
-	addKeyPairsToPayload(p, v.StakeAccountKeyPairs, false)
+	addKeyPairsToPayload(p, v.StakeAccountKeyPairs)
 	return nil
 }
 
 // ------------------------------------------------------------
 // StakeAccount Update Command
 // ------------------------------------------------------------
+type UpdateType int
+
+const (
+	UpdateTypeAuthority UpdateType = iota
+	UpdateTypeDelegate
+	UpdateTypeDeactivate
+	UpdateTypeLock
+)
+
+func (v *StakeAccountUpdate) UpdatePlan() []UpdateType {
+	var updates []UpdateType
+
+	oldKps := v.state.StakeAccountKeyPairs
+	newKps := v.newArgs.StakeAccountKeyPairs
+
+	// Authority Diff
+	if (oldKps.WithdrawAuthority != newKps.WithdrawAuthority) || (&oldKps.StakeAuthority != &newKps.StakeAuthority) {
+		updates = append(updates, UpdateTypeAuthority)
+	}
+
+	// Lockup Args Diff
+	if v.state.LockupArgs != v.newArgs.LockupArgs {
+		updates = append(updates, UpdateTypeLock)
+	}
+
+	// Vote Account diff
+	if oldKps.VoteAccount != newKps.VoteAccount {
+		if oldKps.VoteAccount != nil && newKps.VoteAccount == nil {
+			updates = append(updates, UpdateTypeDeactivate)
+		} else {
+			updates = append(updates, UpdateTypeDelegate)
+		}
+	}
+	return updates
+}
 
 func (v *StakeAccountUpdate) Check() error {
-	if v.state.StakeAccountKeyPairs != v.newArgs.StakeAccountKeyPairs {
-		// In future this is how redelgation will be signaled
-		return errors.New("rotation of any keypair is not supported")
+	if v.state.StakeAccountKeyPairs.StakeAccount != v.newArgs.StakeAccountKeyPairs.StakeAccount {
+		return errors.New("stake account address can not be rotated")
 	}
 
 	if v.newArgs.Amount != v.state.Amount {
 		// This will trigger a split in the future
 		return errors.New("cannot change stake amount; operation not currently supported")
-	}
-
-	if v.state.StakeState == StakeStateCooldown || v.state.StakeState == StakeStateWarmup {
-		return errors.New("cannot update while in warmup/cooldown")
 	}
 
 	if v.state.WithdrawAddress == nil && v.newArgs.WithdrawAddress != nil {
@@ -238,11 +280,48 @@ func (v *StakeAccountUpdate) Env() *runner.EnvBuilder {
 	e := env(v.newArgs)
 	e.Set("STAKE_ACCOUNT_ACTION", "UPDATE")
 
-	if v.state.WithdrawAddress == nil && v.newArgs.WithdrawAddress != nil {
-		e.Set("STAKE_ACCOUNT_UPDATE_ACTION", "DEACTIVATE")
-	}
+	e.SetBool("STAKE_ACCOUNT_DEACTIVATE", false)
+	e.SetBool("STAKE_ACCOUNT_DELEGATE", false)
+	e.SetBool("STAKE_ACCOUNT_AUTHORITY", false)
+	e.SetBool("STAKE_ACCOUNT_LOCKUP", false)
+	e.SetBool("STAKE_AUTHORITY_UPDATE", false)
+	e.SetBool("WITHDRAW_AUTHORITY_UPDATE", false)
 
-	setupEnvWithAuthorities(e, v.state.StakeAccountKeyPairs)
+	updates := v.UpdatePlan()
+	if slices.Contains(updates, UpdateTypeDeactivate) {
+		e.SetBool("STAKE_ACCOUNT_DEACTIVATE", true)
+	}
+	if slices.Contains(updates, UpdateTypeDelegate) {
+		e.SetBool("STAKE_ACCOUNT_DELEGATE", true)
+	}
+	if slices.Contains(updates, UpdateTypeAuthority) {
+		e.SetBool("STAKE_ACCOUNT_AUTHORITY", true)
+
+		oldStakeAuth := v.state.StakeAccountKeyPairs.StakeAuthority
+		newStakeAuth := v.newArgs.StakeAccountKeyPairs.StakeAuthority
+		if (oldStakeAuth == nil) != (newStakeAuth == nil) || (oldStakeAuth != nil && newStakeAuth != nil && *oldStakeAuth != *newStakeAuth) {
+			e.SetBool("STAKE_AUTHORITY_UPDATE", true)
+			if oldStakeAuth != nil {
+				e.SetBool("STAKE_AUTHORITY", true)
+			}
+		}
+
+		oldWithdrawAuth := v.state.StakeAccountKeyPairs.WithdrawAuthority
+		newWithdrawAuth := v.newArgs.StakeAccountKeyPairs.WithdrawAuthority
+		if (oldWithdrawAuth == nil) != (newWithdrawAuth == nil) || (oldWithdrawAuth != nil && newWithdrawAuth != nil && *oldWithdrawAuth != *newWithdrawAuth) {
+			e.SetBool("WITHDRAW_AUTHORITY_UPDATE", true)
+			if oldWithdrawAuth != nil {
+				e.SetBool("WITHDRAW_AUTHORITY", true)
+			}
+		}
+	}
+	if slices.Contains(updates, UpdateTypeLock) {
+		e.SetBool("STAKE_ACCOUNT_LOCKUP", true)
+		if v.newArgs.LockupArgs != nil {
+			e.Set("EPOCH_AVAILABLE", fmt.Sprintf("%d", v.newArgs.LockupArgs.EpochAvailable))
+			e.Set("CUSTODIAN_PUBKEY", v.newArgs.LockupArgs.CustodianPubkey)
+		}
+	}
 	return e
 }
 
@@ -250,6 +329,41 @@ func (v *StakeAccountUpdate) AddToPayload(p *runner.Payload) error {
 	if err := setupPayload(p, v.newArgs.TransactionOptions); err != nil {
 		return err
 	}
-	addKeyPairsToPayload(p, v.state.StakeAccountKeyPairs, true)
+
+	// Add the stake account keypair
+	p.AddString("stake_account.json", v.state.StakeAccountKeyPairs.StakeAccount)
+
+	updates := v.UpdatePlan()
+
+	// Add old authority keypairs if needed for authorization
+	if slices.Contains(updates, UpdateTypeAuthority) {
+		oldStakeAuth := v.state.StakeAccountKeyPairs.StakeAuthority
+		newStakeAuth := v.newArgs.StakeAccountKeyPairs.StakeAuthority
+		if (oldStakeAuth == nil) != (newStakeAuth == nil) || (oldStakeAuth != nil && newStakeAuth != nil && *oldStakeAuth != *newStakeAuth) {
+			if oldStakeAuth != nil {
+				p.AddString("stake_authority.json", *oldStakeAuth)
+			}
+			if newStakeAuth != nil {
+				p.AddString("new_stake_authority.json", *newStakeAuth)
+			}
+		}
+
+		oldWithdrawAuth := v.state.StakeAccountKeyPairs.WithdrawAuthority
+		newWithdrawAuth := v.newArgs.StakeAccountKeyPairs.WithdrawAuthority
+		if (oldWithdrawAuth == nil) != (newWithdrawAuth == nil) || (oldWithdrawAuth != nil && newWithdrawAuth != nil && *oldWithdrawAuth != *newWithdrawAuth) {
+			if oldWithdrawAuth != nil {
+				p.AddString("withdraw_authority.json", *oldWithdrawAuth)
+			}
+			if newWithdrawAuth != nil {
+				p.AddString("new_withdraw_authority.json", *newWithdrawAuth)
+			}
+		}
+	}
+
+	// For delegation updates, add the vote account
+	if slices.Contains(updates, UpdateTypeDelegate) && v.newArgs.StakeAccountKeyPairs.VoteAccount != nil {
+		p.AddString("new_vote_account.json", *v.newArgs.StakeAccountKeyPairs.VoteAccount)
+	}
+
 	return nil
 }
