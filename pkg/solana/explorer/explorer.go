@@ -60,13 +60,9 @@ func (cmd *ExplorerCommand) Check() error {
 }
 
 func (cmd *ExplorerCommand) AddToPayload(p *runner.Payload) error {
-	explorerScript, err := assets.Open(assetsExplorerScript)
-
-	if err != nil {
+	if err := p.AddTemplate("steps.sh", explorerScriptTmpl, cmd); err != nil {
 		return err
 	}
-
-	p.AddReader("steps.sh", explorerScript)
 
 	if err := cmd.RunnerCommand.AddToPayload(p); err != nil {
 		return err

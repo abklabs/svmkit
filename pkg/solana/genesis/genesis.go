@@ -93,12 +93,9 @@ func (cmd *CreateCommand) AddToPayload(p *runner.Payload) error {
 		}
 	}
 
-	genesisScript, err := assets.Open(assetsGenesisScript)
-	if err != nil {
+	if err := p.AddTemplate("steps.sh", genesisScriptTmpl, cmd); err != nil {
 		return err
 	}
-
-	p.AddReader("steps.sh", genesisScript)
 
 	err = cmd.RunnerCommand.AddToPayload(p)
 

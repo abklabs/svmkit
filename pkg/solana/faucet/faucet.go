@@ -50,13 +50,10 @@ func (cmd *InstallCommand) Check() error {
 }
 
 func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
-	faucetScript, err := assets.Open(assetsFaucetScript)
-
-	if err != nil {
+	if err := p.AddTemplate("steps.sh", faucetScriptTmpl, cmd); err != nil {
 		return err
 	}
 
-	p.AddReader("steps.sh", faucetScript)
 	p.AddString("faucet-keypair.json", cmd.KeyPair)
 
 	if err := cmd.RunnerCommand.AddToPayload(p); err != nil {

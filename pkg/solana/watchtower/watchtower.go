@@ -64,7 +64,7 @@ func (cmd *InstallCommand) Check() error {
 }
 
 func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
-	err := p.AddTemplate("steps.sh", installScriptTmpl, cmd)
+	err := p.AddTemplate("steps.sh", watchtowerScriptTmpl, cmd)
 
 	if err != nil {
 		return err
