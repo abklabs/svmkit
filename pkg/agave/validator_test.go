@@ -141,7 +141,7 @@ func TestValidatorFlags(t *testing.T) {
 	waitForSupermajority := 1000
 	walRecoveryMode := "someaddress"
 
-	f := Flags{
+	f := AgaveFlags{
 		AccountIndex:                        &accountIndex,
 		AccountIndexExcludeKey:              &accountIndexExcludeKey,
 		AccountIndexIncludeKey:              &accountIndexIncludeKey,

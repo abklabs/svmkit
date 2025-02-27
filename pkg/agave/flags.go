@@ -4,7 +4,7 @@ import (
 	"github.com/abklabs/svmkit/pkg/runner"
 )
 
-type Flags struct {
+type AgaveFlags struct {
 	AccountIndex                        *[]string `pulumi:"accountIndex,optional"`
 	AccountIndexExcludeKey              *[]string `pulumi:"accountIndexExcludeKey,optional"`
 	AccountIndexIncludeKey              *[]string `pulumi:"accountIndexIncludeKey,optional"`
@@ -126,7 +126,7 @@ type Flags struct {
 	WalRecoveryMode                     string    `pulumi:"walRecoveryMode"`
 }
 
-func (f Flags) Args() []string {
+func (f AgaveFlags) Args(paths AgavePaths) []string {
 	b := runner.FlagBuilder{}
 
 	// Note: These locations are hard coded inside asset-builder.

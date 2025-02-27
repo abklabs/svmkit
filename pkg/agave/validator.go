@@ -178,7 +178,7 @@ type Agave struct {
 	Version        *string               `pulumi:"version,optional"`
 	Variant        *Variant              `pulumi:"variant,optional"`
 	KeyPairs       KeyPairs              `pulumi:"keyPairs"`
-	Flags          Flags                 `pulumi:"flags"`
+	Flags          AgaveFlags            `pulumi:"flags"`
 	Metrics        *Metrics              `pulumi:"metrics,optional"`
 	Info           *solana.ValidatorInfo `pulumi:"info,optional"`
 	TimeoutConfig  *TimeoutConfig        `pulumi:"timeoutConfig,optional"`
