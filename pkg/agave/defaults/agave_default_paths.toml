@@ -1,0 +1,3 @@
+agaveRunBinPath = "/usr/bin/run-validator"
+agaveStopBinPath = "/usr/bin/stop-validator"
+agaveCheckBinPath = "/usr/bin/check-validator"

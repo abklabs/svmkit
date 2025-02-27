@@ -1,0 +1,3 @@
+genesisPrimordialAccountsPath = "/home/sol/primordial.yaml"
+genesisValidatorAccountsPath = "/home/sol/validator_accounts.yaml"
+genesisSolanaSplCachePath = "~/.cache/solana-spl"

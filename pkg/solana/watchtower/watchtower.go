@@ -81,6 +81,7 @@ type Watchtower struct {
 	runner.RunnerCommand
 
 	Environment   solana.Environment `pulumi:"environment"`
+	Paths         WatchtowerPaths    `pulumi:"paths"`
 	Flags         WatchtowerFlags    `pulumi:"flags"`
 	Notifications NotificationConfig `pulumi:"notifications"`
 }

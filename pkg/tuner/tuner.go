@@ -111,6 +111,7 @@ type TunerParams struct {
 
 type Tuner struct {
 	runner.RunnerCommand
+	Paths  TunerPaths  `pulumi:"paths"`
 	Params TunerParams `pulumi:"params" toml:"params"`
 }
 

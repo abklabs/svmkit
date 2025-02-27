@@ -129,11 +129,11 @@ type AgaveFlags struct {
 func (f AgaveFlags) Args(paths AgavePaths) []string {
 	b := runner.FlagBuilder{}
 
-	// Note: These locations are hard coded inside asset-builder.
-	b.Append("identity", identityKeyPairPath)
-	b.Append("vote-account", voteAccountKeyPairPath)
-	b.Append("accounts", accountsPath)
-	b.Append("ledger", ledgerPath)
+	b.AppendP("identity", paths.ValidatorIdentityKeypairPath)
+	b.AppendP("vote-account", paths.ValidatorVoteAccountKeypairPath)
+	b.AppendP("log", paths.LogPath)
+	b.AppendP("accounts", paths.AccountsPath)
+	b.AppendP("ledger", paths.LedgerPath)
 	b.AppendArrayP("account-index", f.AccountIndex)
 	b.AppendArrayP("account-index-exclude-key", f.AccountIndexExcludeKey)
 	b.AppendArrayP("account-index-include-key", f.AccountIndexIncludeKey)

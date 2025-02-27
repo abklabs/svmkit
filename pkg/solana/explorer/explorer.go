@@ -76,6 +76,7 @@ type Explorer struct {
 
 	Environment solana.Environment `pulumi:"environment"`
 	Flags       ExplorerFlags      `pulumi:"flags"`
+	Paths       ExplorerPaths      `pulumi:"paths"`
 	Version     *string            `pulumi:"version,optional"`
 	Name        *string            `pulumi:"name,optional"`
 	Symbol      *string            `pulumi:"symbol,optional"`

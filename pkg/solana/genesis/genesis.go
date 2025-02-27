@@ -32,9 +32,8 @@ func (cmd *CreateCommand) Env() *runner.EnvBuilder {
 
 	b := runner.NewEnvBuilder()
 
-	b.SetArray("GENESIS_FLAGS", cmd.Flags.Args(cmd.Accounts))
+	b.SetArray("GENESIS_FLAGS", cmd.Flags.Args(cmd.Accounts, cmd.Paths))
 	b.SetArray("GENESIS_ENV", genesisEnv.Args())
-	b.Set("LEDGER_PATH", cmd.Flags.LedgerPath)
 
 	b.Merge(cmd.RunnerCommand.Env())
 
@@ -63,6 +62,10 @@ func (cmd *CreateCommand) Check() error {
 		if err := cmd.RunnerCommand.UpdatePackageGroup(packages); err != nil {
 			return err
 		}
+	}
+
+	if err := cmd.Paths.MergeFlags(&cmd.Flags); err != nil {
+		return err
 	}
 
 	return nil
@@ -160,13 +163,14 @@ type Genesis struct {
 	runner.RunnerCommand
 
 	Flags      GenesisFlags        `pulumi:"flags"`
+	Paths      GenesisPaths        `pulumi:"paths"`
 	Primordial []PrimordialAccount `pulumi:"primordial"`
 	Accounts   []BootstrapAccount  `pulumi:"accounts,optional"`
 	Version    *string             `pulumi:"version,optional"`
 }
 
 type GenesisFlags struct {
-	LedgerPath string `pulumi:"ledgerPath"`
+	LedgerPath *string `pulumi:"ledgerPath,optional"`
 
 	// maps to --bootstrap-validator
 	IdentityPubkey string `pulumi:"identityPubkey"`
@@ -199,22 +203,22 @@ type GenesisFlags struct {
 	ExtraFlags                      *[]string `pulumi:"extraFlags,optional"`
 }
 
-func (f GenesisFlags) Args(accounts []BootstrapAccount) []string {
+func (f GenesisFlags) Args(accounts []BootstrapAccount, paths GenesisPaths) []string {
 	b := runner.FlagBuilder{}
 
 	// Note: --upgradeable-program, --bpf-program are hard-coded in the install
 	// script and should not be included here.
 
 	// Required flags
-	b.Append("primordial-accounts-file", primordialAccountPath)
+	b.AppendP("primordial-accounts-file", paths.GenesisPrimordialAccountsPath)
 
 	b.AppendRaw("--bootstrap-validator", f.IdentityPubkey, f.VotePubkey, f.StakePubkey)
 
 	if len(accounts) > 0 {
-		b.Append("validator-accounts-file", validatorAccountsPath)
+		b.AppendP("validator-accounts-file", paths.GenesisValidatorAccountsPath)
 	}
 
-	b.Append("ledger", f.LedgerPath)
+	b.AppendP("ledger", paths.LedgerPath)
 
 	// Optional flags
 	b.AppendP("bootstrap-stake-authorized-pubkey", f.BootstrapStakeAuthorizedPubkey)
