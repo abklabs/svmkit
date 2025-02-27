@@ -129,11 +129,11 @@ type AgaveFlags struct {
 func (f AgaveFlags) Args(paths AgavePaths) []string {
 	b := runner.FlagBuilder{}
 
-	// Note: These locations are hard coded inside asset-builder.
-	b.Append("identity", identityKeyPairPath)
-	b.Append("vote-account", voteAccountKeyPairPath)
-	b.Append("accounts", accountsPath)
-	b.Append("ledger", ledgerPath)
+	b.AppendP("identity", paths.ValidatorIdentityKeypairPath)
+	b.AppendP("vote-account", paths.ValidatorVoteAccountKeypairPath)
+	b.AppendP("log", paths.LogPath)
+	b.AppendP("accounts", paths.AccountsPath)
+	b.AppendP("ledger", paths.LedgerPath)
 	b.AppendArrayP("account-index", f.AccountIndex)
 	b.AppendArrayP("account-index-exclude-key", f.AccountIndexExcludeKey)
 	b.AppendArrayP("account-index-include-key", f.AccountIndexIncludeKey)
@@ -200,7 +200,6 @@ func (f AgaveFlags) Args(paths AgavePaths) []string {
 	b.AppendP("init-complete-file", f.InitCompleteFile)
 	b.AppendArrayP("known-validator", f.KnownValidator)
 	b.AppendIntP("limit-ledger-size", f.LimitLedgerSize)
-	b.AppendP("log", f.Log)
 	b.AppendIntP("log-messages-bytes-limit", f.LogMessagesBytesLimit)
 	b.AppendIntP("max-genesis-archive-unpacked-size", f.MaxGenesisArchiveUnpackedSize)
 	b.AppendIntP("maximum-full-snapshots-to-retain", f.MaximumFullSnapshotsToRetain)

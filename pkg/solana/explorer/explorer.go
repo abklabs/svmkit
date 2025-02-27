@@ -56,6 +56,10 @@ func (cmd *ExplorerCommand) Check() error {
 		return err
 	}
 
+	if err := cmd.Paths.Check(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -76,6 +80,7 @@ type Explorer struct {
 
 	Environment solana.Environment `pulumi:"environment"`
 	Flags       ExplorerFlags      `pulumi:"flags"`
+	Paths       ExplorerPaths      `pulumi:"paths"`
 	Version     *string            `pulumi:"version,optional"`
 	Name        *string            `pulumi:"name,optional"`
 	Symbol      *string            `pulumi:"symbol,optional"`

@@ -21,6 +21,12 @@ func TestValidatorEnv(t *testing.T) {
 
 func TestValidatorFlags(t *testing.T) {
 
+	paths, err := NewDefaultAgavePaths(nil)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	accountIndex := []string{"program-id", "spl-token-owner"}
 	accountIndexExcludeKey := []string{"excludeKey1", "excludeKey2"}
 	accountIndexIncludeKey := []string{"includeKey1", "includeKey2"}
@@ -264,10 +270,11 @@ func TestValidatorFlags(t *testing.T) {
 	}
 
 	expectedArgs := []string{
-		"--identity", "/home/sol/validator-keypair.json",
-		"--vote-account", "/home/sol/vote-account-keypair.json",
-		"--accounts", "/home/sol/accounts",
-		"--ledger", "/home/sol/ledger",
+		"--identity", *paths.ValidatorIdentityKeypairPath,
+		"--vote-account", *paths.ValidatorVoteAccountKeypairPath,
+		"--log", *paths.LogPath,
+		"--accounts", *paths.AccountsPath,
+		"--ledger", *paths.LedgerPath,
 		"--account-index", "program-id",
 		"--account-index", "spl-token-owner",
 		"--account-index-exclude-key", "excludeKey1",
@@ -334,7 +341,6 @@ func TestValidatorFlags(t *testing.T) {
 		"--known-validator", "validatorA",
 		"--known-validator", "validatorB",
 		"--limit-ledger-size", "62",
-		"--log", "/home/sol/log",
 		"--log-messages-bytes-limit", "1048576",
 		"--max-genesis-archive-unpacked-size", "10485760",
 		"--maximum-full-snapshots-to-retain", "2",
@@ -404,7 +410,7 @@ func TestValidatorFlags(t *testing.T) {
 		"--wal-recovery-mode", "someaddress",
 	}
 
-	actualArgs := f.Args()
+	actualArgs := f.Args(*paths)
 
 	assert.Equal(t, expectedArgs, actualArgs)
 }

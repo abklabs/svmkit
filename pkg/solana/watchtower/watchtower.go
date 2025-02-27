@@ -60,6 +60,10 @@ func (cmd *InstallCommand) Check() error {
 		return err
 	}
 
+	if err := cmd.Paths.Check(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -81,6 +85,7 @@ type Watchtower struct {
 	runner.RunnerCommand
 
 	Environment   solana.Environment `pulumi:"environment"`
+	Paths         WatchtowerPaths    `pulumi:"paths"`
 	Flags         WatchtowerFlags    `pulumi:"flags"`
 	Notifications NotificationConfig `pulumi:"notifications"`
 }
