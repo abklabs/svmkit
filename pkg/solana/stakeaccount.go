@@ -2,6 +2,7 @@ package solana
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -73,17 +74,10 @@ func (c *StakeAccountClient) Read(args StakeAccount) (StakeAccount, error) {
 // StakeOperator Interface
 // ------------------------------------------------------------
 
-// StakeAccountStatusResult represents the detailed status of a stake account
-type StakeAccountStatus struct {
-	StakeAccountPubkey string
-	Balance            float64
-	//TODO: Add all the other fields
-}
-
 // StakeOperator defines interface for stake account operations
 // It's agnostic to connection type and query method (RPC or bash commands)
 type StakeOperator interface {
-	GetStatus(stakeAccount StakeAccount) (StakeAccountStatus, error)
+	GetStatus(stakeAccount StakeAccount) (CliStakeState, error)
 	Create(account StakeAccount) error
 }
 
@@ -121,7 +115,7 @@ func (op *CliStakeOperator) Create(stakeAccount StakeAccount) error {
 	return nil
 }
 
-func (op *CliStakeOperator) GetStatus(stakeAccount StakeAccount) (StakeAccountStatus, error) {
+func (op *CliStakeOperator) GetStatus(stakeAccount StakeAccount) (CliStakeState, error) {
 	// This is the lone operation that doesn't use the provided handler and
 	// uses a StringHandler so that the output can be parsed
 	handler := &StringHandler{}
@@ -130,54 +124,52 @@ func (op *CliStakeOperator) GetStatus(stakeAccount StakeAccount) (StakeAccountSt
 
 	err := op.runCommand(cmd, handler)
 	if err != nil {
-		return StakeAccountStatus{}, err
+		return CliStakeState{}, err
 	}
 
 	output := handler.Output
 
 	status, err := parseOutput(output)
 	if err != nil {
-		return StakeAccountStatus{}, err
+		return CliStakeState{}, err
 	}
 
 	return status, nil
 
 }
 
-// ------------------------------------------------------------
-// String Handler
-// ------------------------------------------------------------
-
-type StringHandler struct {
-	Output string
+type CliAuthorized struct {
+	Staker     string `json:"staker"`
+	Withdrawer string `json:"withdrawer"`
 }
 
-func (h *StringHandler) IngestReaders(done chan<- struct{}, stdout io.Reader, stderr io.Reader) error {
-	var buf strings.Builder
+type CliLockup struct {
+	UnixTimestamp int64  `json:"unixTimestamp"` // Assuming UnixTimestamp is an int64
+	Epoch         uint64 `json:"epoch"`         // Assuming Epoch is a uint64
+	Custodian     string `json:"custodian"`
+}
+type CliStakeState struct {
+	StakeType                   string         `json:"stakeType"`
+	AccountBalance              uint64         `json:"accountBalance"`
+	DelegatedStake              *uint64        `json:"delegatedStake,omitempty"`
+	DelegatedVoteAccountAddress *string        `json:"delegatedVoteAccountAddress,omitempty"`
+	ActivationEpoch             *uint64        `json:"activationEpoch,omitempty"`
+	DeactivationEpoch           *uint64        `json:"deactivationEpoch,omitempty"`
+	Authorized                  *CliAuthorized `json:",omitempty"`
+	Lockup                      *CliLockup     `json:",omitempty"`
+	ActiveStake                 *uint64        `json:"activeStake,omitempty"`
+	ActivatingStake             *uint64        `json:"activatingStake,omitempty"`
+	DeactivatingStake           *uint64        `json:"deactivatingStake,omitempty"`
+}
 
-	// Copy stdout to our buffer
-	if _, err := io.Copy(&buf, stdout); err != nil {
-		return err
+func parseOutput(output string) (CliStakeState, error) {
+	output = strings.TrimSpace(output)
+	var state CliStakeState
+	err := json.Unmarshal([]byte(output), &state)
+	if err != nil {
+		return CliStakeState{}, err
 	}
-
-	// Store the output
-	h.Output = buf.String()
-
-	// Signal completion
-	close(done)
-	return nil
-}
-
-func (h *StringHandler) AugmentError(err error) error {
-	if err == nil {
-		return nil
-	}
-	return fmt.Errorf("command failed: %w\nOutput: %s", err, h.Output)
-}
-
-func parseOutput(output string) (StakeAccountStatus, error) {
-	// Parse the Output
-	return StakeAccountStatus{}, fmt.Errorf("not implemented")
+	return state, nil
 }
 
 // ------------------------------------------------------------
@@ -527,3 +519,34 @@ func (v *StakeAccountRead) AddToPayload(p *runner.Payload) error {
 
 // 	return nil
 // }
+
+// ------------------------------------------------------------
+// String Handler
+// ------------------------------------------------------------
+
+type StringHandler struct {
+	Output string
+}
+
+func (h *StringHandler) IngestReaders(done chan<- struct{}, stdout io.Reader, stderr io.Reader) error {
+	var buf strings.Builder
+
+	// Copy stdout to our buffer
+	if _, err := io.Copy(&buf, stdout); err != nil {
+		return err
+	}
+
+	// Store the output
+	h.Output = buf.String()
+
+	// Signal completion
+	close(done)
+	return nil
+}
+
+func (h *StringHandler) AugmentError(err error) error {
+	if err == nil {
+		return nil
+	}
+	return fmt.Errorf("command failed: %w\nOutput: %s", err, h.Output)
+}

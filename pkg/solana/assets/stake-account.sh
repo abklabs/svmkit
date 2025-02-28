@@ -3,6 +3,10 @@
 
 umask 077
 
+stake-account-status () {
+    solana stake-account --output json-compact stake_account.json
+}
+
 stake-account-create () {
     local create_args=()
     local delegate_args=()
@@ -57,7 +61,7 @@ stake-account-update () {
                 --stake-authority stake_authority.json \
                 --new-stake-authority new_stake_authority.json
         fi
-        
+
         if [[ -v WITHDRAW_AUTHORITY_UPDATE ]] && [[ "$WITHDRAW_AUTHORITY_UPDATE" == "true" ]] && [[ -f new_withdraw_authority.json ]]; then
             solana stake-authorize "${SOLANA_CLI_TXN_FLAGS[@]}" \
                 stake_account.json \
@@ -76,6 +80,9 @@ stake-account-update () {
 }
 
 case "$STAKE_ACCOUNT_ACTION" in
+    READ)
+	stake-account-status
+	;;
     CREATE)
 	stake-account-create
 	;;
