@@ -124,6 +124,10 @@ type StakeAccountClient struct {
 	operator StakeOperator
 }
 
+func NewStakeAccountClient(operator StakeOperator) *StakeAccountClient {
+  return &StakeAccountClient{operator: operator}
+}
+
 func (c *StakeAccountClient) Create(args StakeAccount) (StakeAccount, error) {
 	if args.StakeAccountKeyPairs.VoteAccount == nil {
 		return StakeAccount{}, errors.New("cannot create stake account without specifying delegate address")
@@ -195,8 +199,16 @@ func (c *StakeAccountClient) Delete(state StakeAccount) error {
 
 type CliStakeOperator struct {
 	client *ssh.Client
-	handle runner.DeployerHandler
+	handler runner.DeployerHandler
 	ctx    context.Context
+}
+
+func NewCliStakeOperator(client *ssh.Client, handler runner.DeployerHandler, ctx context.Context) *CliStakeOperator {
+  return &CliStakeOperator{
+    client: client,
+    handler: handler,
+    ctx:    ctx,
+  }
 }
 
 func (op *CliStakeOperator) runCommand(cmd runner.Command, handler runner.DeployerHandler) error {
@@ -214,7 +226,7 @@ func (op *CliStakeOperator) runCommand(cmd runner.Command, handler runner.Deploy
 
 func (op *CliStakeOperator) Create(args StakeAccount) error {
 	cmd := &StakeAccountCreate{StakeAccount: args}
-	if err := op.runCommand(cmd, op.handle); err != nil {
+	if err := op.runCommand(cmd, op.handler); err != nil {
 		return err
 	}
 	return nil
@@ -222,7 +234,7 @@ func (op *CliStakeOperator) Create(args StakeAccount) error {
 
 func (op *CliStakeOperator) Update(oldState StakeAccount, newArgs StakeAccount) error {
 	cmd := &StakeAccountUpdate{state: oldState, newArgs: newArgs}
-	if err := op.runCommand(cmd, op.handle); err != nil {
+	if err := op.runCommand(cmd, op.handler); err != nil {
 		return err
 	}
 	return nil
@@ -230,7 +242,7 @@ func (op *CliStakeOperator) Update(oldState StakeAccount, newArgs StakeAccount) 
 
 func (op *CliStakeOperator) Delete(args StakeAccount) error {
 	cmd := &StakeAccountDelete{StakeAccount: args}
-	if err := op.runCommand(cmd, op.handle); err != nil {
+	if err := op.runCommand(cmd, op.handler); err != nil {
 		return err
 	}
 	return nil
