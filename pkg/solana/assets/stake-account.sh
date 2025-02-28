@@ -20,6 +20,10 @@ stake-account-create () {
       delegate_args+=(--stake-authority stake_authority.json)
     fi
 
+    if [[ -v STAKE_ACCOUNT_LOCKUP ]] && [[ -v CUSTODIAN_PUBKEY ]] && [[ -v EPOCH_AVAILABLE ]]; then
+      create_args+=(--lockup-epoch "$EPOCH_AVAILABLE" --custodian "$CUSTODIAN_PUBKEY")
+    fi
+
     solana create-stake-account "${SOLANA_CLI_TXN_FLAGS[@]}" stake_account.json "$STAKE_AMOUNT" "${create_args[@]}"
     solana delegate-stake "${SOLANA_CLI_TXN_FLAGS[@]}" stake_account.json vote_account.json "${delegate_args[@]}"
 }
