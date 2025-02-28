@@ -125,7 +125,7 @@ type StakeAccountClient struct {
 }
 
 func NewStakeAccountClient(operator StakeOperator) *StakeAccountClient {
-  return &StakeAccountClient{operator: operator}
+	return &StakeAccountClient{operator: operator}
 }
 
 func (c *StakeAccountClient) Create(args StakeAccount) (StakeAccount, error) {
@@ -198,17 +198,17 @@ func (c *StakeAccountClient) Delete(state StakeAccount) error {
 // ------------------------------------------------------------
 
 type CliStakeOperator struct {
-	client *ssh.Client
+	client  *ssh.Client
 	handler runner.DeployerHandler
-	ctx    context.Context
+	ctx     context.Context
 }
 
 func NewCliStakeOperator(client *ssh.Client, handler runner.DeployerHandler, ctx context.Context) *CliStakeOperator {
-  return &CliStakeOperator{
-    client: client,
-    handler: handler,
-    ctx:    ctx,
-  }
+	return &CliStakeOperator{
+		client:  client,
+		handler: handler,
+		ctx:     ctx,
+	}
 }
 
 func (op *CliStakeOperator) runCommand(cmd runner.Command, handler runner.DeployerHandler) error {
