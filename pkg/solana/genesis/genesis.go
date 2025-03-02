@@ -151,6 +151,13 @@ type BootstrapAccount struct {
 	StakeLamports   *int   `pulumi:"stakeLamports,optional" yaml:"stake_lamports"`
 }
 
+// maps to --bootstrap-validator
+type BootstrapValidator struct {
+	IdentityPubkey string `pulumi:"identityPubkey" yaml:"identity_account"`
+	VotePubkey     string `pulumi:"votePubkey" yaml:"vote_account"`
+	StakePubkey    string `pulumi:"stakePubkey" yaml:"stake_account"`
+}
+
 type PrimordialAccount struct {
 	Pubkey     string `pulumi:"pubkey" yaml:"-"`
 	Lamports   int64  `pulumi:"lamports" yaml:"balance"`
@@ -171,35 +178,31 @@ type Genesis struct {
 type GenesisFlags struct {
 	LedgerPath string `pulumi:"ledgerPath"`
 
-	// maps to --bootstrap-validator
-	IdentityPubkey string `pulumi:"identityPubkey"`
-	VotePubkey     string `pulumi:"votePubkey"`
-	StakePubkey    string `pulumi:"stakePubkey"`
-
-	BootstrapStakeAuthorizedPubkey  *string   `pulumi:"bootstrapStakeAuthorizedPubkey,optional"`
-	BootstrapValidatorLamports      *int      `pulumi:"bootstrapValidatorLamports,optional"`
-	BootstrapValidatorStakeLamports *int      `pulumi:"bootstrapValidatorStakeLamports,optional"`
-	ClusterType                     *string   `pulumi:"clusterType,optional"`
-	CreationTime                    *string   `pulumi:"creationTime,optional"`
-	DeactivateFeatures              *[]string `pulumi:"deactivateFeatures,optional"`
-	EnableWarmupEpochs              *bool     `pulumi:"enableWarmupEpochs,optional"`
-	FaucetPubkey                    *string   `pulumi:"faucetPubkey,optional"`
-	FaucetLamports                  *int      `pulumi:"faucetLamports,optional"`
-	FeeBurnPercentage               *int      `pulumi:"feeBurnPercentage,optional"`
-	HashesPerTick                   *string   `pulumi:"hashesPerTick,optional"` // can be "auto", "sleep", or a number
-	Inflation                       *string   `pulumi:"inflation,optional"`
-	LamportsPerByteYear             *int      `pulumi:"lamportsPerByteYear,optional"`
-	MaxGenesisArchiveUnpackedSize   *int      `pulumi:"maxGenesisArchiveUnpackedSize,optional"`
-	RentBurnPercentage              *int      `pulumi:"rentBurnPercentage,optional"`
-	RentExemptionThreshold          *int      `pulumi:"rentExemptionThreshold,optional"`
-	SlotsPerEpoch                   *int      `pulumi:"slotsPerEpoch,optional"`
-	TargetLamportsPerSignature      *int      `pulumi:"targetLamportsPerSignature,optional"`
-	TargetSignaturesPerSlot         *int      `pulumi:"targetSignaturesPerSlot,optional"`
-	TargetTickDuration              *int      `pulumi:"targetTickDuration,optional"`
-	TicksPerSlot                    *int      `pulumi:"ticksPerSlot,optional"`
-	Url                             *string   `pulumi:"url,optional"`
-	VoteCommissionPercentage        *int      `pulumi:"voteCommissionPercentage,optional"`
-	ExtraFlags                      *[]string `pulumi:"extraFlags,optional"`
+	BootstrapValidators             []BootstrapValidator `pulumi:"bootstrapValidators"`
+	BootstrapStakeAuthorizedPubkey  *string              `pulumi:"bootstrapStakeAuthorizedPubkey,optional"`
+	BootstrapValidatorLamports      *int                 `pulumi:"bootstrapValidatorLamports,optional"`
+	BootstrapValidatorStakeLamports *int                 `pulumi:"bootstrapValidatorStakeLamports,optional"`
+	ClusterType                     *string              `pulumi:"clusterType,optional"`
+	CreationTime                    *string              `pulumi:"creationTime,optional"`
+	DeactivateFeatures              *[]string            `pulumi:"deactivateFeatures,optional"`
+	EnableWarmupEpochs              *bool                `pulumi:"enableWarmupEpochs,optional"`
+	FaucetPubkey                    *string              `pulumi:"faucetPubkey,optional"`
+	FaucetLamports                  *int                 `pulumi:"faucetLamports,optional"`
+	FeeBurnPercentage               *int                 `pulumi:"feeBurnPercentage,optional"`
+	HashesPerTick                   *string              `pulumi:"hashesPerTick,optional"` // can be "auto", "sleep", or a number
+	Inflation                       *string              `pulumi:"inflation,optional"`
+	LamportsPerByteYear             *int                 `pulumi:"lamportsPerByteYear,optional"`
+	MaxGenesisArchiveUnpackedSize   *int                 `pulumi:"maxGenesisArchiveUnpackedSize,optional"`
+	RentBurnPercentage              *int                 `pulumi:"rentBurnPercentage,optional"`
+	RentExemptionThreshold          *int                 `pulumi:"rentExemptionThreshold,optional"`
+	SlotsPerEpoch                   *int                 `pulumi:"slotsPerEpoch,optional"`
+	TargetLamportsPerSignature      *int                 `pulumi:"targetLamportsPerSignature,optional"`
+	TargetSignaturesPerSlot         *int                 `pulumi:"targetSignaturesPerSlot,optional"`
+	TargetTickDuration              *int                 `pulumi:"targetTickDuration,optional"`
+	TicksPerSlot                    *int                 `pulumi:"ticksPerSlot,optional"`
+	Url                             *string              `pulumi:"url,optional"`
+	VoteCommissionPercentage        *int                 `pulumi:"voteCommissionPercentage,optional"`
+	ExtraFlags                      *[]string            `pulumi:"extraFlags,optional"`
 }
 
 func (f GenesisFlags) Args(accounts []BootstrapAccount) []string {
@@ -211,7 +214,9 @@ func (f GenesisFlags) Args(accounts []BootstrapAccount) []string {
 	// Required flags
 	b.Append("primordial-accounts-file", primordialAccountPath)
 
-	b.AppendRaw("--bootstrap-validator", f.IdentityPubkey, f.VotePubkey, f.StakePubkey)
+	for _, validator := range f.BootstrapValidators {
+		b.AppendRaw("--bootstrap-validator", validator.IdentityPubkey, validator.VotePubkey, validator.StakePubkey)
+	}
 
 	if len(accounts) > 0 {
 		b.Append("validator-accounts-file", validatorAccountsPath)
