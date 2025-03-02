@@ -39,11 +39,17 @@ func TestGenesisFlags(t *testing.T) {
 	voteCommissionPercentage := 10
 	extraFlags := []string{"--extra-flag1", "--extra-flag2"}
 
+	bootstrapValidators := []BootstrapValidator{
+		{
+			IdentityPubkey: identityPubkey,
+			VotePubkey:     votePubkey,
+			StakePubkey:    stakePubkey,
+		},
+	}
+
 	f := GenesisFlags{
-		IdentityPubkey:                  identityPubkey,
+		BootstrapValidators:             bootstrapValidators,
 		LedgerPath:                      ledgerPath,
-		VotePubkey:                      votePubkey,
-		StakePubkey:                     stakePubkey,
 		BootstrapStakeAuthorizedPubkey:  &bootstrapStakeAuthorizedPubkey,
 		BootstrapValidatorLamports:      &bootstrapValidatorLamports,
 		BootstrapValidatorStakeLamports: &bootstrapValidatorStakeLamports,
