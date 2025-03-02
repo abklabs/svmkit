@@ -1,0 +1,6 @@
+logPath = "/home/sol/log"
+systemdPath = "/etc/systemd/system"
+ledgerPath = "/home/sol/ledger"
+accountsPath = "/home/sol/accounts"
+validatorIdentityKeypairPath = "/home/sol/validator-keypair.json"
+validatorVoteAccountKeypairPath = "/home/sol/vote-account-keypair.json"
