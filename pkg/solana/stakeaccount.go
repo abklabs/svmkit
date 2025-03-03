@@ -21,7 +21,7 @@ type StakeAccountKeyPairs struct {
 }
 
 type StakeAccountLockup struct {
-	EpochAvailable  uint64 `pulumi:"epochAvailable"`
+	EpochAvailable  int64 `pulumi:"epochAvailable"`
 	CustodianPubkey string `pulumi:"custodianPubkey"`
 }
 
@@ -31,7 +31,7 @@ type StakeAccount struct {
 	WithdrawAddress      *string              `pulumi:"withdrawAddress,optional"`
 	TransactionOptions   *TxnOptions          `pulumi:"transactionOptions"`
 	ForceDelete          bool                 `pulumi:"forceDelete"`
-	LockupArgs           *StakeAccountLockup  `pulumi:"lockupArgs"`
+	LockupArgs           *StakeAccountLockup  `pulumi:"lockupArgs,optional"`
 }
 
 type CliAuthorized struct {
