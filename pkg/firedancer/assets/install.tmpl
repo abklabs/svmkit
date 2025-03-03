@@ -1,10 +1,6 @@
 # -*- mode: shell-script -*-
 # shellcheck shell=bash
 
-VALIDATOR_USER=sol
-VALIDATOR_GROUP=sol
-VALIDATOR_HOME=/home/$VALIDATOR_USER
-
 step::00::wait-for-a-stable-environment() {
     cloud-init::wait-for-stable-environment
 }
@@ -18,10 +14,15 @@ step::20::create-sol-user() {
 }
 
 step::30::copy-assets() {
-    svmkit::sudo cp validator-keypair.json vote-account-keypair.json config.toml "$VALIDATOR_HOME"
-    svmkit::sudo chown "$VALIDATOR_USER:$VALIDATOR_GROUP" "$VALIDATOR_HOME"/{validator-keypair,vote-account-keypair}.json "$VALIDATOR_HOME"/config.toml
+    svmkit::sudo cp validator-keypair.json {{.Paths.ValidatorIdentityKeypairPath}}
+    svmkit::sudo cp vote-account-keypair.json {{.Paths.ValidatorVoteAccountKeypairPath}}
+    svmkit::sudo cp config.toml {{.Paths.ConfigPath}}
+    svmkit::sudo chown sol:sol {{.Paths.ValidatorIdentityKeypairPath}}
+    svmkit::sudo chown sol:sol {{.Paths.ValidatorVoteAccountKeypairPath}}
+    svmkit::sudo chown sol:sol {{.Paths.ConfigPath}}
 
-    svmkit::sudo cp ./*.service /etc/systemd/system/.
+    svmkit::sudo cp svmkit-fd-setup.service {{.Paths.SystemdPath}}/.
+    svmkit::sudo cp svmkit-fd-validator.service {{.Paths.SystemdPath}}/.
     svmkit::sudo systemctl daemon-reload
 }
 
@@ -36,7 +37,7 @@ step::75::setup-solana-cli() {
     solana config set "${SOLANA_CLI_CONFIG_FLAGS[@]}"
 
     # Setup the sol user.
-    svmkit::sudo -u "$VALIDATOR_USER" -i solana config set "${SOLANA_CLI_CONFIG_FLAGS[@]}"
+    svmkit::sudo -u sol -i solana config set "${SOLANA_CLI_CONFIG_FLAGS[@]}"
 }
 
 step::80::setup-validator() {

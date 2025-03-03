@@ -49,7 +49,7 @@ func TestGenesisFlags(t *testing.T) {
 
 	f := GenesisFlags{
 		BootstrapValidators:             bootstrapValidators,
-		LedgerPath:                      ledgerPath,
+		LedgerPath:                      &ledgerPath,
 		BootstrapStakeAuthorizedPubkey:  &bootstrapStakeAuthorizedPubkey,
 		BootstrapValidatorLamports:      &bootstrapValidatorLamports,
 		BootstrapValidatorStakeLamports: &bootstrapValidatorStakeLamports,
@@ -84,14 +84,20 @@ func TestGenesisFlags(t *testing.T) {
 		},
 	}
 
-	actualArgs := f.Args(bootstrapAccounts)
+	paths, err := NewDefaultGenesisPaths(nil)
+
+	if err != nil {
+		t.Fatalf("Failed to create genesis paths: %v", err)
+	}
+
+	actualArgs := f.Args(bootstrapAccounts, *paths)
 
 	// Construct the expected argument list
 	expectedArgs := []string{
-		"--primordial-accounts-file", primordialAccountPath,
+		"--primordial-accounts-file", *paths.PrimordialAccountsPath,
 		"--bootstrap-validator", identityPubkey, votePubkey, stakePubkey,
-		"--validator-accounts-file", validatorAccountsPath,
-		"--ledger", ledgerPath,
+		"--validator-accounts-file", *paths.ValidatorAccountsPath,
+		"--ledger", *paths.LedgerPath,
 		"--bootstrap-stake-authorized-pubkey", "bootstrap_auth_key",
 		"--bootstrap-validator-lamports", "5000000000",
 		"--bootstrap-validator-stake-lamports", "1000000000",

@@ -36,6 +36,10 @@ func (cmd *TunerCommand) Check() error {
 		return err
 	}
 
+	if err := cmd.Paths.Check(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -111,6 +115,7 @@ type TunerParams struct {
 
 type Tuner struct {
 	runner.RunnerCommand
+	Paths  TunerPaths  `pulumi:"paths"`
 	Params TunerParams `pulumi:"params" toml:"params"`
 }
 

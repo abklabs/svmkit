@@ -27,8 +27,8 @@ step::005::configure-firewall() {
 }
 
 step::006::copy-faucet-keys() {
-    svmkit::sudo cp faucet-keypair.json /home/sol
-    svmkit::sudo chown sol:sol /home/sol/faucet-keypair.json
+    svmkit::sudo cp faucet-keypair.json {{.Paths.KeypairPath}}
+    svmkit::sudo chown sol:sol {{.Paths.KeypairPath}}
 }
 
 step::007::setup-faucet-startup() {
@@ -36,16 +36,16 @@ step::007::setup-faucet-startup() {
         svmkit::sudo systemctl stop "${FAUCET_SERVICE}" || true
     fi
 
-    cat <<EOF | svmkit::sudo tee /home/sol/run-faucet >/dev/null
+    cat <<EOF | svmkit::sudo tee {{.Paths.RunBinPath}} >/dev/null
 #!/usr/bin/env bash
 
 $FAUCET_ENV exec solana-faucet $FAUCET_FLAGS
 EOF
 
-    svmkit::sudo chmod 755 /home/sol/run-faucet
-    svmkit::sudo chown sol:sol /home/sol/run-faucet
+    svmkit::sudo chmod 755 {{.Paths.RunBinPath}}
+    svmkit::sudo chown sol:sol {{.Paths.RunBinPath}}
 
-    cat <<EOF | svmkit::sudo tee /etc/systemd/system/"${FAUCET_SERVICE}" >/dev/null
+    cat <<EOF | svmkit::sudo tee {{.Paths.SystemdPath}}/"${FAUCET_SERVICE}" >/dev/null
 [Unit]
 Description=SVMkit Solana Faucet
 
@@ -53,7 +53,7 @@ Description=SVMkit Solana Faucet
 Type=exec
 User=sol
 Group=sol
-ExecStart=/home/sol/run-faucet
+ExecStart={{.Paths.RunBinPath}}
 
 [Install]
 WantedBy=default.target

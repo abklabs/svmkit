@@ -1,0 +1,3 @@
+runBinPath = "/usr/bin/run-validator"
+stopBinPath = "/usr/bin/stop-validator"
+checkBinPath = "/usr/bin/check-validator"

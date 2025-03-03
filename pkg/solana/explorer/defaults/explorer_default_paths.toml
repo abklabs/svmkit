@@ -1,0 +1,2 @@
+installPath = "/opt/svmkit-solana-explorer"
+runBinPath = "/opt/svmkit-solana-explorer/run-explorer"

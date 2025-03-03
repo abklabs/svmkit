@@ -2,11 +2,11 @@ package genesis
 
 import (
 	"embed"
+
+	"text/template"
 )
 
 //go:embed assets
 var assets embed.FS
 
-const (
-	assetsGenesisScript = "assets/genesis.sh"
-)
+var genesisScriptTmpl = template.Must(template.ParseFS(assets, "assets/genesis.sh.tmpl"))

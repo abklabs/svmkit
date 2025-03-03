@@ -28,7 +28,7 @@ step::005::configure-firewall() {
 }
 
 step::006::setup-explorer() {
-    svmkit::sudo chown -R sol:sol /opt/svmkit-solana-explorer
+    svmkit::sudo chown -R sol:sol {{.Paths.InstallPath}}
 }
 
 step::007::setup-explorer-startup() {
@@ -36,17 +36,17 @@ step::007::setup-explorer-startup() {
         svmkit::sudo systemctl stop "${EXPLORER_SERVICE}" || true
     fi
 
-    cat <<EOF | svmkit::sudo tee /opt/svmkit-solana-explorer/run-explorer >/dev/null
+    cat <<EOF | svmkit::sudo tee {{.Paths.RunBinPath}} >/dev/null
 #!/usr/bin/env bash
 
-cd /opt/svmkit-solana-explorer
-$EXPLORER_ENV exec pnpm start /opt/svmkit-solana-explorer $EXPLORER_FLAGS
+cd {{.Paths.InstallPath}}
+$EXPLORER_ENV exec pnpm start {{.Paths.InstallPath}} $EXPLORER_FLAGS
 EOF
 
-    svmkit::sudo chmod 755 /opt/svmkit-solana-explorer/run-explorer
-    svmkit::sudo chown sol:sol /opt/svmkit-solana-explorer/run-explorer
+    svmkit::sudo chmod 755 {{.Paths.RunBinPath}}
+    svmkit::sudo chown sol:sol {{.Paths.RunBinPath}}
 
-    cat <<EOF | svmkit::sudo tee /etc/systemd/system/"${EXPLORER_SERVICE}" >/dev/null
+    cat <<EOF | svmkit::sudo tee {{.Paths.SystemdPath}}/"${EXPLORER_SERVICE}" >/dev/null
 [Unit]
 Description=SVMkit Solana Explorer
 
@@ -54,7 +54,7 @@ Description=SVMkit Solana Explorer
 Type=exec
 User=sol
 Group=sol
-ExecStart=/opt/svmkit-solana-explorer/run-explorer
+ExecStart={{.Paths.RunBinPath}}
 
 [Install]
 WantedBy=default.target

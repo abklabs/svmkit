@@ -6,7 +6,7 @@ TUNER_SERVICE=svmkit-tuner.service
 write-to-tuner-log() {
     local line
     while IFS= read -r line; do
-        echo "$line" | svmkit::sudo tee -a /home/sol/svmkit-tuner.log >/dev/null
+        echo "$line" | svmkit::sudo tee -a {{.Paths.TunerLogPath}} >/dev/null
     done
 }
 
@@ -27,13 +27,13 @@ step::003::create-sol-user() {
 }
 
 step::004::setup-tuner() {
-    svmkit::sudo rm -f /home/sol/svmkit-tuner.log
-    svmkit::sudo touch /home/sol/svmkit-tuner.log
-    svmkit::sudo chown -R sol:sol /home/sol/svmkit-tuner.log
+    svmkit::sudo rm -f {{.Paths.TunerLogPath}}
+    svmkit::sudo touch {{.Paths.TunerLogPath}}
+    svmkit::sudo chown -R sol:sol {{.Paths.TunerLogPath}}
 
-    svmkit::sudo rm -f /etc/sysctl.d/zzz-svmkit-tuner.conf
-    svmkit::sudo touch /etc/sysctl.d/zzz-svmkit-tuner.conf
-    svmkit::sudo chown root:root /etc/sysctl.d/zzz-svmkit-tuner.conf
+    svmkit::sudo rm -f {{.Paths.SysctlConfPath}}
+    svmkit::sudo touch {{.Paths.SysctlConfPath}}
+    svmkit::sudo chown root:root {{.Paths.SysctlConfPath}}
 
     echo "# Tuning parameters enabled by SVMKit" | write-to-tuner-log
     while IFS= read -r line; do
@@ -43,15 +43,11 @@ step::004::setup-tuner() {
 
         if svmkit::sudo sysctl "${parameter}" 2>/dev/null; then
             echo "${line}" | write-to-tuner-log
-            echo "${line}" | svmkit::sudo tee -a /etc/sysctl.d/zzz-svmkit-tuner.conf
+            echo "${line}" | svmkit::sudo tee -a {{.Paths.SysctlConfPath}}
         else
             echo "Parameter ${line} not supported on this system" | write-to-tuner-log
         fi
     done <svmkit-tuner.conf
-
-    svmkit::sudo mkdir -p /root/bin
-    svmkit::sudo chown root:root /root/bin
-    svmkit::sudo chmod 700 /root/bin
 }
 
 step::005::setup-tuner-service() {
@@ -59,29 +55,29 @@ step::005::setup-tuner-service() {
         svmkit::sudo systemctl stop "${TUNER_SERVICE}" || true
     fi
 
-    cat <<EOF | svmkit::sudo tee /root/bin/run-tuner >/dev/null
+    cat <<EOF | svmkit::sudo tee {{.Paths.RunBinPath}} >/dev/null
 #!/usr/bin/env bash
 
-echo "# ------------------------" | tee -a /home/sol/svmkit-tuner.log
-echo "# Tuner ran at \$(date)" | tee -a /home/sol/svmkit-tuner.log
+echo "# ------------------------" | tee -a {{.Paths.TunerLogPath}}
+echo "# Tuner ran at \$(date)" | tee -a {{.Paths.TunerLogPath}}
 
 if [[ -n "${CPU_GOVERNOR:-}" ]]; then
     if cpufreq-info -g 2>/dev/null | grep -qw "$CPU_GOVERNOR"; then
         if cpufreq-set -g "$CPU_GOVERNOR"; then
-            echo "CPU governor set to $CPU_GOVERNOR" | tee -a /home/sol/svmkit-tuner.log
+            echo "CPU governor set to $CPU_GOVERNOR" | tee -a {{.Paths.TunerLogPath}}
         else
-            echo "Failed to set CPU governor to $CPU_GOVERNOR" | tee -a /home/sol/svmkit-tuner.log
+            echo "Failed to set CPU governor to $CPU_GOVERNOR" | tee -a {{.Paths.TunerLogPath}}
         fi
     else
-        echo "CPU governor $CPU_GOVERNOR not supported on this system" | tee -a /home/sol/svmkit-tuner.log
+        echo "CPU governor $CPU_GOVERNOR not supported on this system" | tee -a {{.Paths.TunerLogPath}}
     fi
 fi
 EOF
 
-    svmkit::sudo chown root:root /root/bin/run-tuner
-    svmkit::sudo chmod 700 /root/bin/run-tuner
+    svmkit::sudo chown root:root {{.Paths.RunBinPath}}
+    svmkit::sudo chmod 700 {{.Paths.RunBinPath}}
 
-    cat <<EOF | svmkit::sudo tee /etc/systemd/system/"${TUNER_SERVICE}" >/dev/null
+    cat <<EOF | svmkit::sudo tee {{.Paths.SystemdPath}}/"${TUNER_SERVICE}" >/dev/null
 [Unit]
 Description=SVMkit Tuner
 
@@ -89,7 +85,7 @@ Description=SVMkit Tuner
 Type=oneshot
 User=root
 Group=root
-ExecStart=/root/bin/run-tuner
+ExecStart={{.Paths.RunBinPath}}
 
 [Install]
 WantedBy=default.target

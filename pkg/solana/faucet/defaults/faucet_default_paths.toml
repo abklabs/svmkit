@@ -1,0 +1,2 @@
+keypairPath = "/home/sol/faucet-keypair.json"
+runBinPath = "/usr/bin/run-faucet"
