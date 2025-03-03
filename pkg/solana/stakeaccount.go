@@ -21,7 +21,7 @@ type StakeAccountKeyPairs struct {
 }
 
 type StakeAccountLockup struct {
-	EpochAvailable  int64 `pulumi:"epochAvailable"`
+	EpochAvailable  int64  `pulumi:"epochAvailable"`
 	CustodianPubkey string `pulumi:"custodianPubkey"`
 }
 
@@ -473,7 +473,7 @@ func (v *StakeAccountUpdate) updatePlan() []UpdateType {
 	newKps := v.newArgs.StakeAccountKeyPairs
 
 	// Authority Diff
-	if (oldKps.WithdrawAuthority != newKps.WithdrawAuthority) || (&oldKps.StakeAuthority != &newKps.StakeAuthority) {
+	if (oldKps.WithdrawAuthority != newKps.WithdrawAuthority) || (oldKps.StakeAuthority != newKps.StakeAuthority) {
 		updates = append(updates, UpdateTypeAuthority)
 	}
 
@@ -507,6 +507,9 @@ func (v *StakeAccountUpdate) Env() *runner.EnvBuilder {
 	e.SetBool("STAKE_ACCOUNT_LOCKUP", false)
 	e.SetBool("STAKE_AUTHORITY_UPDATE", false)
 	e.SetBool("WITHDRAW_AUTHORITY_UPDATE", false)
+
+	e.SetBool("WITHDRAW_AUTHORITY", false)
+	e.SetBool("STAKE_AUTHORITY", false)
 
 	updates := v.updatePlan()
 	if slices.Contains(updates, UpdateTypeDeactivate) {
