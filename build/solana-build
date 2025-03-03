@@ -143,7 +143,275 @@ provides = "svmkit-validator"
 conflicts = "svmkit-validator"
 replaces = "svmkit-validator"
 recommends = "svmkit-agave-ledger-tool"
+depends = "bash, curl, jq"
+assets = [
+  { source = "templates", dest = "var/lib/dpkg/info/${package_name}.templates", mode = "0644" },
+  { source = "${package_name}.service", dest = "/etc/systemd/system/${package_name}.service", mode = "0644" },
+  { source = "run-validator", dest = "/usr/bin/run-validator", mode = "0755" },
+  { source = "stop-validator", dest = "/usr/bin/stop-validator", mode = "0755" },
+  { source = "check-validator", dest = "/usr/bin/check-validator", mode = "0755" },
+  { source = "target/release/${target}", dest = "/usr/bin/${target}", mode = "0755" }
+]
+
+maintainer-scripts = "."
 EOF
+
+    cat <<EOF > "validator/${package_name}.service"
+[Unit]
+Description=$package_name
+
+[Service]
+Type=exec
+User=sol
+Group=sol
+ExecStart=/usr/bin/run-validator
+ExecStartPost=/usr/bin/check-validator
+ExecStop=/usr/bin/stop-validator
+LimitNOFILE=1000000
+
+[Install]
+WantedBy=default.target
+EOF
+
+    cat <<EOF > validator/run-validator
+#!/usr/bin/env bash
+if [[ ! -f "/etc/validators.d/${package_name}/run-validator.env" ]]; then
+    echo "No run-validator.env found." 1>&2
+    exit 1
+fi
+. "/etc/validators.d/${package_name}/run-validator.env"
+\${VALIDATOR_ENV} exec \${VALIDATOR_PROCESS} \${VALIDATOR_FLAGS}
+EOF
+    chmod +x validator/run-validator
+
+    cat <<EOF > validator/stop-validator
+#!/usr/bin/env bash
+if [[ ! -f "/etc/validators.d/${package_name}/stop-validator.env" ]]; then
+    echo "No stop-validator.env found." 1>&2
+    exit 1
+fi
+. "/etc/validators.d/${package_name}/stop-validator.env"
+\${VALIDATOR_ENV} exec \${VALIDATOR_PROCESS} --ledger \${LEDGER_PATH} exit \${VALIDATOR_EXIT_FLAGS}
+EOF
+    chmod +x validator/stop-validator
+
+    cat <<EOF > validator/check-validator
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ ! -f "/etc/validators.d/${package_name}/check-validator.env" ]]; then
+    echo "No check-validator.env found." 1>&2
+    exit 0
+fi
+
+. "/etc/validators.d/${package_name}/check-validator.env"
+
+HAS_STARTUP_POLICY="\${HAS_STARTUP_POLICY:-false}"
+
+if [[ "\$HAS_STARTUP_POLICY" != "true" ]]; then
+  exit 0
+fi
+
+WAIT_FOR_RPC_HEALTH="\${WAIT_FOR_RPC_HEALTH:-false}"
+
+if [[ "\$WAIT_FOR_RPC_HEALTH" != "true" ]]; then
+  exit 0
+fi
+
+RPC_BIND_ADDRESS="\${RPC_BIND_ADDRESS:-0.0.0.0}"
+RPC_PORT="\${RPC_PORT:-8899}"
+RPC_SERVICE_TIMEOUT="\${RPC_SERVICE_TIMEOUT:-120}"
+
+is-rpc-healthy() {
+    local url result
+    url="\$1"
+    result="\$(curl -s -X POST -H "Content-Type: application/json" \
+      -d '{"jsonrpc":"2.0","id":1,"method":"getHealth"}' "\$url" | jq -r .result)"
+    [[ "\$result" = "ok" ]]
+}
+
+for i in \$(seq 1 "\$RPC_SERVICE_TIMEOUT"); do
+    if is-rpc-healthy "http://\$RPC_BIND_ADDRESS:\$RPC_PORT"; then
+        exit 0
+    fi
+    sleep 1
+done
+
+echo "Timed out waiting for validator to bring RPC online!" 1>&2
+exit 1
+EOF
+
+    cat <<EOF > validator/templates
+Template: ${package_name}/has-startup-policy
+Type: boolean
+Default: false
+Description: Does the validator have a startup policy?
+
+Template: ${package_name}/wait-for-rpc-health
+Type: boolean
+Default: false
+Description: Should the validator wait for RPC health on startup?
+
+Template: ${package_name}/validator-env
+Type: string
+Default: ""
+Description: Environment variables to set when running the validator.
+
+Template: ${package_name}/validator-process
+Type: string
+Default: ""
+Description: The process to run when starting the validator.
+
+Template: ${package_name}/validator-flags
+Type: string
+Default: ""
+Description: Flags to pass to the validator process.
+
+Template: ${package_name}/validator-exit-flags
+Type: string
+Default: ""
+Description: Flags to pass to the validator process when stopping.
+
+Template: ${package_name}/ledger-path
+Type: string
+Default: ""
+Description: The path to the ledger.
+
+Template: ${package_name}/has-timeout-config
+Type: boolean
+Default: false
+Description: Does the validator have a timeout configuration?
+
+Template: ${package_name}/rpc-service-timeout
+Type: string
+Default: "120"
+Description: The timeout for the RPC service.
+
+Template: ${package_name}/rpc-bind-address
+Type: string
+Default: "0.0.0.0"
+Description: The RPC bind address.
+
+Template: ${package_name}/rpc-port
+Type: string
+Default: "8899"
+Description: The RPC port.
+
+EOF
+
+    cat <<EOF > validator/prerm
+#!/bin/sh
+set -e
+
+case "\$1" in
+  remove|deconfigure)
+    systemctl stop ${package_name}.service || true
+    systemctl disable ${package_name}.service || true
+    systemctl daemon-reload || true
+    ;;
+esac
+
+exit 0
+EOF
+    chmod +x validator/prerm
+
+    cat <<EOF > validator/postinst
+#!/bin/bash
+set -e
+
+. /usr/share/debconf/confmodule 2>/dev/null || true
+
+case "\$1" in
+  configure)
+    # Load templates
+    db_x_loadtemplatefile /var/lib/dpkg/info/${package_name}.templates ${package_name} 2>/dev/null || true
+
+    db_input high ${package_name}/has-startup-policy || true
+    db_input high ${package_name}/wait-for-rpc-health || true
+
+    db_input high ${package_name}/validator-env || true
+    db_input high ${package_name}/validator-process || true
+    db_input high ${package_name}/validator-flags || true
+    db_input high ${package_name}/validator-exit-flags || true
+    db_input high ${package_name}/ledger-path || true
+
+    db_input high ${package_name}/has-timeout-config || true
+    db_input high ${package_name}/rpc-service-timeout || true
+
+    db_input high ${package_name}/rpc-bind-address || true
+    db_input high ${package_name}/rpc-port || true
+
+    db_go || true
+    
+    db_get ${package_name}/has-startup-policy
+    HAS_STARTUP_POLICY="\$RET"
+
+    db_get ${package_name}/wait-for-rpc-health
+    WAIT_FOR_RPC_HEALTH="\$RET"
+
+    db_get ${package_name}/validator-env
+    VALIDATOR_ENV="\$RET"
+
+    db_get ${package_name}/validator-process
+    VALIDATOR_PROCESS="\$RET"
+
+    db_get ${package_name}/validator-flags
+    VALIDATOR_FLAGS="\$RET"
+
+    db_get ${package_name}/validator-exit-flags
+    VALIDATOR_EXIT_FLAGS="\$RET"
+
+    db_get ${package_name}/ledger-path
+    LEDGER_PATH="\$RET"
+
+    db_get ${package_name}/has-timeout-config
+    HAS_TIMEOUT_CONFIG="\$RET"
+
+    db_get ${package_name}/rpc-service-timeout
+    RPC_SERVICE_TIMEOUT="\$RET"
+
+    db_get ${package_name}/rpc-bind-address
+    RPC_BIND_ADDRESS="\$RET"
+
+    db_get ${package_name}/rpc-port
+    RPC_PORT="\$RET"
+
+    ETC_DIR=/etc/validators.d/${package_name}
+    mkdir -p "\$ETC_DIR"
+
+    cat <<CONF >\${ETC_DIR}/run-validator.env
+VALIDATOR_ENV="\$VALIDATOR_ENV"
+VALIDATOR_PROCESS="\$VALIDATOR_PROCESS"
+VALIDATOR_FLAGS="\$VALIDATOR_FLAGS"
+CONF
+    chmod 0644 \${ETC_DIR}/run-validator.env
+
+    cat <<CONF >\${ETC_DIR}/stop-validator.env
+VALIDATOR_ENV="\$VALIDATOR_ENV"
+VALIDATOR_PROCESS="\$VALIDATOR_PROCESS"
+LEDGER_PATH="\$LEDGER_PATH"
+VALIDATOR_EXIT_FLAGS="\$VALIDATOR_EXIT_FLAGS"
+CONF
+    chmod 0644 \${ETC_DIR}/stop-validator.env
+
+    cat <<CONF >\${ETC_DIR}/check-validator.env
+HAS_STARTUP_POLICY="\$HAS_STARTUP_POLICY"
+WAIT_FOR_RPC_HEALTH="\$WAIT_FOR_RPC_HEALTH"
+HAS_TIMEOUT_CONFIG="\$HAS_TIMEOUT_CONFIG"
+RPC_SERVICE_TIMEOUT="\$RPC_SERVICE_TIMEOUT"
+RPC_BIND_ADDRESS="\$RPC_BIND_ADDRESS"
+RPC_PORT="\$RPC_PORT"
+CONF
+    chmod 0644 \${ETC_DIR}/check-validator.env
+
+    systemctl daemon-reload || true
+    ;;
+esac
+
+exit 0
+EOF
+    chmod +x validator/postinst
+
     $buildfunc
     git submodule deinit --all
     git checkout -f master

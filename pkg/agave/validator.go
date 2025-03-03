@@ -127,11 +127,25 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 	b.Set("VALIDATOR_PACKAGE", cmd.packageInfo.Variant.PackageName())
 	b.Merge(cmd.RunnerCommand.Env())
 
+	if s := cmd.TimeoutConfig; s != nil {
+		b.SetBool("HAS_TIMEOUT_CONFIG", true)
+	} else {
+		b.SetBool("HAS_TIMEOUT_CONFIG", false)
+	}
+
 	b.Set("RPC_BIND_ADDRESS", cmd.Flags.RpcBindAddress)
 	b.SetInt("RPC_PORT", cmd.Flags.RpcPort)
 
+	if s := cmd.StartupPolicy; s != nil {
+		b.SetBool("HAS_STARTUP_POLICY", true)
+	} else {
+		b.SetBool("HAS_STARTUP_POLICY", false)
+	}
+
 	if cmd.Flags.FullRpcAPI != nil && *cmd.Flags.FullRpcAPI && cmd.StartupPolicy != nil {
 		b.SetBoolP("WAIT_FOR_RPC_HEALTH", cmd.StartupPolicy.WaitForRPCHealth)
+	} else {
+		b.SetBool("WAIT_FOR_RPC_HEALTH", false)
 	}
 
 	if i := cmd.Info; i != nil {
@@ -142,7 +156,9 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 	}
 
 	if s := cmd.ShutdownPolicy; s != nil {
-		b.SetArray("VALIDATOR_EXIT_FLAGS", s.Flags().Args())
+		b.Set("VALIDATOR_EXIT_FLAGS", strings.Join(s.Flags().Args(), " "))
+	} else {
+		b.Set("VALIDATOR_EXIT_FLAGS", "")
 	}
 
 	b.Set("LEDGER_PATH", ledgerPath)
@@ -154,10 +170,6 @@ func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
 	err := p.AddTemplate("steps.sh", installScriptTmpl, cmd)
 
 	if err != nil {
-		return err
-	}
-
-	if err := p.AddTemplate("check-validator", checkValidatorScriptTmpl, cmd); err != nil {
 		return err
 	}
 
