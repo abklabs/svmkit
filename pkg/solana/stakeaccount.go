@@ -15,7 +15,7 @@ import (
 
 type StakeAccountKeyPairs struct {
 	StakeAccount      string  `pulumi:"stakeAccount" provider:"secret"`
-	VoteAccount       *string `pulumi:"voteAccount, optional" provider:"secret"`
+	VoteAccount       *string `pulumi:"voteAccount,optional" provider:"secret"`
 	StakeAuthority    *string `pulumi:"stakeAuthority,optional" provider:"secret"`
 	WithdrawAuthority *string `pulumi:"withdrawAuthority,optional" provider:"secret"`
 }
