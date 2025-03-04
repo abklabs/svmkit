@@ -4,100 +4,83 @@
 umask 077
 
 stake-account-status () {
-    solana stake-account --output json-compact stake_account.json
+    solana stake-account --output json-compact "$STAKE_ACCOUNT_ADDRESS"
 }
 
 stake-account-create () {
-    local create_args=()
-    local delegate_args=()
+    local args=()
 
-    # Check for authority files directly
-    if [[ -f withdraw_authority.json ]]; then
-      create_args+=(--withdraw-authority withdraw_authority.json)
+    if [[ -n "${STAKE_AUTHORITY}" ]]; then
+      args+=(--stake-authority "$STAKE_AUTHORITY")
     fi
 
+    if [[ -n "${WITHDRAW_AUTHORITY}" ]]; then
+      args+=(--withdraw-authority "$WITHDRAW_ADDRESS")
+    fi
+
+    if [[ -v CUSTODIAN_PUBKEY ]] && [[ -v EPOCH_AVAILABLE ]] && [[ -n "$CUSTODIAN_PUBKEY" ]] && [[ -n "$EPOCH_AVAILABLE" ]]; then
+      args+=(--lockup-epoch "$EPOCH_AVAILABLE" --custodian "$CUSTODIAN_PUBKEY")
+    fi
+    solana create-stake-account "${SOLANA_CLI_TXN_FLAGS[@]}" stake_account.json "$STAKE_AMOUNT" "${args[@]}"
+}
+
+stake-account-deactivate () {
+  if [[ -f stake_authority.json ]]; then
+    solana deactivate-stake "${SOLANA_CLI_TXN_FLAGS[@]}" "$STAKE_ACCOUNT_ADDRESS" --stake-authority stake_authority.json
+  else
+    solana deactivate-stake "${SOLANA_CLI_TXN_FLAGS[@]}" "$STAKE_ACCOUNT_ADDRESS"
+  fi
+}
+
+stake-account-delegate () {
+    local delegate_args=()
     if [[ -f stake_authority.json ]]; then
-      create_args+=(--stake-authority stake_authority.json)
       delegate_args+=(--stake-authority stake_authority.json)
     fi
 
-    # Lockup args still need environment variables
-    if [[ -v CUSTODIAN_PUBKEY ]] && [[ -v EPOCH_AVAILABLE ]] && [[ -n "$CUSTODIAN_PUBKEY" ]] && [[ -n "$EPOCH_AVAILABLE" ]]; then
-      create_args+=(--lockup-epoch "$EPOCH_AVAILABLE" --custodian "$CUSTODIAN_PUBKEY")
-    fi
-
-    solana create-stake-account "${SOLANA_CLI_TXN_FLAGS[@]}" stake_account.json "$STAKE_AMOUNT" "${create_args[@]}"
-    
-    # Only delegate if vote account exists
-    if [[ -f vote_account.json ]]; then
-        solana delegate-stake "${SOLANA_CLI_TXN_FLAGS[@]}" stake_account.json vote_account.json "${delegate_args[@]}"
-    fi
+    solana delegate-stake "${SOLANA_CLI_TXN_FLAGS[@]}" "$STAKE_ACCOUNT_ADDRESS" vote_account.json "${delegate_args[@]}"
 }
 
+stake-account-authorize() {
+    local authorize_args=()
 
-stake-account-delete () {
-    # Return early if force delete is not set to true
-    [[ "$FORCE_DELETE" == "true" ]] || return 0
-    
-    # Check if we have a withdraw address (ensuring it exists first)
-    if [[ ! -v WITHDRAW_ADDRESS ]] || [[ -z "$WITHDRAW_ADDRESS" ]]; then
-        echo "Error: No withdraw address provided for stake account deletion"
+    if [[ $AUTH_TYPE == "STAKER" ]]; then
+        authorize_args+=(--new-stake-authority new_address.json)
+        if [[ -f old_address.json ]]; then
+          authorize_args+=(--stake-authority old_address.json)
+        fi
+
+    elif [[ $AUTH_TYPE == "WITHDRAWER" ]]; then
+        authorize_args+=(--new-withdraw-authority new_address.json)
+        if [[ -f old_address.json ]]; then
+          authorize_args+=(--withdraw-authority old_address.json)
+        fi
+        if [[ -f lockup_keypair.json ]]; then
+          authorize_args+=(--lockup-authority lockup_keypair.json)
+        fi
+    else
+        echo "Error: Invalid authorization type provided"
         return 1
     fi
-    
+
+    solana stake-authorize "${SOLANA_CLI_TXN_FLAGS[@]}" "$STAKE_ACCOUNT_ADDRESS" "${authorize_args[@]}"
+}
+
+stake-account-withdraw() {
     local args=()
     if [[ -f withdraw_authority.json ]]; then
       args+=(--withdraw-authority withdraw_authority.json)
     fi
 
-    solana withdraw "${SOLANA_CLI_TXN_FLAGS[@]}" stake_account.json "$WITHDRAW_ADDRESS" "$STAKE_AMOUNT" "${args[@]}"
+    if [[ -f lockup_authority.json ]]; then
+      args+=(--lockup-authority lockup_authority.json)
+    fi
+
+    solana withdraw-stake "${SOLANA_CLI_TXN_FLAGS[@]}" "$STAKE_ACCOUNT_ADDRESS" "$WITHDRAW_ADDRESS" "$STAKE_AMOUNT" "${args[@]}"
 }
 
-stake-account-update () {
-    # Build authority argument arrays based on file existence
-    local stake_auth_args=()
-    if [[ -f stake_authority.json ]]; then
-      stake_auth_args+=(--stake-authority stake_authority.json)
-    fi
-
-    local withdraw_auth_args=()
-    if [[ -f withdraw_authority.json ]]; then
-      withdraw_auth_args+=(--withdraw-authority withdraw_authority.json)
-    fi
-
-    # Handle deactivation (required explicit operation flag as it doesn't use any unique files)
-    if [[ "$OPERATION" == "DEACTIVATE" ]]; then
-        solana deactivate-stake "${SOLANA_CLI_TXN_FLAGS[@]}" stake_account.json "${stake_auth_args[@]}"
-    fi
-
-    # Handle delegation (check for new vote account file)
-    if [[ -f new_vote_account.json ]]; then
-        solana delegate-stake "${SOLANA_CLI_TXN_FLAGS[@]}" stake_account.json new_vote_account.json "${stake_auth_args[@]}"
-    fi
-
-    # Handle stake authority update
-    if [[ "$UPDATE_STAKE_AUTHORITY" == "true" ]] && [[ -f stake_authority.json ]] && [[ -f new_stake_authority.json ]]; then
-        solana stake-authorize "${SOLANA_CLI_TXN_FLAGS[@]}" \
-            stake_account.json \
-            --stake-authority stake_authority.json \
-            --new-stake-authority new_stake_authority.json
-    fi
-
-    # Handle withdraw authority update
-    if [[ "$UPDATE_WITHDRAW_AUTHORITY" == "true" ]] && [[ -f withdraw_authority.json ]] && [[ -f new_withdraw_authority.json ]]; then
-        solana stake-authorize "${SOLANA_CLI_TXN_FLAGS[@]}" \
-            stake_account.json \
-            --withdraw-authority withdraw_authority.json \
-            --new-withdraw-authority new_withdraw_authority.json
-    fi
-
-    # Handle lockup changes (still needs explicit params)
-    if [[ -v CUSTODIAN_PUBKEY ]] && [[ -v EPOCH_AVAILABLE ]] && [[ -n "$CUSTODIAN_PUBKEY" ]] && [[ -n "$EPOCH_AVAILABLE" ]]; then
-        solana stake-set-lockup "${SOLANA_CLI_TXN_FLAGS[@]}" stake_account.json \
-            --custodian "$CUSTODIAN_PUBKEY" \
-            --epoch "$EPOCH_AVAILABLE" \
-            "${withdraw_auth_args[@]}"
-    fi
+stake-account-set-lockup() {
+  log::fatal "Not implemented"
 }
 
 case "$STAKE_ACCOUNT_ACTION" in
@@ -107,11 +90,20 @@ case "$STAKE_ACCOUNT_ACTION" in
     CREATE)
 	stake-account-create
 	;;
-    DELETE)
-	stake-account-delete
+    DELEGATE)
+	stake-account-delegate
 	;;
-    UPDATE)
-	stake-account-update
+    DEACTIVATE)
+	stake-account-deactivate
+	;;
+    AUTHORIZE)
+	stake-account-authorize
+	;;
+    WITHDRAW)
+	stake-account-withdraw
+	;;
+    LOCKUP)
+	stake-account-set-lockup
 	;;
     *)
 	log::fatal "unknown action provided '$STAKE_ACCOUNT_ACTION'!"

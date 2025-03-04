@@ -6,13 +6,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"slices"
+	// "slices"
 	"strings"
 
 	"github.com/abklabs/svmkit/pkg/runner"
 	"golang.org/x/crypto/ssh"
 )
 
+// TODO: VoteAccount should be an address
 type StakeAccountKeyPairs struct {
 	StakeAccount      string  `pulumi:"stakeAccount" provider:"secret"`
 	VoteAccount       *string `pulumi:"voteAccount,optional" provider:"secret"`
@@ -73,17 +74,66 @@ func parseOutput(output string) (CliStakeState, error) {
 // StakeOperator Interface
 // ------------------------------------------------------------
 
+type CreateArgs struct {
+	StakeAccountKeyPair      string
+	Amount                   float64
+	LockupArgs               *StakeAccountLockup
+	StakeAuthorityAddress    *string
+	WithdrawAuthorityAddress *string
+}
+
+type DelegateArgs struct {
+	StakeAccountAddress   string
+	VoteAccountAddress    string
+	StakeAuthorityKeypair *string
+}
+
+type DeactivateArgs struct {
+	StakeAccountAddress   string
+	StakeAuthorityKeypair *string
+}
+
+type AuthorizeType int
+
+const (
+	AuthorizeStaker AuthorizeType = iota
+	AuthorizeWithdrawer
+)
+
+type AuthorizeArgs struct {
+	StakeAccountAddress string
+
+	OldKeyPair *string
+	NewAddress string
+	AuthType   AuthorizeType
+
+	// Only needed on withdrawer authorization change
+	LockupKeypair *string
+}
+
+type WithdrawArgs struct {
+	StakeAccountAddress      string
+	Amount                   float64
+	WithdrawAddress          string
+	WithdrawAuthorityKeypair *string
+	LockupKeypair            *string
+}
+
+type SetLockupArgs struct {
+	StakeAccountAddress string
+	LockupArgs          *StakeAccountLockup
+}
+
 // StakeOperator defines interface for stake account operations
 // It's agnostic to connection type and query method (RPC or bash commands)
 type StakeOperator interface {
-	// TODO: Only need to pass in the stake account address; but rn we repr that as a keypair
-	// and so we currently pass in the whole StakeAccount that contains the keypair. Eventually we
-	// want to decouple this implementation detail
-	GetStatus(stakeAccount StakeAccount) (CliStakeState, error)
-
-	Create(StakeAccount) error
-	Update(oldState StakeAccount, newArgs StakeAccount) error
-	Delete(StakeAccount) error
+	GetStatus(address string) (CliStakeState, error)
+	Create(CreateArgs) error
+	Delegate(DelegateArgs) error
+	Deactivate(DeactivateArgs) error
+	SetLockup(SetLockupArgs) error
+	Authorize(AuthorizeArgs) error
+	Withdraw(WithdrawArgs) error
 }
 
 // ------------------------------------------------------------
@@ -130,22 +180,56 @@ func NewStakeAccountClient(operator StakeOperator) *StakeAccountClient {
 }
 
 func (c *StakeAccountClient) Create(args StakeAccount) (StakeAccount, error) {
-	if args.StakeAccountKeyPairs.VoteAccount == nil {
-		return StakeAccount{}, errors.New("cannot create stake account without specifying delegate address")
+	var mWithdrawAuthAddress *string
+	var mStakeAuthAddress *string
+
+	if args.StakeAccountKeyPairs.WithdrawAuthority != nil {
+		withdrawAuthAddress, err := getPubkeyFromJson(*args.StakeAccountKeyPairs.WithdrawAuthority)
+		if err != nil {
+			return StakeAccount{}, err
+		}
+		mWithdrawAuthAddress = &withdrawAuthAddress
+	}
+	if args.StakeAccountKeyPairs.StakeAuthority != nil {
+		stakeAuthAddress, err := getPubkeyFromJson(*args.StakeAccountKeyPairs.StakeAuthority)
+		if err != nil {
+			return StakeAccount{}, err
+		}
+		mStakeAuthAddress = &stakeAuthAddress
 	}
 
-	if err := c.operator.Create(args); err != nil {
+	createArgs := CreateArgs{
+		StakeAccountKeyPair:      args.StakeAccountKeyPairs.StakeAccount,
+		Amount:                   args.Amount,
+		LockupArgs:               args.LockupArgs,
+		StakeAuthorityAddress:    mStakeAuthAddress,
+		WithdrawAuthorityAddress: mWithdrawAuthAddress,
+	}
+
+	if err := c.operator.Create(createArgs); err != nil {
 		return StakeAccount{}, err
+	}
+
+	stakeAccountAddress, err := getPubkeyFromJson(args.StakeAccountKeyPairs.StakeAccount)
+	if err != nil {
+		return StakeAccount{}, err
+	}
+
+	if args.StakeAccountKeyPairs.VoteAccount != nil {
+		delegateArgs := DelegateArgs{
+			StakeAccountAddress:   stakeAccountAddress,
+			VoteAccountAddress:    *args.StakeAccountKeyPairs.VoteAccount,
+			StakeAuthorityKeypair: args.StakeAccountKeyPairs.StakeAuthority,
+		}
+		if err := c.operator.Delegate(delegateArgs); err != nil {
+			return StakeAccount{}, err
+		}
 	}
 	return args, nil
 }
 
 func (c *StakeAccountClient) Update(state StakeAccount, newArgs StakeAccount) (StakeAccount, error) {
-	readState, err := c.operator.GetStatus(state)
-	if err != nil {
-		return StakeAccount{}, errors.New("failed to read stake account state from chain")
-	}
-
+	// Basic checks
 	if state.StakeAccountKeyPairs.StakeAccount != newArgs.StakeAccountKeyPairs.StakeAccount {
 		return StakeAccount{}, errors.New("stake account address can not be rotated")
 	}
@@ -153,56 +237,77 @@ func (c *StakeAccountClient) Update(state StakeAccount, newArgs StakeAccount) (S
 		return StakeAccount{}, errors.New("cannot change stake amount; operation not currently supported")
 	}
 
+	// Read state from chain
+	stakeAccountAddress, err := getPubkeyFromJson(state.StakeAccountKeyPairs.StakeAccount)
+	readState, err := c.operator.GetStatus(stakeAccountAddress)
+	if err != nil {
+		return StakeAccount{}, errors.New("failed to read stake account state from chain")
+	}
+
+	//TODO: This is just a way to use readState to compile
+	readState.StakeType = "stake"
+
 	// Handle vote-account change
-	currentVA := state.StakeAccountKeyPairs.VoteAccount
-	newVA := newArgs.StakeAccountKeyPairs.VoteAccount
+	// currentVA := state.StakeAccountKeyPairs.VoteAccount
+	// newVA := newArgs.StakeAccountKeyPairs.VoteAccount
+	// if newVA != nil && oldVA == nil {
+	// // DELEGATE
+	// todo("delegate")
+	// } else if newVA == nil && oldVA != nil {
+	// // DEACTIVATE
+	// todo("deactivate")
+	// } else if newVA != nil && oldVA != nil && *newVA != *oldVA {
+	// todo("error")
+	// 	// if currentVA != nil && newVA != nil && (*readState.DelegatedStake != 0 || *readState.DeactivatingStake != 0) {
+	// }
 
-	// Compare vote accounts properly by value, not by pointer
-	voteAccountChanged := false
+	// currentWAuth := state.StakeAccountKeyPairs.WithdrawAuthority
+	// newWAuth := newArgs.StakeAccountKeyPairs.WithdrawAuthority
 
-	// Different nil status (one is nil, the other isn't)
-	if (currentVA == nil) != (newVA == nil) {
-		voteAccountChanged = true
-	} else if currentVA != nil && newVA != nil {
-		// Both non-nil, compare the actual string contents
-		if *currentVA != *newVA {
-			voteAccountChanged = true
-		}
-	}
+	// // if currentWAuth != nil && newWAuth != nil && *currentWAuth != *newWAuth {
 
-	if voteAccountChanged {
-		// Stake must be fully deactivated to redelegate per the stake program
-		if currentVA != nil && newVA != nil && (*readState.DelegatedStake != 0 || *readState.DeactivatingStake != 0) {
-			return StakeAccount{}, errors.New("cannot redelegate stake until it is fully deactivated")
-		}
-	}
+	// currentSAuth := state.StakeAccountKeyPairs.StakeAuthority
+	// newSAuth := newArgs.StakeAccountKeyPairs.StakeAuthority
 
-	if err := c.operator.Update(state, newArgs); err != nil {
-		return StakeAccount{}, err
-	}
 	return newArgs, nil
 }
 
 func (c *StakeAccountClient) Delete(state StakeAccount) error {
-	readState, err := c.operator.GetStatus(state)
+	if state.ForceDelete {
+		return nil
+	}
+
+	stakeAddress, err := getPubkeyFromJson(state.StakeAccountKeyPairs.StakeAccount)
+	if err != nil {
+		return err
+	}
+
+	readState, err := c.operator.GetStatus(stakeAddress)
 	if err != nil {
 		return errors.New("failed to read stake account state from chain")
 	}
 
+	//TODO: Is this extra forcedelete check necessary given we already checked it above?
 	if state.WithdrawAddress == nil && !state.ForceDelete {
-		return errors.New("must provide withdraw address or set force delete to true")
+		return errors.New("must provide withdraw address or set force_delete to true")
 	}
 
-	if state.WithdrawAddress != nil && state.ForceDelete {
-		// You must not have a withdraw address set if you forcibly delete
-		return errors.New("cannot provide withdraw address and set force delete to true")
-	}
-
+	// TODO: Fix pointers
 	if state.WithdrawAddress != nil && (*readState.DelegatedStake != 0 || *readState.DeactivatingStake != 0) {
 		return errors.New("cannot withdraw stake until it is fully deactivated")
 	}
 
-	if err := c.operator.Delete(state); err != nil {
+	// TODO: Check lockup state from read and ensure it's unlocked
+
+	widrawArgs := WithdrawArgs{
+		StakeAccountAddress:      stakeAddress,
+		Amount:                   state.Amount,
+		WithdrawAddress:          *state.WithdrawAddress,
+		WithdrawAuthorityKeypair: state.StakeAccountKeyPairs.WithdrawAuthority,
+		LockupKeypair:            state.StakeAccountKeyPairs.StakeAuthority,
+	}
+
+	if err := c.operator.Withdraw(widrawArgs); err != nil {
 		return err
 	}
 	return nil
@@ -213,17 +318,23 @@ func (c *StakeAccountClient) Delete(state StakeAccount) error {
 // ------------------------------------------------------------
 
 type CliStakeOperator struct {
-	client  *ssh.Client
-	handler runner.DeployerHandler
-	ctx     context.Context
+	client     *ssh.Client
+	handler    runner.DeployerHandler
+	ctx        context.Context
+	txnOptions *TxnOptions
 }
 
 func NewCliStakeOperator(client *ssh.Client, handler runner.DeployerHandler, ctx context.Context) *CliStakeOperator {
 	return &CliStakeOperator{
-		client:  client,
-		handler: handler,
-		ctx:     ctx,
+		client:     client,
+		handler:    handler,
+		ctx:        ctx,
+		txnOptions: nil,
 	}
+}
+
+func (op *CliStakeOperator) SetTxnOptions(opt *TxnOptions) {
+	op.txnOptions = opt
 }
 
 func (op *CliStakeOperator) runCommand(cmd runner.Command, handler runner.DeployerHandler) error {
@@ -239,36 +350,52 @@ func (op *CliStakeOperator) runCommand(cmd runner.Command, handler runner.Deploy
 	return nil
 }
 
-func (op *CliStakeOperator) Create(args StakeAccount) error {
-	cmd := &StakeAccountCreate{StakeAccount: args}
+func (op *CliStakeOperator) Create(args CreateArgs) error {
+	cmd := &StakeAccountCreate{args, op.txnOptions}
 	if err := op.runCommand(cmd, op.handler); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (op *CliStakeOperator) Update(oldState StakeAccount, newArgs StakeAccount) error {
-	cmd := &StakeAccountUpdate{state: oldState, newArgs: newArgs}
+func (op *CliStakeOperator) Delegate(args DelegateArgs) error {
+	cmd := &StakeAccountDelegate{args, op.txnOptions}
 	if err := op.runCommand(cmd, op.handler); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (op *CliStakeOperator) Delete(args StakeAccount) error {
-	cmd := &StakeAccountDelete{StakeAccount: args}
+func (op *CliStakeOperator) Deactivate(args DeactivateArgs) error {
+	cmd := &StakeAccountDeactivate{args, op.txnOptions}
 	if err := op.runCommand(cmd, op.handler); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (op *CliStakeOperator) GetStatus(stakeAccount StakeAccount) (CliStakeState, error) {
+func (op *CliStakeOperator) Authorize(args AuthorizeArgs) error {
+	cmd := &StakeAccountAuthorize{args, op.txnOptions}
+	if err := op.runCommand(cmd, op.handler); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (op *CliStakeOperator) Withdraw(args WithdrawArgs) error {
+	cmd := &StakeAccountWithdraw{args, op.txnOptions}
+	if err := op.runCommand(cmd, op.handler); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (op *CliStakeOperator) GetStatus(stakeAddress string) (CliStakeState, error) {
 	// This is the lone operation that doesn't use the provided handler and
 	// uses a StringHandler so that the output can be parsed
 	handler := &StringHandler{}
 
-	cmd := &StakeAccountRead{StakeAccount: stakeAccount}
+	cmd := &StakeAccountRead{stakeAddress, op.txnOptions}
 
 	err := op.runCommand(cmd, handler)
 	if err != nil {
@@ -286,23 +413,29 @@ func (op *CliStakeOperator) GetStatus(stakeAccount StakeAccount) (CliStakeState,
 
 }
 
+func (op *CliStakeOperator) SetLockup(args SetLockupArgs) error {
+	return nil
+}
+
 // ------------------------------------------------------------
 // Common Command Helper Functions
 // ------------------------------------------------------------
-func env(newArgs StakeAccount) *runner.EnvBuilder {
+func envWithOptions(txnOptions *TxnOptions) *runner.EnvBuilder {
 	// Sets default env for all stake Commands
 	b := runner.NewEnvBuilder()
 
-	// Set stake amount - always required
-	b.SetFloat64("STAKE_AMOUNT", newArgs.Amount)
-
 	// Set transaction flags if available
-	if opt := newArgs.TransactionOptions; opt != nil {
+	if opt := txnOptions; opt != nil {
 		cli := CLITxnOptions{*opt}
 		b.SetArray("SOLANA_CLI_TXN_FLAGS", cli.Flags().Args())
 	}
-
 	return b
+}
+
+func getPubkeyFromJson(json string) (string, error) {
+	//TODO
+	panic("not implemented")
+	return "", nil
 }
 
 func setupPayload(p *runner.Payload, opt *TxnOptions) error {
@@ -323,64 +456,163 @@ func setupPayload(p *runner.Payload, opt *TxnOptions) error {
 	return nil
 }
 
-func addKeyPairsToPayload(p *runner.Payload, keys StakeAccountKeyPairs) {
-	p.AddString("stake_account.json", keys.StakeAccount)
-	if keys.VoteAccount != nil {
-		p.AddString("vote_account.json", *keys.VoteAccount)
-	}
-	if keys.StakeAuthority != nil {
-		p.AddString("stake_authority.json", *keys.StakeAuthority)
-	}
-	if keys.WithdrawAuthority != nil {
-		p.AddString("withdraw_authority.json", *keys.WithdrawAuthority)
-	}
-}
-
 // ------------------------------------------------------------
 // StakeAccount Create Command
 // ------------------------------------------------------------
 
 type StakeAccountCreate struct {
-	StakeAccount
+	CreateArgs
+	TxnOptions *TxnOptions
 }
 
-func (v *StakeAccountCreate) Check() error {
-	if v.Amount < 0 {
+func (a *StakeAccountCreate) Check() error {
+	if a.Amount < 0 {
 		return errors.New("stake amount cannot be negative")
+	}
+	if a.StakeAccountKeyPair == "" {
+		return errors.New("stake account keypair is required")
 	}
 	return nil
 }
 
-func (v *StakeAccountCreate) Env() *runner.EnvBuilder {
-	e := env(v.StakeAccount)
+func (a *StakeAccountCreate) Env() *runner.EnvBuilder {
+	e := envWithOptions(a.TxnOptions)
 	e.Set("STAKE_ACCOUNT_ACTION", "CREATE")
-
-	// No need to set authority flags - shell script will check file existence
+	e.SetFloat64("STAKE_AMOUNT", a.Amount)
 
 	// Set lockup parameters if provided
-	if v.LockupArgs != nil {
-		e.Set("EPOCH_AVAILABLE", fmt.Sprintf("%d", v.LockupArgs.EpochAvailable))
-		e.Set("CUSTODIAN_PUBKEY", v.LockupArgs.CustodianPubkey)
+	if a.LockupArgs != nil {
+		e.Set("EPOCH_AVAILABLE", fmt.Sprintf("%d", a.LockupArgs.EpochAvailable))
+		e.Set("CUSTODIAN_PUBKEY", a.LockupArgs.CustodianPubkey)
+	}
+	if a.StakeAuthorityAddress != nil {
+		e.Set("STAKE_AUTHORITY", *a.StakeAuthorityAddress)
+	}
+	if a.WithdrawAuthorityAddress != nil {
+		e.Set("WITHDRAW_AUTHORITY", *a.WithdrawAuthorityAddress)
 	}
 	return e
 }
 
-func (v *StakeAccountCreate) AddToPayload(p *runner.Payload) error {
+func (a *StakeAccountCreate) AddToPayload(p *runner.Payload) error {
 	// Add stake account script
-	if err := setupPayload(p, v.TransactionOptions); err != nil {
+	if err := setupPayload(p, a.TxnOptions); err != nil {
 		return err
 	}
-
 	// Add keypair files
-	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
-	if v.StakeAccountKeyPairs.VoteAccount != nil {
-		p.AddString("vote_account.json", *v.StakeAccountKeyPairs.VoteAccount)
+	p.AddString("stake_account.json", a.StakeAccountKeyPair)
+
+	return nil
+}
+
+// ------------------------------------------------------------
+// StakeAccount Delegate Command
+// ------------------------------------------------------------
+type StakeAccountDelegate struct {
+	DelegateArgs
+	TxnOptions *TxnOptions
+}
+
+func (v *StakeAccountDelegate) Check() error {
+	if v.StakeAccountAddress == "" {
+		return errors.New("stake account address is required")
 	}
-	if v.StakeAccountKeyPairs.StakeAuthority != nil {
-		p.AddString("stake_authority.json", *v.StakeAccountKeyPairs.StakeAuthority)
+	if v.VoteAccountAddress == "" {
+		return errors.New("vote account address is required")
 	}
-	if v.StakeAccountKeyPairs.WithdrawAuthority != nil {
-		p.AddString("withdraw_authority.json", *v.StakeAccountKeyPairs.WithdrawAuthority)
+	return nil
+}
+
+func (v *StakeAccountDelegate) Env() *runner.EnvBuilder {
+	e := envWithOptions(v.TxnOptions)
+	e.Set("STAKE_ACCOUNT_ACTION", "DELEGATE")
+	e.Set("STAKE_ACCOUNT_ADDRESS", v.StakeAccountAddress)
+	return e
+}
+
+func (v *StakeAccountDelegate) AddToPayload(p *runner.Payload) error {
+	if err := setupPayload(p, v.TxnOptions); err != nil {
+		return err
+	}
+	p.AddString("vote_account.json", v.VoteAccountAddress)
+	if v.StakeAuthorityKeypair != nil {
+		p.AddString("stake_authority.json", *v.StakeAuthorityKeypair)
+	}
+	return nil
+}
+
+// ------------------------------------------------------------
+// StakeAccount Deactivate Command
+// ------------------------------------------------------------
+type StakeAccountDeactivate struct {
+	DeactivateArgs
+	TxnOptions *TxnOptions
+}
+
+func (a *StakeAccountDeactivate) Check() error {
+	if a.StakeAccountAddress == "" {
+		return errors.New("stake account address is required")
+	}
+	return nil
+}
+
+func (a *StakeAccountDeactivate) Env() *runner.EnvBuilder {
+	e := envWithOptions(a.TxnOptions)
+	e.Set("STAKE_ACCOUNT_ACTION", "DEACTIVATE")
+	e.Set("STAKE_ACCOUNT_ADDRESS", a.StakeAccountAddress)
+	return e
+}
+
+func (a *StakeAccountDeactivate) AddToPayload(p *runner.Payload) error {
+	if err := setupPayload(p, a.TxnOptions); err != nil {
+		return err
+	}
+	if a.StakeAuthorityKeypair != nil {
+		p.AddString("stake_authority.json", *a.StakeAuthorityKeypair)
+	}
+	return nil
+}
+
+// ------------------------------------------------------------
+// StakeAccount Authorize Command
+// ------------------------------------------------------------
+
+type StakeAccountAuthorize struct {
+	AuthorizeArgs
+	TxnOptions *TxnOptions
+}
+
+func (a *StakeAccountAuthorize) Check() error {
+	if a.AuthType == AuthorizeStaker && a.LockupKeypair != nil {
+		return errors.New("staker authorization should not have a lockup keypair")
+	}
+	return nil
+}
+
+func (v *StakeAccountAuthorize) Env() *runner.EnvBuilder {
+	e := envWithOptions(v.TxnOptions)
+	e.Set("STAKE_ACCOUNT_ACTION", "AUTHORIZE")
+	e.Set("STAKE_ACCOUNT_ADDRESS", v.StakeAccountAddress)
+
+	if v.AuthType == AuthorizeStaker {
+		e.Set("AUTH_TYPE", "STAKER")
+	} else {
+		e.Set("AUTH_TYPE", "WITHDRAWER")
+	}
+	return e
+}
+
+func (v *StakeAccountAuthorize) AddToPayload(p *runner.Payload) error {
+	if err := setupPayload(p, v.TxnOptions); err != nil {
+		return err
+	}
+	p.AddString("new_address.json", v.NewAddress)
+
+	if v.OldKeyPair != nil {
+		p.AddString("old_signer.json", *v.OldKeyPair)
+	}
+	if v.LockupKeypair != nil {
+		p.AddString("lockup_keypair.json", *v.LockupKeypair)
 	}
 	return nil
 }
@@ -390,7 +622,8 @@ func (v *StakeAccountCreate) AddToPayload(p *runner.Payload) error {
 // ------------------------------------------------------------
 
 type StakeAccountRead struct {
-	StakeAccount
+	StakeAddress string
+	TxnOptions   *TxnOptions
 }
 
 func (v *StakeAccountRead) Check() error {
@@ -398,216 +631,58 @@ func (v *StakeAccountRead) Check() error {
 }
 
 func (v *StakeAccountRead) Env() *runner.EnvBuilder {
-	e := env(v.StakeAccount)
+	e := envWithOptions(nil)
 	e.Set("STAKE_ACCOUNT_ACTION", "READ")
+	e.Set("STAKE_ACCOUNT_ADDRESS", v.StakeAddress)
 	return e
 }
 
 func (v *StakeAccountRead) AddToPayload(p *runner.Payload) error {
-	if err := setupPayload(p, v.TransactionOptions); err != nil {
+	if err := setupPayload(p, nil); err != nil {
 		return err
 	}
-	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
 	return nil
 }
 
 // ------------------------------------------------------------
-// StakeAccount Delete Command
+// StakeAccount Withdraw Command
 // ------------------------------------------------------------
-type StakeAccountDelete struct {
-	StakeAccount
+type StakeAccountWithdraw struct {
+	WithdrawArgs
+	TxnOptions *TxnOptions
 }
 
-func (v *StakeAccountDelete) Check() error {
+func (a *StakeAccountWithdraw) Check() error {
+	if a.StakeAccountAddress == "" {
+		return errors.New("stake account address is required")
+	}
+	if a.WithdrawAddress == "" {
+		return errors.New("withdraw address is required")
+	}
+	if a.Amount < 0 {
+		return errors.New("withdraw amount cannot be negative")
+	}
 	return nil
 }
 
-func (v *StakeAccountDelete) Env() *runner.EnvBuilder {
-	e := env(v.StakeAccount)
-	e.Set("STAKE_ACCOUNT_ACTION", "DELETE")
-
-	// Only set FORCE_DELETE if it's true
-	if v.ForceDelete {
-		e.SetBool("FORCE_DELETE", true)
-	}
-
-	// Add withdraw address if available
-	if v.WithdrawAddress != nil {
-		e.Set("WITHDRAW_ADDRESS", *v.WithdrawAddress)
-	}
-
+func (a *StakeAccountWithdraw) Env() *runner.EnvBuilder {
+	e := envWithOptions(a.TxnOptions)
+	e.Set("STAKE_ACCOUNT_ACTION", "WITHDRAW")
+	e.SetFloat64("WITHDRAW_AMOUNT", a.Amount)
+	e.Set("STAKE_ACCOUNT_ADDRESS", a.StakeAccountAddress)
+	e.Set("WITHDRAW_ADDRESS", a.WithdrawAddress)
 	return e
 }
 
-func (v *StakeAccountDelete) AddToPayload(p *runner.Payload) error {
-	if err := setupPayload(p, v.TransactionOptions); err != nil {
+func (a *StakeAccountWithdraw) AddToPayload(p *runner.Payload) error {
+	if err := setupPayload(p, a.TxnOptions); err != nil {
 		return err
 	}
-	addKeyPairsToPayload(p, v.StakeAccountKeyPairs)
-	return nil
-}
-
-// ------------------------------------------------------------
-// StakeAccount Update Command
-// ------------------------------------------------------------
-
-type StakeAccountUpdate struct {
-	state   StakeAccount
-	newArgs StakeAccount
-}
-
-type UpdateType int
-
-const (
-	UpdateTypeAuthority UpdateType = iota
-	UpdateTypeDelegate
-	UpdateTypeDeactivate
-	UpdateTypeLock
-)
-
-func (v *StakeAccountUpdate) updatePlan() []UpdateType {
-	var updates []UpdateType
-
-	oldKps := v.state.StakeAccountKeyPairs
-	newKps := v.newArgs.StakeAccountKeyPairs
-
-	// Authority Diff - compare actual values, not just pointers
-	authorityChanged := false
-
-	// Withdraw authority comparison
-	if (oldKps.WithdrawAuthority == nil) != (newKps.WithdrawAuthority == nil) {
-		// One is nil, the other isn't
-		authorityChanged = true
-	} else if oldKps.WithdrawAuthority != nil && newKps.WithdrawAuthority != nil {
-		// Both non-nil, compare the actual string contents
-		if *oldKps.WithdrawAuthority != *newKps.WithdrawAuthority {
-			authorityChanged = true
-		}
+	if a.WithdrawAuthorityKeypair != nil {
+		p.AddString("withdraw_authority.json", *a.WithdrawAuthorityKeypair)
 	}
-
-	// Stake authority comparison
-	if (oldKps.StakeAuthority == nil) != (newKps.StakeAuthority == nil) {
-		// One is nil, the other isn't
-		authorityChanged = true
-	} else if oldKps.StakeAuthority != nil && newKps.StakeAuthority != nil {
-		// Both non-nil, compare the actual string contents
-		if *oldKps.StakeAuthority != *newKps.StakeAuthority {
-			authorityChanged = true
-		}
+	if a.LockupKeypair != nil {
+		p.AddString("lockup_keypair.json", *a.LockupKeypair)
 	}
-
-	if authorityChanged {
-		updates = append(updates, UpdateTypeAuthority)
-	}
-
-	// Lockup Args Diff
-	if v.state.LockupArgs != v.newArgs.LockupArgs {
-		updates = append(updates, UpdateTypeLock)
-	}
-
-	// Vote Account diff - compare actual vote account values, not just pointers
-	voteAccountChanged := false
-
-	// Different nil status (one is nil, the other isn't)
-	if (oldKps.VoteAccount == nil) != (newKps.VoteAccount == nil) {
-		voteAccountChanged = true
-	} else if oldKps.VoteAccount != nil && newKps.VoteAccount != nil {
-		// Both non-nil, compare the actual string contents
-		if *oldKps.VoteAccount != *newKps.VoteAccount {
-			voteAccountChanged = true
-		}
-	}
-
-	if voteAccountChanged {
-		if oldKps.VoteAccount != nil && newKps.VoteAccount == nil {
-			updates = append(updates, UpdateTypeDeactivate)
-		} else {
-			updates = append(updates, UpdateTypeDelegate)
-		}
-	}
-	return updates
-}
-
-func (v *StakeAccountUpdate) Check() error {
-	return nil
-}
-
-func (v *StakeAccountUpdate) Env() *runner.EnvBuilder {
-	e := env(v.newArgs)
-	e.Set("STAKE_ACCOUNT_ACTION", "UPDATE")
-
-	// Determine necessary operations
-	updates := v.updatePlan()
-
-	// Set operation type for deactivation
-	if slices.Contains(updates, UpdateTypeDeactivate) {
-		e.Set("OPERATION", "DEACTIVATE")
-	}
-
-	// Set lockup parameters if needed
-	if slices.Contains(updates, UpdateTypeLock) && v.newArgs.LockupArgs != nil {
-		e.Set("EPOCH_AVAILABLE", fmt.Sprintf("%d", v.newArgs.LockupArgs.EpochAvailable))
-		e.Set("CUSTODIAN_PUBKEY", v.newArgs.LockupArgs.CustodianPubkey)
-	}
-
-	// Set flags for authority updates
-	if slices.Contains(updates, UpdateTypeAuthority) {
-		oldStakeAuth := v.state.StakeAccountKeyPairs.StakeAuthority
-		newStakeAuth := v.newArgs.StakeAccountKeyPairs.StakeAuthority
-		if (oldStakeAuth == nil) != (newStakeAuth == nil) || (oldStakeAuth != nil && newStakeAuth != nil && *oldStakeAuth != *newStakeAuth) {
-			e.Set("UPDATE_STAKE_AUTHORITY", "true")
-		}
-
-		oldWithdrawAuth := v.state.StakeAccountKeyPairs.WithdrawAuthority
-		newWithdrawAuth := v.newArgs.StakeAccountKeyPairs.WithdrawAuthority
-		if (oldWithdrawAuth == nil) != (newWithdrawAuth == nil) || (oldWithdrawAuth != nil && newWithdrawAuth != nil && *oldWithdrawAuth != *newWithdrawAuth) {
-			e.Set("UPDATE_WITHDRAW_AUTHORITY", "true")
-		}
-	}
-
-	return e
-}
-
-func (v *StakeAccountUpdate) AddToPayload(p *runner.Payload) error {
-	if err := setupPayload(p, v.newArgs.TransactionOptions); err != nil {
-		return err
-	}
-
-	// Add the stake account keypair
-	p.AddString("stake_account.json", v.state.StakeAccountKeyPairs.StakeAccount)
-
-	updates := v.updatePlan()
-
-	// Add old authority keypairs if needed for authorization
-	if slices.Contains(updates, UpdateTypeAuthority) {
-		oldStakeAuth := v.state.StakeAccountKeyPairs.StakeAuthority
-		newStakeAuth := v.newArgs.StakeAccountKeyPairs.StakeAuthority
-		if (oldStakeAuth == nil) != (newStakeAuth == nil) || (oldStakeAuth != nil && newStakeAuth != nil && *oldStakeAuth != *newStakeAuth) {
-			if oldStakeAuth != nil {
-				p.AddString("stake_authority.json", *oldStakeAuth)
-			}
-			if newStakeAuth != nil {
-				p.AddString("new_stake_authority.json", *newStakeAuth)
-			}
-		}
-
-		oldWithdrawAuth := v.state.StakeAccountKeyPairs.WithdrawAuthority
-		newWithdrawAuth := v.newArgs.StakeAccountKeyPairs.WithdrawAuthority
-		if (oldWithdrawAuth == nil) != (newWithdrawAuth == nil) || (oldWithdrawAuth != nil && newWithdrawAuth != nil && *oldWithdrawAuth != *newWithdrawAuth) {
-			if oldWithdrawAuth != nil {
-				p.AddString("withdraw_authority.json", *oldWithdrawAuth)
-			}
-			if newWithdrawAuth != nil {
-				p.AddString("new_withdraw_authority.json", *newWithdrawAuth)
-			}
-		}
-	}
-
-	// For delegation updates, add the vote account
-	if slices.Contains(updates, UpdateTypeDelegate) && v.newArgs.StakeAccountKeyPairs.VoteAccount != nil {
-		p.AddString("new_vote_account.json", *v.newArgs.StakeAccountKeyPairs.VoteAccount)
-	}
-
-	// Validate that required files were added
 	return nil
 }
