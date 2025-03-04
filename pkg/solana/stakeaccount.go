@@ -156,10 +156,24 @@ func (c *StakeAccountClient) Update(state StakeAccount, newArgs StakeAccount) (S
 	// Handle vote-account change
 	currentVA := state.StakeAccountKeyPairs.VoteAccount
 	newVA := newArgs.StakeAccountKeyPairs.VoteAccount
-	if currentVA != newVA {
+
+	// Compare vote accounts properly by value, not by pointer
+	voteAccountChanged := false
+
+	// Different nil status (one is nil, the other isn't)
+	if (currentVA == nil) != (newVA == nil) {
+		voteAccountChanged = true
+	} else if currentVA != nil && newVA != nil {
+		// Both non-nil, compare the actual string contents
+		if *currentVA != *newVA {
+			voteAccountChanged = true
+		}
+	}
+
+	if voteAccountChanged {
 		// Stake must be fully deactivated to redelegate per the stake program
 		if currentVA != nil && newVA != nil && (*readState.DelegatedStake != 0 || *readState.DeactivatingStake != 0) {
-			return StakeAccount{}, errors.New("cannot redelgate stake until it is fully deactivated")
+			return StakeAccount{}, errors.New("cannot redelegate stake until it is fully deactivated")
 		}
 	}
 
@@ -457,8 +471,32 @@ func (v *StakeAccountUpdate) updatePlan() []UpdateType {
 	oldKps := v.state.StakeAccountKeyPairs
 	newKps := v.newArgs.StakeAccountKeyPairs
 
-	// Authority Diff
-	if (oldKps.WithdrawAuthority != newKps.WithdrawAuthority) || (oldKps.StakeAuthority != newKps.StakeAuthority) {
+	// Authority Diff - compare actual values, not just pointers
+	authorityChanged := false
+
+	// Withdraw authority comparison
+	if (oldKps.WithdrawAuthority == nil) != (newKps.WithdrawAuthority == nil) {
+		// One is nil, the other isn't
+		authorityChanged = true
+	} else if oldKps.WithdrawAuthority != nil && newKps.WithdrawAuthority != nil {
+		// Both non-nil, compare the actual string contents
+		if *oldKps.WithdrawAuthority != *newKps.WithdrawAuthority {
+			authorityChanged = true
+		}
+	}
+
+	// Stake authority comparison
+	if (oldKps.StakeAuthority == nil) != (newKps.StakeAuthority == nil) {
+		// One is nil, the other isn't
+		authorityChanged = true
+	} else if oldKps.StakeAuthority != nil && newKps.StakeAuthority != nil {
+		// Both non-nil, compare the actual string contents
+		if *oldKps.StakeAuthority != *newKps.StakeAuthority {
+			authorityChanged = true
+		}
+	}
+
+	if authorityChanged {
 		updates = append(updates, UpdateTypeAuthority)
 	}
 
