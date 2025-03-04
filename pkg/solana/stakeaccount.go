@@ -278,8 +278,10 @@ func env(newArgs StakeAccount) *runner.EnvBuilder {
 	// Sets default env for all stake Commands
 	b := runner.NewEnvBuilder()
 
+	// Set stake amount - always required
 	b.SetFloat64("STAKE_AMOUNT", newArgs.Amount)
 
+	// Set transaction flags if available
 	if opt := newArgs.TransactionOptions; opt != nil {
 		cli := CLITxnOptions{*opt}
 		b.SetArray("SOLANA_CLI_TXN_FLAGS", cli.Flags().Args())
@@ -289,17 +291,28 @@ func env(newArgs StakeAccount) *runner.EnvBuilder {
 }
 
 func setupPayload(p *runner.Payload, opt *TxnOptions) error {
+	// Add the stake account script
 	stakeAccountScript, err := assets.Open(assetsStakeAccountScript)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to open stake account script: %w", err)
 	}
 	p.AddReader("steps.sh", stakeAccountScript)
 
+	// Add transaction options if provided
 	if opt != nil {
 		cli := CLITxnOptions{*opt}
 		if err := cli.AddToPayload(p); err != nil {
-			return err
+			return fmt.Errorf("failed to add transaction options: %w", err)
 		}
+	}
+	return nil
+}
+
+// validatePayload ensures that required files exist in the payload
+func validatePayload(p *runner.Payload) error {
+	// stake_account.json is required for all operations
+	if _, exists := p.Files["stake_account.json"]; !exists {
+		return fmt.Errorf("stake account keypair must be provided")
 	}
 	return nil
 }
@@ -335,19 +348,11 @@ func (v *StakeAccountCreate) Check() error {
 func (v *StakeAccountCreate) Env() *runner.EnvBuilder {
 	e := env(v.StakeAccount)
 	e.Set("STAKE_ACCOUNT_ACTION", "CREATE")
+	
+	// No need to set authority flags - shell script will check file existence
 
-	e.SetBool("STAKE_AUTHORITY", false)
-	e.SetBool("WITHDRAW_AUTHORITY", false)
-	e.SetBool("STAKE_ACCOUNT_LOCKUP", false)
-
-	if v.StakeAccountKeyPairs.StakeAuthority != nil {
-		e.SetBool("STAKE_AUTHORITY", true)
-	}
-	if v.StakeAccountKeyPairs.WithdrawAuthority != nil {
-		e.SetBool("WITHDRAW_AUTHORITY", true)
-	}
+	// Set lockup parameters if provided
 	if v.LockupArgs != nil {
-		e.SetBool("STAKE_ACCOUNT_LOCKUP", true)
 		e.Set("EPOCH_AVAILABLE", fmt.Sprintf("%d", v.LockupArgs.EpochAvailable))
 		e.Set("CUSTODIAN_PUBKEY", v.LockupArgs.CustodianPubkey)
 	}
@@ -356,11 +361,9 @@ func (v *StakeAccountCreate) Env() *runner.EnvBuilder {
 
 func (v *StakeAccountCreate) AddToPayload(p *runner.Payload) error {
 	// Add stake account script
-	script, err := assets.Open(assetsStakeAccountScript)
-	if err != nil {
-		return fmt.Errorf("failed to open stake account script: %w", err)
+	if err := setupPayload(p, v.TransactionOptions); err != nil {
+		return err
 	}
-	p.AddReader("steps.sh", script)
 
 	// Add keypair files
 	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
@@ -374,14 +377,8 @@ func (v *StakeAccountCreate) AddToPayload(p *runner.Payload) error {
 		p.AddString("withdraw_authority.json", *v.StakeAccountKeyPairs.WithdrawAuthority)
 	}
 
-	// Add transaction options if present
-	if v.TransactionOptions != nil {
-		cli := CLITxnOptions{*v.TransactionOptions}
-		if err := cli.AddToPayload(p); err != nil {
-			return fmt.Errorf("failed to add transaction options: %w", err)
-		}
-	}
-	return nil
+	// Validate that required files were added
+	return validatePayload(p)
 }
 
 // ------------------------------------------------------------
@@ -407,7 +404,7 @@ func (v *StakeAccountRead) AddToPayload(p *runner.Payload) error {
 		return err
 	}
 	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
-	return nil
+	return validatePayload(p)
 }
 
 // ------------------------------------------------------------
@@ -424,19 +421,15 @@ func (v *StakeAccountDelete) Check() error {
 func (v *StakeAccountDelete) Env() *runner.EnvBuilder {
 	e := env(v.StakeAccount)
 	e.Set("STAKE_ACCOUNT_ACTION", "DELETE")
-	e.SetBool("WITHDRAW_AUTHORITY", false)
-	e.SetBool("FORCE_DELETE", false)
-
-	if v.StakeAccountKeyPairs.WithdrawAuthority != nil {
-		e.SetBool("WITHDRAW_AUTHORITY", true)
-	}
-
-	if v.WithdrawAddress != nil {
-		e.Set("WITHDRAW_ADDRESS", *v.WithdrawAddress)
-	}
-
+	
+	// Only set FORCE_DELETE if it's true
 	if v.ForceDelete {
 		e.SetBool("FORCE_DELETE", true)
+	}
+
+	// Add withdraw address if available
+	if v.WithdrawAddress != nil {
+		e.Set("WITHDRAW_ADDRESS", *v.WithdrawAddress)
 	}
 
 	return e
@@ -447,7 +440,7 @@ func (v *StakeAccountDelete) AddToPayload(p *runner.Payload) error {
 		return err
 	}
 	addKeyPairsToPayload(p, v.StakeAccountKeyPairs)
-	return nil
+	return validatePayload(p)
 }
 
 // ------------------------------------------------------------
@@ -503,51 +496,35 @@ func (v *StakeAccountUpdate) Env() *runner.EnvBuilder {
 	e := env(v.newArgs)
 	e.Set("STAKE_ACCOUNT_ACTION", "UPDATE")
 
-	e.SetBool("STAKE_ACCOUNT_DEACTIVATE", false)
-	e.SetBool("STAKE_ACCOUNT_DELEGATE", false)
-	e.SetBool("STAKE_ACCOUNT_AUTHORITY", false)
-	e.SetBool("STAKE_ACCOUNT_LOCKUP", false)
-	e.SetBool("STAKE_AUTHORITY_UPDATE", false)
-	e.SetBool("WITHDRAW_AUTHORITY_UPDATE", false)
-
-	e.SetBool("WITHDRAW_AUTHORITY", false)
-	e.SetBool("STAKE_AUTHORITY", false)
-
+	// Determine necessary operations
 	updates := v.updatePlan()
+	
+	// Set operation type for deactivation
 	if slices.Contains(updates, UpdateTypeDeactivate) {
-		e.SetBool("STAKE_ACCOUNT_DEACTIVATE", true)
+		e.Set("OPERATION", "DEACTIVATE")
 	}
-	if slices.Contains(updates, UpdateTypeDelegate) {
-		e.SetBool("STAKE_ACCOUNT_DELEGATE", true)
+	
+	// Set lockup parameters if needed
+	if slices.Contains(updates, UpdateTypeLock) && v.newArgs.LockupArgs != nil {
+		e.Set("EPOCH_AVAILABLE", fmt.Sprintf("%d", v.newArgs.LockupArgs.EpochAvailable))
+		e.Set("CUSTODIAN_PUBKEY", v.newArgs.LockupArgs.CustodianPubkey)
 	}
+	
+	// Set flags for authority updates
 	if slices.Contains(updates, UpdateTypeAuthority) {
-		e.SetBool("STAKE_ACCOUNT_AUTHORITY", true)
-
 		oldStakeAuth := v.state.StakeAccountKeyPairs.StakeAuthority
 		newStakeAuth := v.newArgs.StakeAccountKeyPairs.StakeAuthority
 		if (oldStakeAuth == nil) != (newStakeAuth == nil) || (oldStakeAuth != nil && newStakeAuth != nil && *oldStakeAuth != *newStakeAuth) {
-			e.SetBool("STAKE_AUTHORITY_UPDATE", true)
-			if oldStakeAuth != nil {
-				e.SetBool("STAKE_AUTHORITY", true)
-			}
+			e.Set("UPDATE_STAKE_AUTHORITY", "true")
 		}
 
 		oldWithdrawAuth := v.state.StakeAccountKeyPairs.WithdrawAuthority
 		newWithdrawAuth := v.newArgs.StakeAccountKeyPairs.WithdrawAuthority
 		if (oldWithdrawAuth == nil) != (newWithdrawAuth == nil) || (oldWithdrawAuth != nil && newWithdrawAuth != nil && *oldWithdrawAuth != *newWithdrawAuth) {
-			e.SetBool("WITHDRAW_AUTHORITY_UPDATE", true)
-			if oldWithdrawAuth != nil {
-				e.SetBool("WITHDRAW_AUTHORITY", true)
-			}
+			e.Set("UPDATE_WITHDRAW_AUTHORITY", "true")
 		}
 	}
-	if slices.Contains(updates, UpdateTypeLock) {
-		e.SetBool("STAKE_ACCOUNT_LOCKUP", true)
-		if v.newArgs.LockupArgs != nil {
-			e.Set("EPOCH_AVAILABLE", fmt.Sprintf("%d", v.newArgs.LockupArgs.EpochAvailable))
-			e.Set("CUSTODIAN_PUBKEY", v.newArgs.LockupArgs.CustodianPubkey)
-		}
-	}
+	
 	return e
 }
 
@@ -591,5 +568,6 @@ func (v *StakeAccountUpdate) AddToPayload(p *runner.Payload) error {
 		p.AddString("new_vote_account.json", *v.newArgs.StakeAccountKeyPairs.VoteAccount)
 	}
 
-	return nil
+	// Validate that required files were added
+	return validatePayload(p)
 }
