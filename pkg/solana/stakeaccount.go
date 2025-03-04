@@ -424,9 +424,11 @@ func (v *StakeAccountDelete) Check() error {
 func (v *StakeAccountDelete) Env() *runner.EnvBuilder {
 	e := env(v.StakeAccount)
 	e.Set("STAKE_ACCOUNT_ACTION", "DELETE")
+	e.SetBool("WITHDRAW_AUTHORITY", false)
+	e.SetBool("FORCE_DELETE", false)
 
 	if v.StakeAccountKeyPairs.WithdrawAuthority != nil {
-		e.SetBool("ADD_WITHDRAW_AUTHORITY", true)
+		e.SetBool("WITHDRAW_AUTHORITY", true)
 	}
 
 	if v.WithdrawAddress != nil {
