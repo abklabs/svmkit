@@ -40,10 +40,11 @@ type CliAuthorized struct {
 }
 
 type CliLockup struct {
-	UnixTimestamp int64  `json:"unixTimestamp"` // Assuming UnixTimestamp is an int64
-	Epoch         uint64 `json:"epoch"`         // Assuming Epoch is a uint64
+	UnixTimestamp int64  `json:"unixTimestamp"`
+	Epoch         uint64 `json:"epoch"`
 	Custodian     string `json:"custodian"`
 }
+
 type CliStakeState struct {
 	StakeType                   string         `json:"stakeType"`
 	AccountBalance              uint64         `json:"accountBalance"`
@@ -308,15 +309,6 @@ func setupPayload(p *runner.Payload, opt *TxnOptions) error {
 	return nil
 }
 
-// validatePayload ensures that required files exist in the payload
-func validatePayload(p *runner.Payload) error {
-	// stake_account.json is required for all operations
-	if _, exists := p.Files["stake_account.json"]; !exists {
-		return fmt.Errorf("stake account keypair must be provided")
-	}
-	return nil
-}
-
 func addKeyPairsToPayload(p *runner.Payload, keys StakeAccountKeyPairs) {
 	p.AddString("stake_account.json", keys.StakeAccount)
 	if keys.VoteAccount != nil {
@@ -348,7 +340,7 @@ func (v *StakeAccountCreate) Check() error {
 func (v *StakeAccountCreate) Env() *runner.EnvBuilder {
 	e := env(v.StakeAccount)
 	e.Set("STAKE_ACCOUNT_ACTION", "CREATE")
-	
+
 	// No need to set authority flags - shell script will check file existence
 
 	// Set lockup parameters if provided
@@ -376,9 +368,7 @@ func (v *StakeAccountCreate) AddToPayload(p *runner.Payload) error {
 	if v.StakeAccountKeyPairs.WithdrawAuthority != nil {
 		p.AddString("withdraw_authority.json", *v.StakeAccountKeyPairs.WithdrawAuthority)
 	}
-
-	// Validate that required files were added
-	return validatePayload(p)
+	return nil
 }
 
 // ------------------------------------------------------------
@@ -404,7 +394,7 @@ func (v *StakeAccountRead) AddToPayload(p *runner.Payload) error {
 		return err
 	}
 	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
-	return validatePayload(p)
+	return nil
 }
 
 // ------------------------------------------------------------
@@ -421,7 +411,7 @@ func (v *StakeAccountDelete) Check() error {
 func (v *StakeAccountDelete) Env() *runner.EnvBuilder {
 	e := env(v.StakeAccount)
 	e.Set("STAKE_ACCOUNT_ACTION", "DELETE")
-	
+
 	// Only set FORCE_DELETE if it's true
 	if v.ForceDelete {
 		e.SetBool("FORCE_DELETE", true)
@@ -440,7 +430,7 @@ func (v *StakeAccountDelete) AddToPayload(p *runner.Payload) error {
 		return err
 	}
 	addKeyPairsToPayload(p, v.StakeAccountKeyPairs)
-	return validatePayload(p)
+	return nil
 }
 
 // ------------------------------------------------------------
@@ -477,8 +467,20 @@ func (v *StakeAccountUpdate) updatePlan() []UpdateType {
 		updates = append(updates, UpdateTypeLock)
 	}
 
-	// Vote Account diff
-	if oldKps.VoteAccount != newKps.VoteAccount {
+	// Vote Account diff - compare actual vote account values, not just pointers
+	voteAccountChanged := false
+
+	// Different nil status (one is nil, the other isn't)
+	if (oldKps.VoteAccount == nil) != (newKps.VoteAccount == nil) {
+		voteAccountChanged = true
+	} else if oldKps.VoteAccount != nil && newKps.VoteAccount != nil {
+		// Both non-nil, compare the actual string contents
+		if *oldKps.VoteAccount != *newKps.VoteAccount {
+			voteAccountChanged = true
+		}
+	}
+
+	if voteAccountChanged {
 		if oldKps.VoteAccount != nil && newKps.VoteAccount == nil {
 			updates = append(updates, UpdateTypeDeactivate)
 		} else {
@@ -498,18 +500,18 @@ func (v *StakeAccountUpdate) Env() *runner.EnvBuilder {
 
 	// Determine necessary operations
 	updates := v.updatePlan()
-	
+
 	// Set operation type for deactivation
 	if slices.Contains(updates, UpdateTypeDeactivate) {
 		e.Set("OPERATION", "DEACTIVATE")
 	}
-	
+
 	// Set lockup parameters if needed
 	if slices.Contains(updates, UpdateTypeLock) && v.newArgs.LockupArgs != nil {
 		e.Set("EPOCH_AVAILABLE", fmt.Sprintf("%d", v.newArgs.LockupArgs.EpochAvailable))
 		e.Set("CUSTODIAN_PUBKEY", v.newArgs.LockupArgs.CustodianPubkey)
 	}
-	
+
 	// Set flags for authority updates
 	if slices.Contains(updates, UpdateTypeAuthority) {
 		oldStakeAuth := v.state.StakeAccountKeyPairs.StakeAuthority
@@ -524,7 +526,7 @@ func (v *StakeAccountUpdate) Env() *runner.EnvBuilder {
 			e.Set("UPDATE_WITHDRAW_AUTHORITY", "true")
 		}
 	}
-	
+
 	return e
 }
 
@@ -569,5 +571,5 @@ func (v *StakeAccountUpdate) AddToPayload(p *runner.Payload) error {
 	}
 
 	// Validate that required files were added
-	return validatePayload(p)
+	return nil
 }
