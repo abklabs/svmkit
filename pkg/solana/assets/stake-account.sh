@@ -22,7 +22,7 @@ stake-account-create () {
     fi
 
     # Lockup args still need environment variables
-    if [[ -n "$CUSTODIAN_PUBKEY" ]] && [[ -n "$EPOCH_AVAILABLE" ]]; then
+    if [[ -v CUSTODIAN_PUBKEY ]] && [[ -v EPOCH_AVAILABLE ]] && [[ -n "$CUSTODIAN_PUBKEY" ]] && [[ -n "$EPOCH_AVAILABLE" ]]; then
       create_args+=(--lockup-epoch "$EPOCH_AVAILABLE" --custodian "$CUSTODIAN_PUBKEY")
     fi
 
@@ -39,8 +39,8 @@ stake-account-delete () {
     # Return early if force delete is not set to true
     [[ "$FORCE_DELETE" == "true" ]] || return 0
     
-    # Check if we have a withdraw address
-    if [[ -z "$WITHDRAW_ADDRESS" ]]; then
+    # Check if we have a withdraw address (ensuring it exists first)
+    if [[ ! -v WITHDRAW_ADDRESS ]] || [[ -z "$WITHDRAW_ADDRESS" ]]; then
         echo "Error: No withdraw address provided for stake account deletion"
         return 1
     fi
@@ -92,7 +92,7 @@ stake-account-update () {
     fi
 
     # Handle lockup changes (still needs explicit params)
-    if [[ -n "$CUSTODIAN_PUBKEY" ]] && [[ -n "$EPOCH_AVAILABLE" ]]; then
+    if [[ -v CUSTODIAN_PUBKEY ]] && [[ -v EPOCH_AVAILABLE ]] && [[ -n "$CUSTODIAN_PUBKEY" ]] && [[ -n "$EPOCH_AVAILABLE" ]]; then
         solana stake-set-lockup "${SOLANA_CLI_TXN_FLAGS[@]}" stake_account.json \
             --custodian "$CUSTODIAN_PUBKEY" \
             --epoch "$EPOCH_AVAILABLE" \
