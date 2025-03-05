@@ -281,6 +281,7 @@ func (c *StakeAccountClient) Update(state StakeAccount, newArgs StakeAccount) (S
 			return StakeAccount{}, errors.New("cannot change vote account until stake is fully deactivated")
 		}
 	} else if vaChangeType == Removed {
+    // TODO: Check readstate
 		// Deactivate from current vote account
 		deactivateArgs := DeactivateArgs{
 			StakeAccountAddress:   stakeAccountAddress,
@@ -388,8 +389,7 @@ func (c *StakeAccountClient) Delete(state StakeAccount) error {
 
 	readState, err := c.operator.GetStatus(stakeAddress)
 	if err != nil {
-		// return errors.New("failed to read stake account state from chain")
-		return err
+		return errors.New("failed to read stake account state from chain")
 	}
 
 	//TODO: Is this extra forcedelete check necessary given we already checked it above?
@@ -398,9 +398,7 @@ func (c *StakeAccountClient) Delete(state StakeAccount) error {
 	}
 
 	if state.WithdrawAddress != nil && !isFullyDeactivated(readState) {
-    deactivatingStake := readState.DeactivatingStake
-    delegatedStake := readState.DelegatedStake
-    return fmt.Errorf("stake account must be fully deactivated before deletion but has state: %d deactivating, %d delegated", deactivatingStake, delegatedStake)
+		return errors.New("cannot withdraw stake until it is fully deactivated")
 	}
 
 	// TODO: Check lockup state from read and ensure it's unlocked
@@ -515,14 +513,12 @@ func (op *CliStakeOperator) GetStatus(stakeAddress string) (CliStakeState, error
 
 	output := handler.Output
 
-  return CliStakeState{}, fmt.Errorf("output: %s", output)
+	status, err := parseOutput(output)
+	if err != nil {
+		return CliStakeState{}, err
+	}
 
-// 	status, err := parseOutput(output)
-// 	if err != nil {
-// 		return CliStakeState{}, err
-// 	}
-
-// 	return status, nil
+	return status, nil
 
 }
 
