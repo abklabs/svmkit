@@ -607,10 +607,10 @@ func (a *StakeAccountCreate) Env() *runner.EnvBuilder {
 		e.Set("CUSTODIAN_PUBKEY", a.LockupArgs.CustodianPubkey)
 	}
 	if a.StakeAuthorityAddress != nil {
-		e.Set("STAKE_AUTHORITY", *a.StakeAuthorityAddress)
+		e.Set("STAKE_AUTHORITY_ADDRESS", *a.StakeAuthorityAddress)
 	}
 	if a.WithdrawAuthorityAddress != nil {
-		e.Set("WITHDRAW_AUTHORITY", *a.WithdrawAuthorityAddress)
+		e.Set("WITHDRAW_AUTHORITY_ADDRESS", *a.WithdrawAuthorityAddress)
 	}
 	return e
 }

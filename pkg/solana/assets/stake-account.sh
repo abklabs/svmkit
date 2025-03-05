@@ -10,12 +10,12 @@ stake-account-status () {
 stake-account-create () {
     local args=()
 
-    if [[ -n "${STAKE_AUTHORITY}" ]]; then
-      args+=(--stake-authority "$STAKE_AUTHORITY")
+    if [[ -n "${STAKE_AUTHORITY_ADDRESS}" ]]; then
+      args+=(--stake-authority "$STAKE_AUTHORITY_ADDRESS")
     fi
 
-    if [[ -n "${WITHDRAW_AUTHORITY}" ]]; then
-      args+=(--withdraw-authority "$WITHDRAW_ADDRESS")
+    if [[ -n "${WITHDRAW_AUTHORITY_ADDRESS}" ]]; then
+      args+=(--withdraw-authority "$WITHDRAW_AUTHORITY_ADDRESS")
     fi
 
     if [[ -v CUSTODIAN_PUBKEY ]] && [[ -v EPOCH_AVAILABLE ]] && [[ -n "$CUSTODIAN_PUBKEY" ]] && [[ -n "$EPOCH_AVAILABLE" ]]; then
