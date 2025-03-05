@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/abklabs/svmkit/pkg/runner"
+	"github.com/gagliardetto/solana-go"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -46,6 +47,7 @@ type CliLockup struct {
 	Custodian     string `json:"custodian"`
 }
 
+// These values are go types converted directly from the rust types in the agave cli program
 type CliStakeState struct {
 	StakeType                   string         `json:"stakeType"`
 	AccountBalance              uint64         `json:"accountBalance"`
@@ -183,6 +185,7 @@ func (c *StakeAccountClient) Create(args StakeAccount) (StakeAccount, error) {
 	var mWithdrawAuthAddress *string
 	var mStakeAuthAddress *string
 
+	// Set withdraw authority if provided
 	if args.StakeAccountKeyPairs.WithdrawAuthority != nil {
 		withdrawAuthAddress, err := getPubkeyFromJson(*args.StakeAccountKeyPairs.WithdrawAuthority)
 		if err != nil {
@@ -190,6 +193,8 @@ func (c *StakeAccountClient) Create(args StakeAccount) (StakeAccount, error) {
 		}
 		mWithdrawAuthAddress = &withdrawAuthAddress
 	}
+
+	// Set stake authority if provided
 	if args.StakeAccountKeyPairs.StakeAuthority != nil {
 		stakeAuthAddress, err := getPubkeyFromJson(*args.StakeAccountKeyPairs.StakeAuthority)
 		if err != nil {
@@ -292,7 +297,7 @@ func (c *StakeAccountClient) Delete(state StakeAccount) error {
 		return errors.New("must provide withdraw address or set force_delete to true")
 	}
 
-	// TODO: Fix pointers
+	// TODO: Fix pointers (what happens if delegated stake is nil)
 	if state.WithdrawAddress != nil && (*readState.DelegatedStake != 0 || *readState.DeactivatingStake != 0) {
 		return errors.New("cannot withdraw stake until it is fully deactivated")
 	}
@@ -414,6 +419,7 @@ func (op *CliStakeOperator) GetStatus(stakeAddress string) (CliStakeState, error
 }
 
 func (op *CliStakeOperator) SetLockup(args SetLockupArgs) error {
+	// TODO
 	return nil
 }
 
@@ -432,10 +438,22 @@ func envWithOptions(txnOptions *TxnOptions) *runner.EnvBuilder {
 	return b
 }
 
-func getPubkeyFromJson(json string) (string, error) {
-	//TODO
-	panic("not implemented")
-	return "", nil
+func getPubkeyFromJson(jsonStr string) (string, error) {
+	// Parse the JSON string into a slice of ints
+	var privateKeyInts []int
+	err := json.Unmarshal([]byte(jsonStr), &privateKeyInts)
+	if err != nil {
+		return "", fmt.Errorf("failed to unmarshal JSON: %w", err)
+	}
+
+	// Convert back to a byte slice
+	// NOTE: We only do this switch from ints => bytes bc pulumi doesn't support uint8
+	privateKeyBytes := make([]byte, len(privateKeyInts))
+	for i, v := range privateKeyInts {
+		privateKeyBytes[i] = byte(v)
+	}
+	pubKey := solana.PrivateKey(privateKeyBytes).PublicKey().String()
+	return pubKey, nil
 }
 
 func setupPayload(p *runner.Payload, opt *TxnOptions) error {
