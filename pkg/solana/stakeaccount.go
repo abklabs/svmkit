@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	// "slices"
 	"strings"
 
 	"github.com/abklabs/svmkit/pkg/runner"
@@ -221,9 +220,13 @@ func (c *StakeAccountClient) Create(args StakeAccount) (StakeAccount, error) {
 	}
 
 	if args.StakeAccountKeyPairs.VoteAccount != nil {
+		voteAccountAddress, err := getPubkeyFromJson(*args.StakeAccountKeyPairs.VoteAccount)
+		if err != nil {
+			return StakeAccount{}, err
+		}
 		delegateArgs := DelegateArgs{
 			StakeAccountAddress:   stakeAccountAddress,
-			VoteAccountAddress:    *args.StakeAccountKeyPairs.VoteAccount,
+			VoteAccountAddress:    voteAccountAddress,
 			StakeAuthorityKeypair: args.StakeAccountKeyPairs.StakeAuthority,
 		}
 		if err := c.operator.Delegate(delegateArgs); err != nil {
@@ -244,37 +247,133 @@ func (c *StakeAccountClient) Update(state StakeAccount, newArgs StakeAccount) (S
 
 	// Read state from chain
 	stakeAccountAddress, err := getPubkeyFromJson(state.StakeAccountKeyPairs.StakeAccount)
+	if err != nil {
+		return StakeAccount{}, err
+	}
+
 	readState, err := c.operator.GetStatus(stakeAccountAddress)
 	if err != nil {
 		return StakeAccount{}, errors.New("failed to read stake account state from chain")
 	}
 
-	//TODO: This is just a way to use readState to compile
-	readState.StakeType = "stake"
-
 	// Handle vote-account change
-	// currentVA := state.StakeAccountKeyPairs.VoteAccount
-	// newVA := newArgs.StakeAccountKeyPairs.VoteAccount
-	// if newVA != nil && oldVA == nil {
-	// // DELEGATE
-	// todo("delegate")
-	// } else if newVA == nil && oldVA != nil {
-	// // DEACTIVATE
-	// todo("deactivate")
-	// } else if newVA != nil && oldVA != nil && *newVA != *oldVA {
-	// todo("error")
-	// 	// if currentVA != nil && newVA != nil && (*readState.DelegatedStake != 0 || *readState.DeactivatingStake != 0) {
-	// }
+	currentVA := state.StakeAccountKeyPairs.VoteAccount
+	newVA := newArgs.StakeAccountKeyPairs.VoteAccount
+	vaChangeType := accountChange(currentVA, newVA)
 
-	// currentWAuth := state.StakeAccountKeyPairs.WithdrawAuthority
-	// newWAuth := newArgs.StakeAccountKeyPairs.WithdrawAuthority
+	if vaChangeType == Added {
+		if isFullyDeactivated(readState) {
+			newVAAddress, err := getPubkeyFromJson(*newVA)
+			if err != nil {
+				return StakeAccount{}, err
+			}
+			// Delegate to new vote account
+			delegateArgs := DelegateArgs{
+				StakeAccountAddress: stakeAccountAddress,
+				VoteAccountAddress:  newVAAddress,
+				// Use old state since we haven't done authority updates yet
+				StakeAuthorityKeypair: state.StakeAccountKeyPairs.StakeAuthority,
+			}
+			if err := c.operator.Delegate(delegateArgs); err != nil {
+				return StakeAccount{}, err
+			}
+		} else {
+			return StakeAccount{}, errors.New("cannot change vote account until stake is fully deactivated")
+		}
+	} else if vaChangeType == Removed {
+		// Deactivate from current vote account
+		deactivateArgs := DeactivateArgs{
+			StakeAccountAddress:   stakeAccountAddress,
+			StakeAuthorityKeypair: state.StakeAccountKeyPairs.StakeAuthority,
+		}
+		if err := c.operator.Deactivate(deactivateArgs); err != nil {
+			return StakeAccount{}, err
+		}
+	} else if vaChangeType == Modified {
+		return StakeAccount{}, errors.New("must fully deactivate stake before changing vote account")
+	}
 
-	// // if currentWAuth != nil && newWAuth != nil && *currentWAuth != *newWAuth {
+	currentWAuth := state.StakeAccountKeyPairs.WithdrawAuthority
+	newWAuth := newArgs.StakeAccountKeyPairs.WithdrawAuthority
+	wAuthChangeType := accountChange(currentWAuth, newWAuth)
 
-	// currentSAuth := state.StakeAccountKeyPairs.StakeAuthority
-	// newSAuth := newArgs.StakeAccountKeyPairs.StakeAuthority
+	if wAuthChangeType == Added  || wAuthChangeType == Modified {
+		// Change withdraw authority
+		newWAuthAddress, err := getPubkeyFromJson(*newWAuth)
+		if err != nil {
+			return StakeAccount{}, err
+		}
+		authorizeArgs := AuthorizeArgs{
+			StakeAccountAddress: stakeAccountAddress,
+      OldKeyPair:          state.StakeAccountKeyPairs.WithdrawAuthority,
+			NewAddress:          newWAuthAddress,
+			AuthType:            AuthorizeWithdrawer,
+      // TODO: We currently only store a pubkey for lockup, but we need to store the full keypair
+			// LockupKeypair:       state.LockupArgs.CustodianPubkey,
+		}
+		if err := c.operator.Authorize(authorizeArgs); err != nil {
+			return StakeAccount{}, err
+		}
+
+	} else if wAuthChangeType == Removed {
+		return StakeAccount{}, errors.New("cannot remove withdraw authority")
+	}
+
+	currentSAuth := state.StakeAccountKeyPairs.StakeAuthority
+	newSAuth := newArgs.StakeAccountKeyPairs.StakeAuthority
+	sAuthChangeType := accountChange(currentSAuth, newSAuth)
+
+	if sAuthChangeType == Added || sAuthChangeType == Modified {
+		// Change stake authority
+    newSAuthAddress, err := getPubkeyFromJson(*newSAuth)
+    if err != nil {
+      return StakeAccount{}, err
+    }
+    authorizeArgs := AuthorizeArgs{
+      StakeAccountAddress: stakeAccountAddress,
+      OldKeyPair:          state.StakeAccountKeyPairs.StakeAuthority,
+      NewAddress:          newSAuthAddress,
+      AuthType:            AuthorizeStaker,
+    }
+    if err := c.operator.Authorize(authorizeArgs); err != nil {
+      return StakeAccount{}, err
+    }
+	} else if sAuthChangeType == Removed {
+		return StakeAccount{}, errors.New("cannot remove stake authority")
+	}
+
+	// TODO: Change lockup
 
 	return newArgs, nil
+}
+
+type DiffStatus int
+
+const (
+	Unchanged DiffStatus = iota // both values are nil or equal
+	Added                       // old is nil and new is non-nil
+	Removed                     // old is non-nil and new is nil
+	Modified                    // both non-nil but different
+)
+
+func accountChange(oldVal *string, newVal *string) DiffStatus {
+	// Both are nil => unchanged
+	if oldVal == nil && newVal == nil {
+		return Unchanged
+	}
+	// Added: old is nil, new is non-nil
+	if oldVal == nil && newVal != nil {
+		return Added
+	}
+	// Removed: old is non-nil, new is nil
+	if oldVal != nil && newVal == nil {
+		return Removed
+	}
+	// Both are non-nil. If equal, unchanged; if not, modified.
+	if *oldVal == *newVal {
+		return Unchanged
+	}
+	return Modified
 }
 
 func (c *StakeAccountClient) Delete(state StakeAccount) error {
@@ -297,8 +396,7 @@ func (c *StakeAccountClient) Delete(state StakeAccount) error {
 		return errors.New("must provide withdraw address or set force_delete to true")
 	}
 
-	// TODO: Fix pointers (what happens if delegated stake is nil)
-	if state.WithdrawAddress != nil && (*readState.DelegatedStake != 0 || *readState.DeactivatingStake != 0) {
+	if state.WithdrawAddress != nil && !isFullyDeactivated(readState) {
 		return errors.New("cannot withdraw stake until it is fully deactivated")
 	}
 
@@ -316,6 +414,11 @@ func (c *StakeAccountClient) Delete(state StakeAccount) error {
 		return err
 	}
 	return nil
+}
+
+func isFullyDeactivated(state CliStakeState) bool {
+	return (state.DelegatedStake == nil || *state.DelegatedStake == 0) &&
+		(state.DeactivatingStake == nil || *state.DeactivatingStake == 0)
 }
 
 // ------------------------------------------------------------
