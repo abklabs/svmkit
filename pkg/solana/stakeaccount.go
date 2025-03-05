@@ -253,7 +253,8 @@ func (c *StakeAccountClient) Update(state StakeAccount, newArgs StakeAccount) (S
 
 	readState, err := c.operator.GetStatus(stakeAccountAddress)
 	if err != nil {
-		return StakeAccount{}, errors.New("failed to read stake account state from chain")
+		// return StakeAccount{}, errors.New("failed to read stake account state from chain")
+		return StakeAccount{}, err
 	}
 
 	// Handle vote-account change
