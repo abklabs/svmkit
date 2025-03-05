@@ -253,8 +253,7 @@ func (c *StakeAccountClient) Update(state StakeAccount, newArgs StakeAccount) (S
 
 	readState, err := c.operator.GetStatus(stakeAccountAddress)
 	if err != nil {
-		// return StakeAccount{}, errors.New("failed to read stake account state from chain")
-		return StakeAccount{}, err
+		return StakeAccount{}, errors.New("failed to read stake account state from chain")
 	}
 
 	// Handle vote-account change
@@ -389,7 +388,8 @@ func (c *StakeAccountClient) Delete(state StakeAccount) error {
 
 	readState, err := c.operator.GetStatus(stakeAddress)
 	if err != nil {
-		return errors.New("failed to read stake account state from chain")
+		// return errors.New("failed to read stake account state from chain")
+		return err
 	}
 
 	//TODO: Is this extra forcedelete check necessary given we already checked it above?
