@@ -648,6 +648,7 @@ func (v *StakeAccountDelegate) Env() *runner.EnvBuilder {
 	e := envWithOptions(v.TxnOptions)
 	e.Set("STAKE_ACCOUNT_ACTION", "DELEGATE")
 	e.Set("STAKE_ACCOUNT_ADDRESS", v.StakeAccountAddress)
+	e.Set("VOTE_ACCOUNT_ADDRESS", v.VoteAccountAddress)
 	return e
 }
 
@@ -655,7 +656,6 @@ func (v *StakeAccountDelegate) AddToPayload(p *runner.Payload) error {
 	if err := setupPayload(p, v.TxnOptions); err != nil {
 		return err
 	}
-	p.AddString("vote_account.json", v.VoteAccountAddress)
 	if v.StakeAuthorityKeypair != nil {
 		p.AddString("stake_authority.json", *v.StakeAuthorityKeypair)
 	}

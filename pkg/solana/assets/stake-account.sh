@@ -38,11 +38,11 @@ stake-account-delegate () {
       delegate_args+=(--stake-authority stake_authority.json)
     fi
 
-    cmd=(solana delegate-stake "${SOLANA_CLI_TXN_FLAGS[@]}" "$STAKE_ACCOUNT_ADDRESS" vote_account.json "${delegate_args[@]}")
+    cmd=(solana delegate-stake "${SOLANA_CLI_TXN_FLAGS[@]}" "$STAKE_ACCOUNT_ADDRESS" "$VOTE_ACCOUNT_ADDRESS" "${delegate_args[@]}")
     # Print the final command in a shell-quoted format
     echo "Executing command: $(printf "%q " "${cmd[@]}")"
 
-    solana delegate-stake "${SOLANA_CLI_TXN_FLAGS[@]}" "$STAKE_ACCOUNT_ADDRESS" vote_account.json "${delegate_args[@]}"
+    solana delegate-stake "${SOLANA_CLI_TXN_FLAGS[@]}" "$STAKE_ACCOUNT_ADDRESS" "$VOTE_ACCOUNT_ADDRESS" "${delegate_args[@]}"
 }
 
 stake-account-authorize() {
