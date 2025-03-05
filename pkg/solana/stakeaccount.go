@@ -397,7 +397,7 @@ func (c *StakeAccountClient) Delete(state StakeAccount) error {
 	}
 
 	if state.WithdrawAddress != nil && !isFullyDeactivated(readState) {
-		return errors.New("cannot withdraw stake until it is fully deactivated")
+    return fmt.Errorf("stake account must be fully deactivated before deletion but has state: %v", readState)
 	}
 
 	// TODO: Check lockup state from read and ensure it's unlocked
