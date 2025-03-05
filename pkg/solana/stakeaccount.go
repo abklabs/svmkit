@@ -281,6 +281,7 @@ func (c *StakeAccountClient) Update(state StakeAccount, newArgs StakeAccount) (S
 			return StakeAccount{}, errors.New("cannot change vote account until stake is fully deactivated")
 		}
 	} else if vaChangeType == Removed {
+    // TODO: Check readstate
 		// Deactivate from current vote account
 		deactivateArgs := DeactivateArgs{
 			StakeAccountAddress:   stakeAccountAddress,
@@ -714,6 +715,7 @@ func (v *StakeAccountAuthorize) Env() *runner.EnvBuilder {
 	e := envWithOptions(v.TxnOptions)
 	e.Set("STAKE_ACCOUNT_ACTION", "AUTHORIZE")
 	e.Set("STAKE_ACCOUNT_ADDRESS", v.StakeAccountAddress)
+	e.Set("NEW_AUTHORITY_ADDRESS", v.NewAddress)
 
 	if v.AuthType == AuthorizeStaker {
 		e.Set("AUTH_TYPE", "STAKER")
@@ -727,10 +729,8 @@ func (v *StakeAccountAuthorize) AddToPayload(p *runner.Payload) error {
 	if err := setupPayload(p, v.TxnOptions); err != nil {
 		return err
 	}
-	p.AddString("new_address.json", v.NewAddress)
-
 	if v.OldKeyPair != nil {
-		p.AddString("old_signer.json", *v.OldKeyPair)
+		p.AddString("old_authority.json", *v.OldKeyPair)
 	}
 	if v.LockupKeypair != nil {
 		p.AddString("lockup_keypair.json", *v.LockupKeypair)

@@ -49,15 +49,15 @@ stake-account-authorize() {
     local authorize_args=()
 
     if [[ $AUTH_TYPE == "STAKER" ]]; then
-        authorize_args+=(--new-stake-authority new_address.json)
-        if [[ -f old_address.json ]]; then
-          authorize_args+=(--stake-authority old_address.json)
+      authorize_args+=(--new-stake-authority "$NEW_AUTHORITY_ADDRESS")
+        if [[ -f old_authority.json ]]; then
+          authorize_args+=(--stake-authority old_authority.json)
         fi
 
     elif [[ $AUTH_TYPE == "WITHDRAWER" ]]; then
-        authorize_args+=(--new-withdraw-authority new_address.json)
-        if [[ -f old_address.json ]]; then
-          authorize_args+=(--withdraw-authority old_address.json)
+        authorize_args+=(--new-withdraw-authority "$NEW_AUTHORITY_ADDRESS")
+        if [[ -f old_authority.json ]]; then
+          authorize_args+=(--withdraw-authority old_authority.json)
         fi
         if [[ -f lockup_keypair.json ]]; then
           authorize_args+=(--lockup-authority lockup_keypair.json)
