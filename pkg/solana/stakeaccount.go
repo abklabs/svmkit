@@ -514,6 +514,8 @@ func (op *CliStakeOperator) GetStatus(stakeAddress string) (CliStakeState, error
 
 	output := handler.Output
 
+  fmt.Println("output: ", output)
+
 	status, err := parseOutput(output)
 	if err != nil {
 		return CliStakeState{}, err
