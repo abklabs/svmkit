@@ -514,14 +514,14 @@ func (op *CliStakeOperator) GetStatus(stakeAddress string) (CliStakeState, error
 
 	output := handler.Output
 
-  fmt.Println("output: ", output)
+  return CliStakeState{}, fmt.Errorf("output: %s", output)
 
-	status, err := parseOutput(output)
-	if err != nil {
-		return CliStakeState{}, err
-	}
+// 	status, err := parseOutput(output)
+// 	if err != nil {
+// 		return CliStakeState{}, err
+// 	}
 
-	return status, nil
+// 	return status, nil
 
 }
 
