@@ -10,6 +10,10 @@ type RunnerCommand struct {
 	packageGroup *deb.PackageGroup
 }
 
+func (r *RunnerCommand) Config() *Config {
+	return r.RunnerConfig
+}
+
 func (r *RunnerCommand) SetConfigDefaults() {
 	if r.RunnerConfig != nil {
 		r.RunnerConfig.SetDefaults()

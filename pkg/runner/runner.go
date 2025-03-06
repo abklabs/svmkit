@@ -14,6 +14,7 @@ type Command interface {
 	Check() error
 	Env() *EnvBuilder
 	AddToPayload(*Payload) error
+	Config() *Config
 }
 
 func NewRunner(client *ssh.Client, cmd Command) *Runner {

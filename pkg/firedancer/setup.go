@@ -125,6 +125,10 @@ func (c *InstallCommand) AddToPayload(p *runner.Payload) error {
 	return nil
 }
 
+func (c *InstallCommand) Config() *runner.Config {
+	return c.RunnerCommand.RunnerConfig
+}
+
 type UninstallCommand struct {
 	Firedancer
 }
@@ -157,4 +161,8 @@ func (u *UninstallCommand) AddToPayload(p *runner.Payload) error {
 	}
 
 	return nil
+}
+
+func (u *UninstallCommand) Config() *runner.Config {
+	return u.RunnerCommand.RunnerConfig
 }
