@@ -80,7 +80,7 @@ func (c *InstallCommand) AddToPayload(p *runner.Payload) error {
 	{
 		w := p.NewWriter(runner.PayloadFile{Path: "config.toml"})
 
-		if err := c.Config.Encode(w); err != nil {
+		if err := c.Firedancer.Config.Encode(w); err != nil {
 			return err
 		}
 	}
