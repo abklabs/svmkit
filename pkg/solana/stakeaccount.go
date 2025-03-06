@@ -122,7 +122,9 @@ type WithdrawArgs struct {
 
 type SetLockupArgs struct {
 	StakeAccountAddress string
-	LockupArgs          *StakeAccountLockup
+	EpochAvailable  *int64
+	NewCustodianAddress *string
+	OldCustodianKeypair *string
 }
 
 // StakeOperator defines interface for stake account operations
@@ -343,8 +345,6 @@ func (c *StakeAccountClient) Update(state StakeAccount, newArgs StakeAccount) (S
 		return StakeAccount{}, errors.New("cannot remove stake authority")
 	}
 
-	// TODO: Change lockup
-
 	return newArgs, nil
 }
 
@@ -392,7 +392,6 @@ func (c *StakeAccountClient) Delete(state StakeAccount) error {
 		return errors.New("failed to read stake account state from chain")
 	}
 
-	//TODO: Is this extra forcedelete check necessary given we already checked it above?
 	if state.WithdrawAddress == nil && !state.ForceDelete {
 		return errors.New("must provide withdraw address or set force_delete to true")
 	}
@@ -400,8 +399,6 @@ func (c *StakeAccountClient) Delete(state StakeAccount) error {
 	if state.WithdrawAddress != nil && !isFullyDeactivated(readState) {
 		return errors.New("cannot withdraw stake until it is fully deactivated")
 	}
-
-	// TODO: Check lockup state from read and ensure it's unlocked
 
 	widrawArgs := WithdrawArgs{
 		StakeAccountAddress:      stakeAddress,
@@ -503,6 +500,14 @@ func (op *CliStakeOperator) Withdraw(args WithdrawArgs) error {
 	return nil
 }
 
+func (op *CliStakeOperator) SetLockup(args SetLockupArgs) error {
+	// cmd := &StakeAccountSetLockup{args, op.txnOptions}
+	// if err := op.runCommand(cmd, op.handler); err != nil {
+	// 	return err
+	// }
+	return nil
+}
+
 func (op *CliStakeOperator) GetStatus(stakeAddress string) (CliStakeState, error) {
 	// This is the lone operation that doesn't use the provided handler and
 	// uses a StringHandler so that the output can be parsed
@@ -524,11 +529,6 @@ func (op *CliStakeOperator) GetStatus(stakeAddress string) (CliStakeState, error
 
 	return status, nil
 
-}
-
-func (op *CliStakeOperator) SetLockup(args SetLockupArgs) error {
-	// TODO
-	return nil
 }
 
 // ------------------------------------------------------------
