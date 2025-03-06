@@ -10,6 +10,8 @@ type StakeAccountKeyPairs struct {
 }
 
 type StakeAccount struct {
+	runner.RunnerCommand
+
 	TransactionOptions   *TxnOptions          `pulumi:"transactionOptions"`
 	StakeAccountKeyPairs StakeAccountKeyPairs `pulumi:"keyPairs"`
 	Amount               float64              `pulumi:"amount"`
@@ -39,6 +41,8 @@ type StakeAccountCreate struct {
 }
 
 func (v *StakeAccountCreate) Check() error {
+	v.RunnerCommand.SetConfigDefaults()
+
 	return nil
 }
 
