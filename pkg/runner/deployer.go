@@ -11,7 +11,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-var runWrapperTemplate = template.Must(template.New("runWrapper").Parse(`ret=0 ; ( set -euo pipefail ; cd {{ .RootPath }} ; {{ .Cmd }} ; ) || ret=$? ; rm -rf {{ .RootPath }} ; exit $ret`))
+var runWrapperTemplate = template.Must(template.New("runWrapper").Parse(`ret=0 ; ( set -euo pipefail ; cd {{ .RootPath }} ; {{ .Cmd }} ; ) || ret=$? ; {{ if not .KeepPayload }} rm -rf {{ .RootPath }} ; {{ end }} exit $ret`))
 
 type DeployerHandler interface {
 	// IngestReaders is responsible for keeping the readers drained.
@@ -22,8 +22,9 @@ type DeployerHandler interface {
 }
 
 type Deployer struct {
-	Payload *Payload
-	Client  *ssh.Client
+	Payload     *Payload
+	Client      *ssh.Client
+	KeepPayload bool
 }
 
 func (p *Deployer) Deploy() error {
@@ -68,9 +69,11 @@ func (p *Deployer) Run(cmdSegs []string, dontCleanup bool, handler DeployerHandl
 
 	err := runWrapperTemplate.Execute(runWrapper, struct {
 		*Payload
-		Cmd string
+		KeepPayload bool
+		Cmd         string
 	}{
 		p.Payload,
+		p.KeepPayload,
 		strings.Join(cmdSegs, " "),
 	})
 
