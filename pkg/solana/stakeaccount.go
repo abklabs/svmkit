@@ -13,10 +13,8 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-// TODO: VoteAccount should be an address
 type StakeAccountKeyPairs struct {
 	StakeAccount      string  `pulumi:"stakeAccount" provider:"secret"`
-	VoteAccount       *string `pulumi:"voteAccount,optional" provider:"secret"`
 	StakeAuthority    *string `pulumi:"stakeAuthority,optional" provider:"secret"`
 	WithdrawAuthority *string `pulumi:"withdrawAuthority,optional" provider:"secret"`
 }
@@ -28,6 +26,7 @@ type StakeAccountLockup struct {
 
 type StakeAccount struct {
 	StakeAccountKeyPairs StakeAccountKeyPairs `pulumi:"keyPairs"`
+	VoteAddress          *string              `pulumi:"voteAddress,optional"`
 	Amount               float64              `pulumi:"amount"`
 	WithdrawAddress      *string              `pulumi:"withdrawAddress,optional"`
 	TransactionOptions   *TxnOptions          `pulumi:"transactionOptions"`
@@ -122,7 +121,7 @@ type WithdrawArgs struct {
 
 type SetLockupArgs struct {
 	StakeAccountAddress string
-	EpochAvailable  *int64
+	EpochAvailable      *int64
 	NewCustodianAddress *string
 	OldCustodianKeypair *string
 }
@@ -221,14 +220,10 @@ func (c *StakeAccountClient) Create(args StakeAccount) (StakeAccount, error) {
 		return StakeAccount{}, err
 	}
 
-	if args.StakeAccountKeyPairs.VoteAccount != nil {
-		voteAccountAddress, err := getPubkeyFromJson(*args.StakeAccountKeyPairs.VoteAccount)
-		if err != nil {
-			return StakeAccount{}, err
-		}
+	if args.VoteAddress != nil {
 		delegateArgs := DelegateArgs{
 			StakeAccountAddress:   stakeAccountAddress,
-			VoteAccountAddress:    voteAccountAddress,
+			VoteAccountAddress:    *args.VoteAddress,
 			StakeAuthorityKeypair: args.StakeAccountKeyPairs.StakeAuthority,
 		}
 		if err := c.operator.Delegate(delegateArgs); err != nil {
@@ -259,20 +254,16 @@ func (c *StakeAccountClient) Update(state StakeAccount, newArgs StakeAccount) (S
 	}
 
 	// Handle vote-account change
-	currentVA := state.StakeAccountKeyPairs.VoteAccount
-	newVA := newArgs.StakeAccountKeyPairs.VoteAccount
+	currentVA := state.VoteAddress
+	newVA := newArgs.VoteAddress
 	vaChangeType := accountChange(currentVA, newVA)
 
 	if vaChangeType == Added {
 		if isFullyDeactivated(readState) {
-			newVAAddress, err := getPubkeyFromJson(*newVA)
-			if err != nil {
-				return StakeAccount{}, err
-			}
 			// Delegate to new vote account
 			delegateArgs := DelegateArgs{
 				StakeAccountAddress: stakeAccountAddress,
-				VoteAccountAddress:  newVAAddress,
+				VoteAccountAddress:  *newVA,
 				// Use old state since we haven't done authority updates yet
 				StakeAuthorityKeypair: state.StakeAccountKeyPairs.StakeAuthority,
 			}
