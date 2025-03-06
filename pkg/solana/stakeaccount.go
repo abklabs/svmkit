@@ -418,8 +418,12 @@ func (c *StakeAccountClient) Delete(state StakeAccount) error {
 }
 
 func isFullyDeactivated(state CliStakeState) bool {
-	return (state.DelegatedStake == nil || *state.DelegatedStake == 0) &&
-		(state.DeactivatingStake == nil || *state.DeactivatingStake == 0)
+	// We technically also want to check if the deactivation epoch is in the past, but
+	// we don't have the current epoch to compare against, and the result is that the command
+	// will just fail anyways so it should be fine.
+	return (state.DeactivatingStake == nil || *state.DeactivatingStake == 0) &&
+		(state.ActiveStake == nil || *state.ActiveStake == 0) &&
+		(state.ActivatingStake == nil || *state.ActivatingStake == 0)
 }
 
 // ------------------------------------------------------------
