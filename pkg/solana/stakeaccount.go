@@ -281,7 +281,7 @@ func (c *StakeAccountClient) Update(state StakeAccount, newArgs StakeAccount) (S
 			return StakeAccount{}, errors.New("cannot change vote account until stake is fully deactivated")
 		}
 	} else if vaChangeType == Removed {
-    // TODO: Check readstate
+		// TODO: Check readstate
 		// Deactivate from current vote account
 		deactivateArgs := DeactivateArgs{
 			StakeAccountAddress:   stakeAccountAddress,
@@ -298,7 +298,7 @@ func (c *StakeAccountClient) Update(state StakeAccount, newArgs StakeAccount) (S
 	newWAuth := newArgs.StakeAccountKeyPairs.WithdrawAuthority
 	wAuthChangeType := accountChange(currentWAuth, newWAuth)
 
-	if wAuthChangeType == Added  || wAuthChangeType == Modified {
+	if wAuthChangeType == Added || wAuthChangeType == Modified {
 		// Change withdraw authority
 		newWAuthAddress, err := getPubkeyFromJson(*newWAuth)
 		if err != nil {
@@ -306,10 +306,10 @@ func (c *StakeAccountClient) Update(state StakeAccount, newArgs StakeAccount) (S
 		}
 		authorizeArgs := AuthorizeArgs{
 			StakeAccountAddress: stakeAccountAddress,
-      OldKeyPair:          state.StakeAccountKeyPairs.WithdrawAuthority,
+			OldKeyPair:          state.StakeAccountKeyPairs.WithdrawAuthority,
 			NewAddress:          newWAuthAddress,
 			AuthType:            AuthorizeWithdrawer,
-      // TODO: We currently only store a pubkey for lockup, but we need to store the full keypair
+			// TODO: We currently only store a pubkey for lockup, but we need to store the full keypair
 			// LockupKeypair:       state.LockupArgs.CustodianPubkey,
 		}
 		if err := c.operator.Authorize(authorizeArgs); err != nil {
@@ -326,19 +326,19 @@ func (c *StakeAccountClient) Update(state StakeAccount, newArgs StakeAccount) (S
 
 	if sAuthChangeType == Added || sAuthChangeType == Modified {
 		// Change stake authority
-    newSAuthAddress, err := getPubkeyFromJson(*newSAuth)
-    if err != nil {
-      return StakeAccount{}, err
-    }
-    authorizeArgs := AuthorizeArgs{
-      StakeAccountAddress: stakeAccountAddress,
-      OldKeyPair:          state.StakeAccountKeyPairs.StakeAuthority,
-      NewAddress:          newSAuthAddress,
-      AuthType:            AuthorizeStaker,
-    }
-    if err := c.operator.Authorize(authorizeArgs); err != nil {
-      return StakeAccount{}, err
-    }
+		newSAuthAddress, err := getPubkeyFromJson(*newSAuth)
+		if err != nil {
+			return StakeAccount{}, err
+		}
+		authorizeArgs := AuthorizeArgs{
+			StakeAccountAddress: stakeAccountAddress,
+			OldKeyPair:          state.StakeAccountKeyPairs.StakeAuthority,
+			NewAddress:          newSAuthAddress,
+			AuthType:            AuthorizeStaker,
+		}
+		if err := c.operator.Authorize(authorizeArgs); err != nil {
+			return StakeAccount{}, err
+		}
 	} else if sAuthChangeType == Removed {
 		return StakeAccount{}, errors.New("cannot remove stake authority")
 	}
