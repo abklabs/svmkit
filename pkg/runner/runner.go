@@ -41,7 +41,15 @@ func (r *Runner) Run(ctx context.Context, handler DeployerHandler) error {
 		return err
 	}
 
-	d := Deployer{Payload: p, Client: r.client}
+	keepPayload := false
+
+	if c := r.command.Config(); c != nil {
+		if c.KeepPayload != nil {
+			keepPayload = *c.KeepPayload
+		}
+	}
+
+	d := Deployer{Payload: p, Client: r.client, KeepPayload: keepPayload}
 
 	if err := d.Deploy(); err != nil {
 		return err

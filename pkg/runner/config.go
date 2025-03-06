@@ -11,6 +11,7 @@ const (
 type Config struct {
 	PackageConfig  *deb.PackageConfig `pulumi:"packageConfig,optional"`
 	AptLockTimeout *int               `pulumi:"aptLockTimeout,optional"`
+	KeepPayload    *bool              `pulumi:"keepPayload,optional"`
 }
 
 func (c *Config) SetDefaults() {
