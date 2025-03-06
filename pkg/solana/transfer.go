@@ -5,6 +5,8 @@ import (
 )
 
 type Transfer struct {
+	runner.RunnerCommand
+
 	TransactionOptions     *TxnOptions `pulumi:"transactionOptions"`
 	Amount                 float64     `pulumi:"amount"`
 	RecipientPubkey        string      `pulumi:"recipientPubkey"`
@@ -40,6 +42,8 @@ type TransferCreate struct {
 }
 
 func (v *TransferCreate) Check() error {
+	v.RunnerCommand.SetConfigDefaults()
+
 	return nil
 }
 

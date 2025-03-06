@@ -11,6 +11,8 @@ type VoteAccountKeyPairs struct {
 }
 
 type VoteAccount struct {
+	runner.RunnerCommand
+
 	VoteAccountKeyPairs  VoteAccountKeyPairs `pulumi:"keyPairs"`
 	AuthVoterPubkey      *string             `pulumi:"authVoterPubkey,optional"`
 	CloseRecipientPubkey *string             `pulumi:"closeRecipientPubkey,optional"`
@@ -42,6 +44,8 @@ type VoteAccountCreate struct {
 }
 
 func (v *VoteAccountCreate) Check() error {
+	v.RunnerCommand.SetConfigDefaults()
+
 	return nil
 }
 
