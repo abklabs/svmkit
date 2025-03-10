@@ -7,7 +7,7 @@ After=network.target
 Type=exec
 User=root
 Group=root
-ExecStart=/opt/frankendancer/bin/fdctl --config /home/sol/config.toml configure init all
+ExecStart=/opt/frankendancer/bin/fdctl --config {{.Paths.ConfigPath}} configure init all
 RemainAfterExit=true
 Type=oneshot
 

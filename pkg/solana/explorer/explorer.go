@@ -56,17 +56,17 @@ func (cmd *ExplorerCommand) Check() error {
 		return err
 	}
 
+	if err := cmd.Paths.Check(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (cmd *ExplorerCommand) AddToPayload(p *runner.Payload) error {
-	explorerScript, err := assets.Open(assetsExplorerScript)
-
-	if err != nil {
+	if err := p.AddTemplate("steps.sh", explorerScriptTmpl, cmd); err != nil {
 		return err
 	}
-
-	p.AddReader("steps.sh", explorerScript)
 
 	if err := cmd.RunnerCommand.AddToPayload(p); err != nil {
 		return err
@@ -80,6 +80,7 @@ type Explorer struct {
 
 	Environment solana.Environment `pulumi:"environment"`
 	Flags       ExplorerFlags      `pulumi:"flags"`
+	Paths       ExplorerPaths      `pulumi:"paths"`
 	Version     *string            `pulumi:"version,optional"`
 	Name        *string            `pulumi:"name,optional"`
 	Symbol      *string            `pulumi:"symbol,optional"`

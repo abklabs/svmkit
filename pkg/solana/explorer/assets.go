@@ -2,11 +2,11 @@ package explorer
 
 import (
 	"embed"
+
+	"text/template"
 )
 
 //go:embed assets
 var assets embed.FS
 
-const (
-	assetsExplorerScript = "assets/explorer.sh"
-)
+var explorerScriptTmpl = template.Must(template.ParseFS(assets, "assets/explorer.sh.tmpl"))

@@ -7,10 +7,6 @@ import (
 	"github.com/abklabs/svmkit/pkg/runner/deb"
 )
 
-const (
-	faucetKeyPairPath = "/home/sol/faucet-keypair.json"
-)
-
 type InstallCommand struct {
 	Faucet
 }
@@ -22,7 +18,7 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 	b := runner.NewEnvBuilder()
 
 	b.SetMap(map[string]string{
-		"FAUCET_FLAGS": strings.Join(cmd.Flags.Args(), " "),
+		"FAUCET_FLAGS": strings.Join(cmd.Flags.Args(cmd.Paths), " "),
 		"FAUCET_ENV":   faucetEnv.String(),
 	})
 
@@ -46,17 +42,18 @@ func (cmd *InstallCommand) Check() error {
 		return err
 	}
 
+	if err := cmd.Paths.Check(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
-	faucetScript, err := assets.Open(assetsFaucetScript)
-
-	if err != nil {
+	if err := p.AddTemplate("steps.sh", faucetScriptTmpl, cmd); err != nil {
 		return err
 	}
 
-	p.AddReader("steps.sh", faucetScript)
 	p.AddString("faucet-keypair.json", cmd.KeyPair)
 
 	if err := cmd.RunnerCommand.AddToPayload(p); err != nil {
@@ -70,12 +67,13 @@ type Faucet struct {
 	runner.RunnerCommand
 
 	Flags   FaucetFlags `pulumi:"flags"`
+	Paths   FaucetPaths `pulumi:"paths"`
 	Version *string     `pulumi:"version,optional"`
 	KeyPair string      `pulumi:"keypair" provider:"secret"`
 }
 
-func (f *Faucet) Args() []string {
-	return f.Flags.Args()
+func (f *Faucet) Args(paths FaucetPaths) []string {
+	return f.Flags.Args(paths)
 }
 
 func (f *Faucet) Install() runner.Command {
@@ -102,10 +100,10 @@ type FaucetFlags struct {
 	SliceSeconds *int `pulumi:"sliceSeconds,optional"`
 }
 
-func (f *FaucetFlags) Args() []string {
+func (f *FaucetFlags) Args(paths FaucetPaths) []string {
 	b := runner.FlagBuilder{}
 
-	b.Append("keypair", faucetKeyPairPath)
+	b.AppendP("keypair", paths.KeypairPath)
 	b.AppendArrayP("allow-ip", f.AllowIPs)
 	b.AppendIntP("per-request-cap", f.PerRequestCap)
 	b.AppendIntP("per-time-cap", f.PerTimeCap)

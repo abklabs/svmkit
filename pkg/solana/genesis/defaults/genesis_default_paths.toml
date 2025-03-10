@@ -1,0 +1,3 @@
+primordialAccountsPath = "/home/sol/primordial.yaml"
+validatorAccountsPath = "/home/sol/validator_accounts.yaml"
+solanaSplCachePath = "~/.cache/solana-spl"

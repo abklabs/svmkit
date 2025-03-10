@@ -8,4 +8,4 @@ import (
 //go:embed assets
 var assets embed.FS
 
-var installScriptTmpl = template.Must(template.ParseFS(assets, "assets/install.sh.tmpl"))
+var watchtowerScriptTmpl = template.Must(template.ParseFS(assets, "assets/watchtower.sh.tmpl"))

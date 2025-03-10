@@ -60,11 +60,15 @@ func (cmd *InstallCommand) Check() error {
 		return err
 	}
 
+	if err := cmd.Paths.Check(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
-	err := p.AddTemplate("steps.sh", installScriptTmpl, cmd)
+	err := p.AddTemplate("steps.sh", watchtowerScriptTmpl, cmd)
 
 	if err != nil {
 		return err
@@ -81,6 +85,7 @@ type Watchtower struct {
 	runner.RunnerCommand
 
 	Environment   solana.Environment `pulumi:"environment"`
+	Paths         WatchtowerPaths    `pulumi:"paths"`
 	Flags         WatchtowerFlags    `pulumi:"flags"`
 	Notifications NotificationConfig `pulumi:"notifications"`
 }

@@ -1,0 +1,3 @@
+tunerLogPath = "/home/sol/svmkit-tuner.log"
+sysctlConfPath = "/etc/sysctl.d/zzz-svmkit-tuner.conf"
+runBinPath = "/usr/bin/run-tuner"

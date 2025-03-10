@@ -22,8 +22,8 @@ fetch-program() {
         return
     fi
 
-    if [[ -r ~/.cache/solana-spl/$so ]]; then
-        cp ~/.cache/solana-spl/"$so" "$so"
+    if [[ -r {{.Paths.SolanaSplCachePath}}/$so ]]; then
+        cp {{.Paths.SolanaSplCachePath}}/"$so" "$so"
     else
         echo "Downloading $name $version"
         local so_name="spl_${name//-/_}.so"
@@ -34,8 +34,8 @@ fetch-program() {
                 "https://github.com/solana-labs/solana-program-library/releases/download/$name-v$version/$so_name"
         )
 
-        mkdir -p ~/.cache/solana-spl
-        cp "$so" ~/.cache/solana-spl/"$so"
+        mkdir -p {{.Paths.SolanaSplCachePath}}
+        cp "$so" {{.Paths.SolanaSplCachePath}}/"$so"
     fi
 }
 
@@ -48,8 +48,8 @@ step::005::create-sol-user() {
 }
 
 step::007::check-for-existing-ledger() {
-    if [[ -d $LEDGER_PATH/rocksdb ]]; then
-        log::fatal "Ledger directory '$LEDGER_PATH' already appears populated!"
+    if [[ -d {{.Paths.LedgerPath}}/rocksdb ]]; then
+        log::fatal "Ledger directory '{{.Paths.LedgerPath}}' already appears populated!"
     fi
 }
 
@@ -69,14 +69,14 @@ step::020::fetch-all-programs() {
 }
 
 step::030::write-primordial-accounts-file() {
-    svmkit::sudo cp -f primordial.yaml /home/sol/primordial.yaml
-    svmkit::sudo chown sol:sol /home/sol/primordial.yaml
+    svmkit::sudo cp -f primordial.yaml {{.Paths.PrimordialAccountsPath}}
+    svmkit::sudo chown sol:sol {{.Paths.PrimordialAccountsPath}}
 }
 
 step::035::write-validator-accounts-file() {
     if [[ -f validator_accounts.yaml ]]; then
-        svmkit::sudo cp -f validator_accounts.yaml /home/sol/validator_accounts.yaml
-        svmkit::sudo chown sol:sol /home/sol/validator_accounts.yaml
+        svmkit::sudo cp -f validator_accounts.yaml {{.Paths.ValidatorAccountsPath}}
+        svmkit::sudo chown sol:sol {{.Paths.ValidatorAccountsPath}}
     fi
 }
 

@@ -9,14 +9,6 @@ import (
 	"github.com/abklabs/svmkit/pkg/solana"
 )
 
-const (
-	accountsPath = "/home/sol/accounts"
-	ledgerPath   = "/home/sol/ledger"
-
-	identityKeyPairPath    = "/home/sol/validator-keypair.json"
-	voteAccountKeyPairPath = "/home/sol/vote-account-keypair.json"
-)
-
 type KeyPairs struct {
 	Identity    string `pulumi:"identity" provider:"secret"`
 	VoteAccount string `pulumi:"voteAccount" provider:"secret"`
@@ -76,17 +68,29 @@ func (cmd *InstallCommand) Check() error {
 
 	cmd.RunnerCommand.SetConfigDefaults()
 
-	packageInfo, err := GeneratePackageInfo(cmd.Variant, cmd.Version)
+	{
+		packageInfo, err := GeneratePackageInfo(cmd.Variant, cmd.Version)
 
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
+
+		if err := cmd.RunnerCommand.UpdatePackageGroup(packageInfo.PackageGroup); err != nil {
+			return err
+		}
+
+		cmd.packageInfo = packageInfo
 	}
 
-	if err := cmd.RunnerCommand.UpdatePackageGroup(packageInfo.PackageGroup); err != nil {
-		return err
-	}
+	{
+		if err := cmd.Paths.MergeFlags(&cmd.Flags); err != nil {
+			return err
+		}
 
-	cmd.packageInfo = packageInfo
+		if err := cmd.Paths.Check(); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
@@ -101,14 +105,14 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 	b := runner.NewEnvBuilder()
 
 	b.SetMap(map[string]string{
-		"VALIDATOR_FLAGS": strings.Join(cmd.Flags.Args(), " "),
+		"VALIDATOR_FLAGS": strings.Join(cmd.Flags.Args(cmd.Paths), " "),
 		"VALIDATOR_ENV":   validatorEnv.String(),
 	})
 
 	{
-		s := identityKeyPairPath
+		s := cmd.Paths.ValidatorIdentityKeypairPath
 		conf := solana.CLIConfig{
-			KeyPair: &s,
+			KeyPair: s,
 		}
 
 		if senv := cmd.Environment; senv != nil {
@@ -145,8 +149,6 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 		b.SetArray("VALIDATOR_EXIT_FLAGS", s.Flags().Args())
 	}
 
-	b.Set("LEDGER_PATH", ledgerPath)
-
 	return b
 }
 
@@ -175,10 +177,11 @@ type Agave struct {
 	runner.RunnerCommand
 
 	Environment    *solana.Environment   `pulumi:"environment,optional"`
+	Paths          AgavePaths            `pulumi:"paths"`
 	Version        *string               `pulumi:"version,optional"`
 	Variant        *Variant              `pulumi:"variant,optional"`
 	KeyPairs       KeyPairs              `pulumi:"keyPairs"`
-	Flags          Flags                 `pulumi:"flags"`
+	Flags          AgaveFlags            `pulumi:"flags"`
 	Metrics        *Metrics              `pulumi:"metrics,optional"`
 	Info           *solana.ValidatorInfo `pulumi:"info,optional"`
 	TimeoutConfig  *TimeoutConfig        `pulumi:"timeoutConfig,optional"`

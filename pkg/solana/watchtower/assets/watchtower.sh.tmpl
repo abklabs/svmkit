@@ -26,16 +26,16 @@ step::30::setup-watchtower-startup() {
         svmkit::sudo systemctl stop "${WATCHTOWER_SERVICE}" || true
     fi
 
-    cat <<EOF | svmkit::sudo tee /home/sol/run-watchtower >/dev/null
+    cat <<EOF | svmkit::sudo tee {{.Paths.RunBinPath}} >/dev/null
 #!/usr/bin/env bash
 
 $WATCHTOWER_ENV exec agave-watchtower $WATCHTOWER_FLAGS
 EOF
 
-    svmkit::sudo chmod 755 /home/sol/run-watchtower
-    svmkit::sudo chown sol:sol /home/sol/run-watchtower
+    svmkit::sudo chmod 755 {{.Paths.RunBinPath}}
+    svmkit::sudo chown sol:sol {{.Paths.RunBinPath}}
 
-    cat <<EOF | svmkit::sudo tee /etc/systemd/system/"${WATCHTOWER_SERVICE}" >/dev/null
+    cat <<EOF | svmkit::sudo tee {{.Paths.SystemdPath}}/"${WATCHTOWER_SERVICE}" >/dev/null
 [Unit]
 Description=SVMkit watchtower
 
@@ -43,7 +43,7 @@ Description=SVMkit watchtower
 Type=exec
 User=sol
 Group=sol
-ExecStart=/home/sol/run-watchtower
+ExecStart={{.Paths.RunBinPath}}
 
 [Install]
 WantedBy=default.target

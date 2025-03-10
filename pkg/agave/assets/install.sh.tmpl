@@ -23,8 +23,10 @@ step::20::create-sol-user() {
 }
 
 step::30::copy-validator-keys() {
-    svmkit::sudo cp validator-keypair.json vote-account-keypair.json /home/sol
-    svmkit::sudo chown sol:sol /home/sol/{validator-keypair,vote-account-keypair}.json
+    svmkit::sudo cp validator-keypair.json {{.Paths.ValidatorIdentityKeypairPath}}
+    svmkit::sudo cp vote-account-keypair.json {{.Paths.ValidatorVoteAccountKeypairPath}}
+    svmkit::sudo chown sol:sol {{.Paths.ValidatorIdentityKeypairPath}}
+    svmkit::sudo chown sol:sol {{.Paths.ValidatorVoteAccountKeypairPath}}
 }
 
 step::40::configure-firewall() {
@@ -55,26 +57,28 @@ step::70::setup-validator-startup() {
         svmkit::sudo systemctl stop "${VALIDATOR_SERVICE}" || true
     fi
 
-    cat <<EOF | svmkit::sudo tee /home/sol/stop-validator >/dev/null
+    cat <<EOF | svmkit::sudo tee {{.Paths.StopBinPath}} >/dev/null
 #!/usr/bin/env bash
 
-$VALIDATOR_ENV exec $VALIDATOR_PROCESS --ledger $LEDGER_PATH exit ${VALIDATOR_EXIT_FLAGS[@]@Q}
+$VALIDATOR_ENV exec $VALIDATOR_PROCESS --ledger {{.Paths.LedgerPath}} exit ${VALIDATOR_EXIT_FLAGS[@]@Q}
 EOF
 
-    cat <<EOF | svmkit::sudo tee /home/sol/run-validator >/dev/null
+    cat <<EOF | svmkit::sudo tee {{.Paths.RunBinPath}} >/dev/null
 #!/usr/bin/env bash
 
 $VALIDATOR_ENV exec $VALIDATOR_PROCESS $VALIDATOR_FLAGS
 EOF
 
-    svmkit::sudo cp check-validator /home/sol/.
+    svmkit::sudo cp check-validator {{.Paths.CheckBinPath}}
 
-    for i in run-validator check-validator stop-validator ; do
-	svmkit::sudo chmod 755 /home/sol/$i
-	svmkit::sudo chown sol:sol /home/sol/$i
-    done
+    svmkit::sudo chmod 755 {{.Paths.RunBinPath}}
+    svmkit::sudo chown sol:sol {{.Paths.RunBinPath}}
+    svmkit::sudo chmod 755 {{.Paths.CheckBinPath}}
+    svmkit::sudo chown sol:sol {{.Paths.CheckBinPath}}
+    svmkit::sudo chmod 755 {{.Paths.StopBinPath}}
+    svmkit::sudo chown sol:sol {{.Paths.StopBinPath}}
 
-    cat <<EOF | svmkit::sudo tee /etc/systemd/system/"${VALIDATOR_SERVICE}" >/dev/null
+    cat <<EOF | svmkit::sudo tee {{.Paths.SystemdPath}}/"${VALIDATOR_SERVICE}" >/dev/null
 [Unit]
 Description=SVMkit $VALIDATOR_VARIANT validator
 
@@ -82,9 +86,9 @@ Description=SVMkit $VALIDATOR_VARIANT validator
 Type=exec
 User=sol
 Group=sol
-ExecStart=/home/sol/run-validator
-ExecStartPost=/home/sol/check-validator
-ExecStop=/home/sol/stop-validator
+ExecStart={{.Paths.RunBinPath}}
+ExecStartPost={{.Paths.CheckBinPath}}
+ExecStop={{.Paths.StopBinPath}}
 LimitNOFILE=1000000
 
 [Install]

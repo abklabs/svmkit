@@ -6,10 +6,6 @@ import (
 	"github.com/abklabs/svmkit/pkg/solana"
 )
 
-const (
-	identityKeyPairPath = "/home/sol/validator-keypair.json"
-)
-
 type KeyPairs struct {
 	Identity    string `pulumi:"identity" provider:"secret"`
 	VoteAccount string `pulumi:"voteAccount" provider:"secret"`
@@ -19,6 +15,7 @@ type Firedancer struct {
 	runner.RunnerCommand
 
 	Environment *solana.Environment `pulumi:"environment,optional"`
+	Paths       FiredancerPaths     `pulumi:"paths"`
 	Version     *string             `pulumi:"version,optional"`
 
 	KeyPairs KeyPairs `pulumi:"keyPairs"`
@@ -51,6 +48,14 @@ func (c *InstallCommand) Check() error {
 		return err
 	}
 
+	if err := c.Paths.MergeConfig(&c.Config); err != nil {
+		return err
+	}
+
+	if err := c.Paths.Check(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -58,9 +63,9 @@ func (c *InstallCommand) Env() *runner.EnvBuilder {
 	e := runner.NewEnvBuilder()
 
 	{
-		s := identityKeyPairPath
+		s := c.Paths.ValidatorIdentityKeypairPath
 		conf := solana.CLIConfig{
-			KeyPair: &s,
+			KeyPair: s,
 		}
 
 		if senv := c.Environment; senv != nil {
@@ -71,6 +76,7 @@ func (c *InstallCommand) Env() *runner.EnvBuilder {
 	}
 
 	e.Merge(c.RunnerCommand.Env())
+
 	e.Set("VALIDATOR_PACKAGE", "svmkit-frankendancer")
 
 	return e
@@ -85,34 +91,16 @@ func (c *InstallCommand) AddToPayload(p *runner.Payload) error {
 		}
 	}
 
-	{
-		r, err := assets.Open(assetsInstall)
-
-		if err != nil {
-			return err
-		}
-
-		p.AddReader("steps.sh", r)
+	if err := p.AddTemplate("steps.sh", assetsInstallTmpl, c); err != nil {
+		return err
 	}
 
-	{
-		r, err := assets.Open(assetsFDService)
-
-		if err != nil {
-			return err
-		}
-
-		p.AddReader("svmkit-fd-validator.service", r)
+	if err := p.AddTemplate("svmkit-fd-setup.service", assetsFDSetupServiceTmpl, c); err != nil {
+		return err
 	}
 
-	{
-		r, err := assets.Open(assetsFDSetupService)
-
-		if err != nil {
-			return err
-		}
-
-		p.AddReader("svmkit-fd-setup.service", r)
+	if err := p.AddTemplate("svmkit-fd-validator.service", assetsFDServiceTmpl, c); err != nil {
+		return err
 	}
 
 	p.AddString("validator-keypair.json", c.KeyPairs.Identity)
@@ -150,14 +138,9 @@ func (u *UninstallCommand) Env() *runner.EnvBuilder {
 }
 
 func (u *UninstallCommand) AddToPayload(p *runner.Payload) error {
-	{
-		r, err := assets.Open(assetsUninstall)
 
-		if err != nil {
-			return err
-		}
-
-		p.AddReader("steps.sh", r)
+	if err := p.AddTemplate("steps.sh", assetsUninstallTmpl, u); err != nil {
+		return err
 	}
 
 	return nil
