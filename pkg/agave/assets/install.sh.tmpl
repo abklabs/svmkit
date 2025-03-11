@@ -14,6 +14,19 @@ step::05::setup-abklabs-apt() {
 }
 
 step::10::install-packages() {
+
+    echo "$VALIDATOR_PACKAGE $VALIDATOR_PACKAGE/has-startup-policy boolean ${HAS_STARTUP_POLICY}" | svmkit::sudo debconf-set-selections
+    echo "$VALIDATOR_PACKAGE $VALIDATOR_PACKAGE/wait-for-rpc-health boolean ${WAIT_FOR_RPC_HEALTH}" | svmkit::sudo debconf-set-selections
+    echo "$VALIDATOR_PACKAGE $VALIDATOR_PACKAGE/validator-env string ${VALIDATOR_ENV}" | svmkit::sudo debconf-set-selections
+    echo "$VALIDATOR_PACKAGE $VALIDATOR_PACKAGE/validator-process string ${VALIDATOR_PROCESS}" | svmkit::sudo debconf-set-selections
+    echo "$VALIDATOR_PACKAGE $VALIDATOR_PACKAGE/validator-flags string ${VALIDATOR_FLAGS}" | svmkit::sudo debconf-set-selections
+    echo "$VALIDATOR_PACKAGE $VALIDATOR_PACKAGE/validator-exit-flags string ${VALIDATOR_EXIT_FLAGS}" | svmkit::sudo debconf-set-selections
+    echo "$VALIDATOR_PACKAGE $VALIDATOR_PACKAGE/ledger-path string ${LEDGER_PATH}" | svmkit::sudo debconf-set-selections
+    echo "$VALIDATOR_PACKAGE $VALIDATOR_PACKAGE/has-timeout-config boolean ${HAS_TIMEOUT_CONFIG}" | svmkit::sudo debconf-set-selections
+    echo "$VALIDATOR_PACKAGE $VALIDATOR_PACKAGE/rpc-service-timeout string ${RPC_SERVICE_TIMEOUT}" | svmkit::sudo debconf-set-selections
+    echo "$VALIDATOR_PACKAGE $VALIDATOR_PACKAGE/rpc-bind-address string ${RPC_BIND_ADDRESS}" | svmkit::sudo debconf-set-selections
+    echo "$VALIDATOR_PACKAGE $VALIDATOR_PACKAGE/rpc-port string ${RPC_PORT}" | svmkit::sudo debconf-set-selections
+
     svmkit::apt::update
     svmkit::apt::get --allow-downgrades install "${PACKAGE_LIST[@]}"
 }
@@ -55,42 +68,6 @@ step::70::setup-validator-startup() {
         svmkit::sudo systemctl stop "${VALIDATOR_SERVICE}" || true
     fi
 
-    cat <<EOF | svmkit::sudo tee /home/sol/stop-validator >/dev/null
-#!/usr/bin/env bash
-
-$VALIDATOR_ENV exec $VALIDATOR_PROCESS --ledger $LEDGER_PATH exit ${VALIDATOR_EXIT_FLAGS[@]@Q}
-EOF
-
-    cat <<EOF | svmkit::sudo tee /home/sol/run-validator >/dev/null
-#!/usr/bin/env bash
-
-$VALIDATOR_ENV exec $VALIDATOR_PROCESS $VALIDATOR_FLAGS
-EOF
-
-    svmkit::sudo cp check-validator /home/sol/.
-
-    for i in run-validator check-validator stop-validator ; do
-	svmkit::sudo chmod 755 /home/sol/$i
-	svmkit::sudo chown sol:sol /home/sol/$i
-    done
-
-    cat <<EOF | svmkit::sudo tee /etc/systemd/system/"${VALIDATOR_SERVICE}" >/dev/null
-[Unit]
-Description=SVMkit $VALIDATOR_VARIANT validator
-
-[Service]
-Type=exec
-User=sol
-Group=sol
-ExecStart=/home/sol/run-validator
-ExecStartPost=/home/sol/check-validator
-ExecStop=/home/sol/stop-validator
-LimitNOFILE=1000000
-
-[Install]
-WantedBy=default.target
-EOF
-    svmkit::sudo systemctl daemon-reload
     svmkit::sudo systemctl enable "${VALIDATOR_SERVICE}"
     svmkit::sudo systemctl start "${VALIDATOR_SERVICE}"
 }
@@ -100,16 +77,16 @@ step::80::setup-validator-info() {
 
     [[ -v VALIDATOR_INFO_NAME ]] || return 0
 
-    if [[ -v VALIDATOR_INFO_WEBSITE ]] ; then
-	args+=(--website "$VALIDATOR_INFO_WEBSITE")
+    if [[ -v VALIDATOR_INFO_WEBSITE ]]; then
+        args+=(--website "$VALIDATOR_INFO_WEBSITE")
     fi
 
-    if [[ -v VALIDATOR_INFO_ICON_URL ]] ; then
-	args+=(--icon-url "$VALIDATOR_INFO_ICON_URL")
+    if [[ -v VALIDATOR_INFO_ICON_URL ]]; then
+        args+=(--icon-url "$VALIDATOR_INFO_ICON_URL")
     fi
 
-    if [[ -v VALIDATOR_INFO_DETAILS ]] ; then
-	args+=(--details "$VALIDATOR_INFO_DETAILS")
+    if [[ -v VALIDATOR_INFO_DETAILS ]]; then
+        args+=(--details "$VALIDATOR_INFO_DETAILS")
     fi
 
     svmkit::sudo -u sol -i solana validator-info publish "${args[@]}" "$VALIDATOR_INFO_NAME"
