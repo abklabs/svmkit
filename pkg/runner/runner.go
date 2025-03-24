@@ -26,18 +26,26 @@ type Runner struct {
 	command Command
 }
 
+func PrepareCommandPayload(p *Payload, command Command) error {
+	p.Add(PayloadFile{Path: "opsh", Reader: strings.NewReader(OPSH), Mode: 0755})
+	p.AddString("lib.bash", LibBash)
+	p.Add(PayloadFile{Path: "run.sh", Reader: strings.NewReader(RunScript), Mode: 0755})
+	p.AddReader("env", command.Env().Buffer())
+
+	if err := command.AddToPayload(p); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *Runner) Run(ctx context.Context, handler DeployerHandler) error {
 	p := &Payload{
 		RootPath:    fmt.Sprintf("/tmp/runner-%d-%d", time.Now().Unix(), rand.Int()),
 		DefaultMode: 0640,
 	}
 
-	p.Add(PayloadFile{Path: "opsh", Reader: strings.NewReader(OPSH), Mode: 0755})
-	p.AddString("lib.bash", LibBash)
-	p.Add(PayloadFile{Path: "run.sh", Reader: strings.NewReader(RunScript), Mode: 0755})
-	p.AddReader("env", r.command.Env().Buffer())
-
-	if err := r.command.AddToPayload(p); err != nil {
+	if err := PrepareCommandPayload(p, r.command); err != nil {
 		return err
 	}
 
