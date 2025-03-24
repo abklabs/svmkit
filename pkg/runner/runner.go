@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/abklabs/svmkit/pkg/runner/deployer"
+
 	"golang.org/x/crypto/ssh"
 )
 
@@ -39,7 +41,7 @@ func PrepareCommandPayload(p *Payload, command Command) error {
 	return nil
 }
 
-func (r *Runner) Run(ctx context.Context, handler DeployerHandler) error {
+func (r *Runner) Run(ctx context.Context, handler deployer.DeployerHandler) error {
 	p := &Payload{
 		RootPath:    fmt.Sprintf("/tmp/runner-%d-%d", time.Now().Unix(), rand.Int()),
 		DefaultMode: 0640,
@@ -57,7 +59,7 @@ func (r *Runner) Run(ctx context.Context, handler DeployerHandler) error {
 		}
 	}
 
-	d := Deployer{Payload: p, Client: r.client, KeepPayload: keepPayload}
+	d := deployer.SSH{Payload: p, Client: r.client, KeepPayload: keepPayload}
 
 	if err := d.Deploy(); err != nil {
 		return err
