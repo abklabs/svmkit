@@ -1,6 +1,7 @@
 package deployer
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -14,12 +15,12 @@ type Local struct {
 	KeepPayload bool
 }
 
-func (p *Local) Deploy() error {
+func (p *Local) Deploy() (err error) {
 	for _, f := range p.Payload.Files {
 		path := filepath.Join(p.Payload.RootPath, f.Path)
 		dir := filepath.Dir(path)
 
-		err := os.MkdirAll(dir, 0755)
+		err = os.MkdirAll(dir, 0755)
 
 		if err != nil {
 			return err
@@ -31,7 +32,9 @@ func (p *Local) Deploy() error {
 			return nil
 		}
 
-		defer file.Close()
+		defer func() {
+			err = errors.Join(err, file.Close())
+		}()
 
 		err = file.Chmod(f.Mode)
 

@@ -1,6 +1,7 @@
 package genesis
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -109,23 +110,32 @@ func (cmd *CreateCommand) AddToPayload(p *runner.Payload) error {
 	return nil
 }
 
-func (cmd *CreateCommand) BuildAccountsYaml(w io.Writer) error {
+func (cmd *CreateCommand) BuildAccountsYaml(w io.Writer) (err error) {
 	enc := yaml.NewEncoder(w)
-	defer enc.Close()
+
+	defer func() {
+		err = errors.Join(err, enc.Close())
+	}()
 
 	output := map[string][]BootstrapAccount{
 		"validator_accounts": cmd.Accounts,
 	}
 
-	if err := enc.Encode(output); err != nil {
+	err = enc.Encode(output)
+
+	if err != nil {
 		return fmt.Errorf("failed to encode accounts YAML: %w", err)
 	}
+
 	return nil
 }
 
-func (cmd *CreateCommand) BuildPrimordialYaml(w io.Writer) error {
+func (cmd *CreateCommand) BuildPrimordialYaml(w io.Writer) (err error) {
 	enc := yaml.NewEncoder(w)
-	defer enc.Close()
+
+	defer func() {
+		err = errors.Join(err, enc.Close())
+	}()
 
 	resultMap := make(map[string]PrimordialAccount)
 	for _, acc := range cmd.Primordial {
@@ -135,7 +145,7 @@ func (cmd *CreateCommand) BuildPrimordialYaml(w io.Writer) error {
 		resultMap[acc.Pubkey] = acc
 	}
 
-	if err := enc.Encode(resultMap); err != nil {
+	if err = enc.Encode(resultMap); err != nil {
 		return fmt.Errorf("failed to encode primordial YAML: %w", err)
 	}
 
