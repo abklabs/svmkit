@@ -42,7 +42,7 @@ type TransferCreate struct {
 }
 
 func (v *TransferCreate) Check() error {
-	v.RunnerCommand.SetConfigDefaults()
+	v.SetConfigDefaults()
 
 	return nil
 }
