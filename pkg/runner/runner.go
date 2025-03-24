@@ -65,7 +65,7 @@ func (r *Runner) Run(ctx context.Context, handler deployer.DeployerHandler) erro
 		return err
 	}
 
-	if err := d.Run([]string{"./run.sh"}, false, handler); err != nil {
+	if err := d.Run([]string{"./run.sh"}, handler); err != nil {
 		return err
 	}
 
