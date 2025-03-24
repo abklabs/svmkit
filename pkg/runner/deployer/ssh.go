@@ -1,6 +1,7 @@
 package deployer
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -29,13 +30,15 @@ type SSH struct {
 	KeepPayload bool
 }
 
-func (p *SSH) Deploy() error {
+func (p *SSH) Deploy() (err error) {
 	sftpClient, err := sftp.NewClient(p.Client)
 	if err != nil {
 		return fmt.Errorf("failed to create SFTP client: %w", err)
 	}
 
-	defer sftpClient.Close()
+	defer func() {
+		err = errors.Join(err, sftpClient.Close())
+	}()
 
 	for _, f := range p.Payload.Files {
 		path := filepath.Join(p.Payload.RootPath, f.Path)
@@ -52,7 +55,9 @@ func (p *SSH) Deploy() error {
 			return fmt.Errorf("failed to create remote file %s: %w", path, err)
 		}
 
-		defer remoteFile.Close()
+		defer func() {
+			err = errors.Join(err, remoteFile.Close())
+		}()
 
 		if err := remoteFile.Chmod(f.Mode); err != nil {
 			return fmt.Errorf("couldn't change ownership of file %s: %w", path, err)
@@ -66,10 +71,10 @@ func (p *SSH) Deploy() error {
 	return nil
 }
 
-func (p *SSH) Run(cmdSegs []string, handler DeployerHandler) error {
+func (p *SSH) Run(cmdSegs []string, handler DeployerHandler) (err error) {
 	runWrapper := &strings.Builder{}
 
-	err := runWrapperTemplate.Execute(runWrapper, struct {
+	err = runWrapperTemplate.Execute(runWrapper, struct {
 		*payload.Payload
 		KeepPayload bool
 		Cmd         string
@@ -87,7 +92,10 @@ func (p *SSH) Run(cmdSegs []string, handler DeployerHandler) error {
 	if err != nil {
 		return fmt.Errorf("failed to create SSH session: %w", err)
 	}
-	defer execSession.Close()
+
+	func() {
+		err = errors.Join(err, execSession.Close())
+	}()
 
 	stdoutPipe, err := execSession.StdoutPipe()
 	if err != nil {
