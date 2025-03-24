@@ -44,7 +44,7 @@ type VoteAccountCreate struct {
 }
 
 func (v *VoteAccountCreate) Check() error {
-	v.RunnerCommand.SetConfigDefaults()
+	v.SetConfigDefaults()
 
 	return nil
 }

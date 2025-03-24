@@ -42,12 +42,12 @@ type InstallCommand struct {
 }
 
 func (c *InstallCommand) Check() error {
-	c.RunnerCommand.SetConfigDefaults()
+	c.SetConfigDefaults()
 
 	pkgGrp := deb.Package{}.MakePackageGroup("svmkit-solana-cli")
 	pkgGrp.Add(deb.Package{Name: "svmkit-frankendancer", Version: c.Version})
 
-	if err := c.RunnerCommand.UpdatePackageGroup(pkgGrp); err != nil {
+	if err := c.UpdatePackageGroup(pkgGrp); err != nil {
 		return err
 	}
 
@@ -126,7 +126,7 @@ func (c *InstallCommand) AddToPayload(p *runner.Payload) error {
 }
 
 func (c *InstallCommand) Config() *runner.Config {
-	return c.RunnerCommand.RunnerConfig
+	return c.RunnerConfig
 }
 
 type UninstallCommand struct {
@@ -134,11 +134,11 @@ type UninstallCommand struct {
 }
 
 func (u *UninstallCommand) Check() error {
-	u.RunnerCommand.SetConfigDefaults()
+	u.SetConfigDefaults()
 
 	pkgGrp := deb.Package{}.MakePackageGroup()
 
-	if err := u.RunnerCommand.UpdatePackageGroup(pkgGrp); err != nil {
+	if err := u.UpdatePackageGroup(pkgGrp); err != nil {
 		return err
 	}
 
@@ -164,5 +164,5 @@ func (u *UninstallCommand) AddToPayload(p *runner.Payload) error {
 }
 
 func (u *UninstallCommand) Config() *runner.Config {
-	return u.RunnerCommand.RunnerConfig
+	return u.RunnerConfig
 }

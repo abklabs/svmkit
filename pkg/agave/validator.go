@@ -74,7 +74,7 @@ func (cmd *InstallCommand) Check() error {
 		}
 	}
 
-	cmd.RunnerCommand.SetConfigDefaults()
+	cmd.SetConfigDefaults()
 
 	packageInfo, err := GeneratePackageInfo(cmd.Variant, cmd.Version)
 
@@ -82,7 +82,7 @@ func (cmd *InstallCommand) Check() error {
 		return err
 	}
 
-	if err := cmd.RunnerCommand.UpdatePackageGroup(packageInfo.PackageGroup); err != nil {
+	if err := cmd.UpdatePackageGroup(packageInfo.PackageGroup); err != nil {
 		return err
 	}
 

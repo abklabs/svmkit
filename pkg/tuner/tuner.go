@@ -28,11 +28,11 @@ func (cmd *TunerCommand) Env() *runner.EnvBuilder {
 }
 
 func (cmd *TunerCommand) Check() error {
-	cmd.RunnerCommand.SetConfigDefaults()
+	cmd.SetConfigDefaults()
 
 	pkgGrp := deb.Package{}.MakePackageGroup("cpufrequtils")
 
-	if err := cmd.RunnerCommand.UpdatePackageGroup(pkgGrp); err != nil {
+	if err := cmd.UpdatePackageGroup(pkgGrp); err != nil {
 		return err
 	}
 

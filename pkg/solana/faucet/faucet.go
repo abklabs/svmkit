@@ -37,12 +37,12 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 }
 
 func (cmd *InstallCommand) Check() error {
-	cmd.RunnerCommand.SetConfigDefaults()
+	cmd.SetConfigDefaults()
 
 	pkgGrp := deb.Package{}.MakePackageGroup("ufw")
 	pkgGrp.Add(deb.Package{Name: "svmkit-solana-faucet", Version: cmd.Version})
 
-	if err := cmd.RunnerCommand.UpdatePackageGroup(pkgGrp); err != nil {
+	if err := cmd.UpdatePackageGroup(pkgGrp); err != nil {
 		return err
 	}
 

@@ -41,7 +41,7 @@ type StakeAccountCreate struct {
 }
 
 func (v *StakeAccountCreate) Check() error {
-	v.RunnerCommand.SetConfigDefaults()
+	v.SetConfigDefaults()
 
 	return nil
 }
