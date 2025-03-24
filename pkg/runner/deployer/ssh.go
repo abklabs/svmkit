@@ -66,7 +66,7 @@ func (p *SSH) Deploy() error {
 	return nil
 }
 
-func (p *SSH) Run(cmdSegs []string, dontCleanup bool, handler DeployerHandler) error {
+func (p *SSH) Run(cmdSegs []string, handler DeployerHandler) error {
 	runWrapper := &strings.Builder{}
 
 	err := runWrapperTemplate.Execute(runWrapper, struct {
