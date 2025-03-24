@@ -70,7 +70,7 @@ type InstallCommand struct {
 func (cmd *InstallCommand) Check() error {
 	if m := cmd.Metrics; m != nil {
 		if err := m.Check(); err != nil {
-			return fmt.Errorf("Warning: Invalid metrics URL: %v\n", err)
+			return fmt.Errorf("warning: invalid metrics URL: %v", err)
 		}
 	}
 

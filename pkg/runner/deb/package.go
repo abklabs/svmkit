@@ -39,7 +39,7 @@ func (p *Package) String() string {
 
 func (p *Package) Reader() (io.Reader, error) {
 	if p.LocalPath == nil {
-		return nil, fmt.Errorf("attempting to get a reader from a package with no local path!")
+		return nil, fmt.Errorf("attempting to get a reader from a package with no local path")
 	}
 
 	return os.Open(*p.LocalPath)
