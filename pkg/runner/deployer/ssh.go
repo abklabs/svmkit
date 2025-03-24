@@ -1,4 +1,4 @@
-package runner
+package deployer
 
 import (
 	"fmt"
@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+
+	"github.com/abklabs/svmkit/pkg/runner/payload"
 
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
@@ -21,13 +23,13 @@ type DeployerHandler interface {
 	AugmentError(error) error
 }
 
-type Deployer struct {
-	Payload     *Payload
+type SSH struct {
+	Payload     *payload.Payload
 	Client      *ssh.Client
 	KeepPayload bool
 }
 
-func (p *Deployer) Deploy() error {
+func (p *SSH) Deploy() error {
 	sftpClient, err := sftp.NewClient(p.Client)
 	if err != nil {
 		return fmt.Errorf("failed to create SFTP client: %w", err)
@@ -64,11 +66,11 @@ func (p *Deployer) Deploy() error {
 	return nil
 }
 
-func (p *Deployer) Run(cmdSegs []string, dontCleanup bool, handler DeployerHandler) error {
+func (p *SSH) Run(cmdSegs []string, dontCleanup bool, handler DeployerHandler) error {
 	runWrapper := &strings.Builder{}
 
 	err := runWrapperTemplate.Execute(runWrapper, struct {
-		*Payload
+		*payload.Payload
 		KeepPayload bool
 		Cmd         string
 	}{
