@@ -68,7 +68,7 @@ func (v Variant) Check() error {
 	switch v {
 	case VariantSolana, VariantAgave, VariantPowerledger, VariantJito, VariantPyth, VariantMantis, VariantXen, VariantTachyon:
 	default:
-		return fmt.Errorf("unknown validator variant '%s'!", v)
+		return fmt.Errorf("unknown validator variant '%s'", v)
 	}
 
 	return nil

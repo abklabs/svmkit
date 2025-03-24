@@ -106,7 +106,7 @@ var knownNetworks = map[NetworkName]NetworkInfo{
 // XXX - Expose the API this way, so we can easily move to network lookups later.
 func LookupNetworkInfo(name NetworkName) (*NetworkInfo, error) {
 	if !name.IsValid() {
-		return nil, fmt.Errorf("network name '%s' is invalid!", name)
+		return nil, fmt.Errorf("network name '%s' is invalid", name)
 	}
 
 	n := knownNetworks[name]
