@@ -5,6 +5,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+
+	"github.com/abklabs/svmkit/cmd/svmkit/component"
 )
 
 var (
@@ -14,6 +16,10 @@ var (
 		Long:  `svmkit is a wrapper around the library of the same name.`,
 	}
 )
+
+func init() {
+	rootCmd.AddCommand(component.GenerateCmd)
+}
 
 func main() {
 	if err := rootCmd.Execute(); err != nil {
