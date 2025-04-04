@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/abklabs/svmkit/cmd/svmkit/build"
 	"github.com/abklabs/svmkit/cmd/svmkit/component"
 )
 
@@ -19,6 +20,7 @@ var (
 
 func init() {
 	rootCmd.AddCommand(component.GenerateCmd)
+	rootCmd.AddCommand(build.BuildCmd)
 }
 
 func main() {
