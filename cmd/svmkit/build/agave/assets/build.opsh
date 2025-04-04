@@ -30,6 +30,7 @@ step::10::use-alternate-clang() {
     proxydir=$BUILD_DIR/proxy
     llvmroot=/usr/lib/llvm-14
 
+    mkdir -p "$proxydir"
     # This is a massive hack to work around lack of configurability inside crates.
     cat <<'EOF' >"$proxydir/c++"
 #!/usr/bin/env bash
