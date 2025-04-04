@@ -1,4 +1,4 @@
-GO_DIRS		=	pkg
+GO_DIRS		=	pkg cmd
 GO_PACKAGES	=	$(foreach dir,$(GO_DIRS),./$(dir)/...)
 
 .PHONY: lint test vet setup
