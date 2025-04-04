@@ -1,5 +1,7 @@
 # Building Solana Validator Packages
 
+Note: To use the scripts in this directory, you must have a recent version of the `svmkit` CLI in your path.
+
 `solana-build` will produce a series of Debian packages out of a Solana-fork-based git repository. To build all of the forked flavors, you should configure your remotes to have all of the following in your `.git/config`:
 
 ```

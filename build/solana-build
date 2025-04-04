@@ -53,66 +53,12 @@ fetch-remote() {
 }
 
 default-build() {
-    # shellcheck disable=SC2154,SC1091
-    (set +u && source ci/rust-version.sh stable && env | grep rust_ && cargo +"$rust_stable" deb -p "$target")
+    svmkit build agave "$@"
     mv target/debian/*.deb "../build/$ref/."
 }
 
-generate-replacement-metadata() {
-    local name
-    name=$1
-    shift
-    cat <<EOF
-name = "$name"
-maintainer = "Engineering <engineering@abklabs.com>"
-EOF
-}
-
 anza-build-extra() {
-    cat <<EOF >>genesis/Cargo.toml
-[package.metadata.deb]
-$(generate-replacement-metadata svmkit-solana-genesis)
-EOF
-
-    cat <<EOF >>faucet/Cargo.toml
-[package.metadata.deb]
-$(generate-replacement-metadata svmkit-solana-faucet)
-EOF
-
-    cat <<EOF >>cli/Cargo.toml
-[package.metadata.deb]
-$(generate-replacement-metadata svmkit-solana-cli)
-EOF
-
-    cat <<EOF >>ledger-tool/Cargo.toml
-[package.metadata.deb]
-$(generate-replacement-metadata svmkit-agave-ledger-tool)
-EOF
-
-    cat <<EOF >>watchtower/Cargo.toml
-[package.metadata.deb]
-$(generate-replacement-metadata svmkit-agave-watchtower)
-EOF
-
-    cat <<EOF >>bench-tps/Cargo.toml
-[package.metadata.deb]
-$(generate-replacement-metadata svmkit-solana-bench-tps)
-EOF
-
-    # shellcheck disable=SC2154,SC1091
-    (
-        set +u
-        source ci/rust-version.sh stable
-        env | grep rust_
-        cargo +"$rust_stable" deb -p solana-genesis
-        cargo +"$rust_stable" deb -p solana-faucet
-        cargo +"$rust_stable" deb -p solana-cli
-        cargo +"$rust_stable" deb -p agave-ledger-tool
-        cargo +"$rust_stable" deb -p agave-watchtower
-        cargo +"$rust_stable" deb -p solana-bench-tps
-    )
-
-    default-build
+    default-build --build-extras "$@"
 }
 
 build-ref() {
@@ -135,45 +81,13 @@ build-ref() {
     git clean -f -d -x
     git checkout -f "$ref"
     git submodule update --init
-    cat <<EOF >>validator/Cargo.toml
-[package.metadata.deb]
-name = "${package_prefix}-validator"
-maintainer = "Engineering <engineering@abklabs.com>"
-provides = "svmkit-validator"
-conflicts = "svmkit-validator"
-replaces = "svmkit-validator"
-recommends = "svmkit-agave-ledger-tool"
-EOF
-    $buildfunc
+    $buildfunc --package-prefix "$package_prefix" --validator-target "$target"
     git submodule deinit --all
     git checkout -f master
 }
 
 build-with-other-clang() {
-    local tmpdir llvmroot
-
-    tmpdir=$(mktemp -d)
-    llvmroot=/usr/lib/llvm-14
-
-    # This is a massive hack to work around lack of configurability inside crates.
-    cat <<'EOF' >"$tmpdir/c++"
-#!/usr/bin/env bash
-
-if echo "$@" | grep ROCKSDB > /dev/null ; then
-	exec $llvmroot/bin/clang++ "$@" -include cstdint
-else
-	exec $llvmroot/bin/clang++ "$@"
-fi
-EOF
-    chmod 755 "$tmpdir/c++"
-
-    ln -s $llvmroot/bin/clang "$tmpdir/clang"
-    ln -s $llvmroot/bin/clang++ "$tmpdir/clang++"
-
-    ln -s $llvmroot/bin/cc "$tmpdir/cc"
-
-    PATH=$tmpdir:$PATH LLVM_CONFIG_PATH=$llvmroot/bin/llvm-config LIBCLANG_PATH=$llvmroot/lib/libclang.so.1 default-build
-    rm -rf "$tmpdir"
+    default-build --use-alternative-clang "$@"
 }
 
 for remote in solana-labs anza-xyz PowerLedger jito-foundation pyth-network mantis xen tachyon; do
