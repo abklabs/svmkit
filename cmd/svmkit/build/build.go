@@ -7,7 +7,8 @@ import (
 )
 
 var BuildCmd = &cobra.Command{
-	Use: "build",
+	Use:   "build",
+	Short: "Build Debian Packages of Solana tooling",
 }
 
 func init() {
