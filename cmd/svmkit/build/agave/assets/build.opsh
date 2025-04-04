@@ -1,0 +1,138 @@
+# shellcheck disable=SC2164,SC1091 shell=bash
+
+lib::import git
+
+generate-replacement-metadata() {
+    local name
+    name=$1
+    shift
+    cat <<EOF
+name = "$name"
+maintainer = "$MAINTAINER"
+EOF
+}
+
+step::00::check-environment() {
+    (
+        cd "$BUILD_DIR"
+        git::repo::is-clean || log::fatal "cannot build in a git environment that isn't clean!"
+    )
+}
+
+step::10::use-alternate-clang() {
+    if ! $USE_ALTERNATIVE_CLANG; then
+        log::info "skipping setting up an alternative clang for building."
+        return 0
+    fi
+
+    local proxydir llvmroot
+
+    proxydir=$BUILD_DIR/proxy
+    llvmroot=/usr/lib/llvm-14
+
+    # This is a massive hack to work around lack of configurability inside crates.
+    cat <<'EOF' >"$proxydir/c++"
+#!/usr/bin/env bash
+
+if echo "$@" | grep ROCKSDB > /dev/null ; then
+	exec $llvmroot/bin/clang++ "$@" -include cstdint
+else
+	exec $llvmroot/bin/clang++ "$@"
+fi
+EOF
+    chmod 755 "$proxydir/c++"
+
+    ln -s $llvmroot/bin/clang "$proxydir/clang"
+    ln -s $llvmroot/bin/clang++ "$proxydir/clang++"
+
+    ln -s $llvmroot/bin/cc "$proxydir/cc"
+
+    PATH=$proxydir:$PATH
+    LLVM_CONFIG_PATH=$llvmroot/bin/llvm-config
+    LIBCLANG_PATH=$llvmroot/lib/libclang.so.1
+
+    export PATH LLVM_CONFIG_PATH LIBCLANG_PATH
+}
+
+step::50::build-validator() {
+    pushd "$BUILD_DIR"
+    cat <<EOF >>validator/Cargo.toml
+[package.metadata.deb]
+name = "${PACKAGE_PREFIX}-validator"
+maintainer = "$MAINTAINER"
+provides = "svmkit-validator"
+conflicts = "svmkit-validator"
+replaces = "svmkit-validator"
+recommends = "svmkit-agave-ledger-tool"
+EOF
+
+    (
+        IFS=$'\r\n '
+        set +u
+        source ci/rust-version.sh stable
+        env | grep rust_
+        if ! $NO_BUILD; then
+            # shellcheck disable=SC2154
+            cargo +"$rust_stable" deb -p "$TARGET_VALIDATOR"
+        fi
+    )
+
+    popd
+}
+
+step::75::build-extras() {
+    if ! $BUILD_EXTRAS; then
+        log::info "skipping building extras."
+        return 0
+    fi
+
+    pushd "$BUILD_DIR"
+
+    cat <<EOF >>genesis/Cargo.toml
+[package.metadata.deb]
+$(generate-replacement-metadata svmkit-solana-genesis)
+EOF
+
+    cat <<EOF >>faucet/Cargo.toml
+[package.metadata.deb]
+$(generate-replacement-metadata svmkit-solana-faucet)
+EOF
+
+    cat <<EOF >>cli/Cargo.toml
+[package.metadata.deb]
+$(generate-replacement-metadata svmkit-solana-cli)
+EOF
+
+    cat <<EOF >>ledger-tool/Cargo.toml
+[package.metadata.deb]
+$(generate-replacement-metadata svmkit-agave-ledger-tool)
+EOF
+
+    cat <<EOF >>watchtower/Cargo.toml
+[package.metadata.deb]
+$(generate-replacement-metadata svmkit-agave-watchtower)
+EOF
+
+    cat <<EOF >>bench-tps/Cargo.toml
+[package.metadata.deb]
+$(generate-replacement-metadata svmkit-solana-bench-tps)
+EOF
+
+    if ! $NO_BUILD; then
+        # shellcheck disable=SC2154,SC1091
+        (
+            set +u
+            IFS=$'\r\n '
+            source ci/rust-version.sh stable
+            env | grep rust_
+            cargo +"$rust_stable" deb -p solana-genesis
+            cargo +"$rust_stable" deb -p solana-faucet
+            cargo +"$rust_stable" deb -p solana-cli
+            cargo +"$rust_stable" deb -p agave-ledger-tool
+            cargo +"$rust_stable" deb -p agave-watchtower
+            cargo +"$rust_stable" deb -p solana-bench-tps
+        )
+    fi
+
+    popd
+}
