@@ -1,0 +1,45 @@
+# shellcheck disable=SC2164,SC1091 shell=bash
+
+lib::import git
+
+step::00::check-environment() {
+    (
+        cd "$BUILD_DIR"
+        git::repo::is-clean || log::fatal "cannot build in a git environment that isn't clean!"
+    )
+}
+
+step::50::sync-submodules() {
+    pushd "$BUILD_DIR"
+    git submodule sync
+    git submodule update
+    popd
+}
+
+step::50::install-deps() {
+    pushd "$BUILD_DIR"
+    FD_AUTO_INSTALL_PACKAGES=1 ./deps.sh install
+    popd
+}
+
+step::60::build-fd() {
+    pushd "$BUILD_DIR"
+    local resultdir tag
+
+    tag=$(git::repo::version)
+    resultdir=build/linux/gcc/x86_64
+
+    MACHINE=linux_gcc_x86_64 make -j fdctl
+
+    (
+        cd $resultdir
+        mkdir -p opt/frankendancer
+        mv bin opt/frankendancer
+        tar cvf svmkit-frankendancer.tar.gz opt/frankendancer
+        fakeroot alien --verbose --target=amd64 --version="${tag#v}" --description="SVMKit build of Jump's Frankendancer" svmkit-frankendancer.tar.gz
+        rm svmkit-frankendancer.tar.gz
+    )
+
+    mv $resultdir/*.deb .
+    popd
+}
