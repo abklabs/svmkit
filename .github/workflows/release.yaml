@@ -1,0 +1,32 @@
+name: release
+on:
+  push:
+    tags:
+      - v*.*.*
+      - '!v*.*.*-**'
+env:
+  GITHUB_TOKEN: ${{ github.token }}
+jobs:
+  publish_binary:
+    name: publish
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v4
+    - name: Unshallow clone for tags
+      run: git fetch --prune --unshallow --tags --force
+    - name: Install Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{matrix.goversion}}
+    - name: Run GoReleaser
+      uses: goreleaser/goreleaser-action@v6
+      with:
+        args: -p 3 release --clean
+        version: latest
+    strategy:
+      fail-fast: true
+      matrix:
+        goversion:
+        - 1.22.x

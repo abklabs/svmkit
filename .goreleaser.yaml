@@ -1,0 +1,27 @@
+version: 2
+archives:
+  - id: archive
+    name_template: '{{ .Binary }}-{{ .Tag }}-{{ .Os }}-{{ .Arch }}'
+builds:
+  - binary: svmkit
+    dir: .
+    env:
+      - CGO_ENABLED=0
+    goarch:
+      - amd64
+      - arm64
+    goos:
+      - darwin
+      - windows
+      - linux
+    ldflags:
+      # The line below MUST align with the module in current provider/go.mod
+      - -X github.com/abklabs/svmkit/pkg/version.Version={{ .Tag }}
+    main: ./cmd/svmkit/
+changelog:
+  disable: true
+release:
+  disable: false
+  prerelease: auto
+snapshot:
+  version_template: '{{ .Tag }}-SNAPSHOT'
