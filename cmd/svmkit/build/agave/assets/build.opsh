@@ -27,7 +27,7 @@ step::10::use-alternate-clang() {
 
     local proxydir llvmroot
 
-    proxydir=$BUILD_DIR/proxy
+    proxydir=$PWD/proxy
     llvmroot=/usr/lib/llvm-14
 
     mkdir -p "$proxydir"
