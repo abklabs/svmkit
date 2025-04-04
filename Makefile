@@ -1,18 +1,21 @@
+GO_DIRS		=	pkg
+GO_PACKAGES	=	$(foreach dir,$(GO_DIRS),./$(dir)/...)
+
 .PHONY: lint test vet setup
 
 test:
-	go test ./pkg/...
+	go test $(GO_PACKAGES)
 
 setup: 
 	./setup
 
 lint:
-	golangci-lint run ./pkg/...
+	golangci-lint run $(GO_PACKAGES)
 
 vet:
-	go vet ./pkg/...
+	go vet $(GO_PACKAGES)
 
 check: test lint
 
 format:
-	cd pkg && go fmt ./...
+	for dir in $(GO_DIRS) ; do ( cd $$dir && go fmt ./... ) ; done
