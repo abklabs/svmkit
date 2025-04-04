@@ -16,21 +16,5 @@ git fetch origin
 git checkout "$TAG"
 make clean
 git clean -f -d -x
-git submodule sync
-git submodule update
-FD_AUTO_INSTALL_PACKAGES=1 ./deps.sh install
-
-RESULTDIR=build/linux/gcc/x86_64
-MACHINE=linux_gcc_x86_64 make -j fdctl
-
-(
-	cd $RESULTDIR
-	mkdir -p opt/frankendancer
-	mv bin opt/frankendancer
-	tar cvf svmkit-frankendancer.tar.gz opt/frankendancer
-	fakeroot alien --verbose --target=amd64 --version="${TAG#v}" --description="SVMKit build of Jump's Frankendancer" svmkit-frankendancer.tar.gz
-	rm svmkit-frankendancer.tar.gz
-)
-
-mkdir -p ../build
-mv $RESULTDIR/*.deb ../build/.
+svmkit build fd
+mv *.deb ../build/.
