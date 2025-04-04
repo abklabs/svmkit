@@ -57,7 +57,8 @@ func (cmd *Build) AddToPayload(p *runner.Payload) error {
 }
 
 var FDCmd = &cobra.Command{
-	Use: "fd",
+	Use:   "fd",
+	Short: "Build a Frankendancer Debian package",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cwd, err := os.Getwd()
 

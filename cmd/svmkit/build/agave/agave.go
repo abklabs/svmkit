@@ -69,7 +69,9 @@ func (cmd *Build) AddToPayload(p *runner.Payload) error {
 }
 
 var AgaveCmd = &cobra.Command{
-	Use: "agave",
+	Use:   "agave",
+	Short: "Build an Agave Debian package",
+	Long:  "Build an Agave (or Agave-variant) Debian package",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cwd, err := os.Getwd()
 

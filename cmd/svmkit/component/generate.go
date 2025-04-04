@@ -13,7 +13,8 @@ import (
 )
 
 var GenerateCmd = &cobra.Command{
-	Use: "generate",
+	Use:   "generate",
+	Short: "Generate the scripts used by a given svmkit component",
 }
 
 func makeCommandGlue(runnerCommand runner.Command) func(cmd *cobra.Command, args []string) error {
