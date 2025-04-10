@@ -3,9 +3,12 @@ package agave
 import (
 	_ "embed"
 	"fmt"
+	"net"
 	"strings"
 
+	"github.com/abklabs/svmkit/pkg/agave/geyser"
 	"github.com/abklabs/svmkit/pkg/runner"
+	"github.com/abklabs/svmkit/pkg/runner/deb"
 	"github.com/abklabs/svmkit/pkg/solana"
 )
 
@@ -74,12 +77,24 @@ func (cmd *InstallCommand) Check() error {
 		}
 	}
 
+	if g := cmd.GeyserPlugin; g != nil {
+		if err := g.Check(); err != nil {
+			return fmt.Errorf("warning: invalid geyser plugin config: %v", err)
+		}
+
+	}
+
 	cmd.SetConfigDefaults()
 
 	packageInfo, err := GeneratePackageInfo(cmd.Variant, cmd.Version)
 
 	if err != nil {
 		return err
+	}
+
+	if cmd.GeyserPlugin.YellowstoneGRPC != nil {
+		yellowstoneVersion := cmd.GeyserPlugin.YellowstoneGRPC.Version
+		packageInfo.PackageGroup.Add(deb.Package{Name: "svmkit-yellowstone_grpc", Version: &yellowstoneVersion})
 	}
 
 	if err := cmd.UpdatePackageGroup(packageInfo.PackageGroup); err != nil {
@@ -99,6 +114,17 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 	}
 
 	b := runner.NewEnvBuilder()
+
+	// Add plugin flag that points to config file that get's created by the runner
+	if g := cmd.GeyserPlugin; g != nil {
+		if cmd.Flags.GeyserPluginConfig == nil {
+			pluginConfig := []string{"/home/sol/geyser-config.json"}
+			cmd.Flags.GeyserPluginConfig = &pluginConfig
+		} else {
+			pluginConfig := append(*cmd.Flags.GeyserPluginConfig, "/home/sol/geyser-config.json")
+			cmd.Flags.GeyserPluginConfig = &pluginConfig
+		}
+	}
 
 	b.SetMap(map[string]string{
 		"VALIDATOR_FLAGS": strings.Join(cmd.Flags.Args(), " "),
@@ -147,6 +173,18 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 
 	b.Set("LEDGER_PATH", ledgerPath)
 
+	if cmd.GeyserPlugin.YellowstoneGRPC != nil {
+		b.SetBool("YELLOWSTONE_GRPC", true)
+
+		if cmd.GeyserPlugin.YellowstoneGRPC.Config != nil {
+			address := cmd.GeyserPlugin.YellowstoneGRPC.Config.Grpc.Address
+			_, port, err := net.SplitHostPort(address)
+			if err == nil {
+				b.Set("YELLOWSTONE_GRPC_PORT", port)
+			}
+		}
+	}
+
 	return b
 }
 
@@ -168,6 +206,14 @@ func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
 	p.AddString("validator-keypair.json", cmd.KeyPairs.Identity)
 	p.AddString("vote-account-keypair.json", cmd.KeyPairs.VoteAccount)
 
+	if plugin := cmd.GeyserPlugin; plugin != nil {
+		confString, err := plugin.ToConfigString()
+		if err != nil {
+			return err
+		}
+		p.AddString("geyser-config.json", confString)
+	}
+
 	return nil
 }
 
@@ -184,6 +230,7 @@ type Agave struct {
 	TimeoutConfig  *TimeoutConfig        `pulumi:"timeoutConfig,optional"`
 	StartupPolicy  *StartupPolicy        `pulumi:"startupPolicy,optional"`
 	ShutdownPolicy *ShutdownPolicy       `pulumi:"shutdownPolicy,optional"`
+	GeyserPlugin   *geyser.GeyserPlugin  `pulumi:"geyserPlugin,optional"`
 }
 
 func (agave *Agave) Install() runner.Command {
