@@ -27,6 +27,18 @@ step::30::copy-validator-keys() {
     svmkit::sudo chown sol:sol /home/sol/{validator-keypair,vote-account-keypair}.json
 }
 
+step::35::copy-plugin-config() {
+    if [[ -f geyser-config.json ]]; then
+      svmkit::sudo cp geyser-config.json /home/sol
+      svmkit::sudo chown sol:sol /home/sol/geyser-config.json
+
+      if [[ "${YELLOWSTONE_GRPC}" = "true" ]]; then
+        /usr/bin/config-check -c /home/sol/geyser-config.json
+      fi
+
+    fi
+}
+
 step::40::configure-firewall() {
     svmkit::sudo ufw allow 53
     svmkit::sudo ufw allow ssh
@@ -36,6 +48,11 @@ step::40::configure-firewall() {
     svmkit::sudo ufw allow 8899/tcp
     svmkit::sudo ufw allow 8899/udp
     svmkit::sudo ufw allow 8900/tcp
+
+    if [[ -v YELLOWSTONE_GRPC_PORT ]] ; then
+      svmkit::sudo ufw allow "${YELLOWSTONE_GRPC_PORT}"/tcp
+      svmkit::sudo ufw allow "${YELLOWSTONE_GRPC_PORT}"/udp
+    fi
 
     svmkit::sudo ufw --force enable
 }
