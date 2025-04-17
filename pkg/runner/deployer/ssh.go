@@ -93,7 +93,7 @@ func (p *SSH) Run(cmdSegs []string, handler DeployerHandler) (err error) {
 		return fmt.Errorf("failed to create SSH session: %w", err)
 	}
 
-	func() {
+	defer func() {
 		err = errors.Join(err, execSession.Close())
 	}()
 
