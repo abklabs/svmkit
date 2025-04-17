@@ -94,7 +94,9 @@ func (p *SSH) Run(cmdSegs []string, handler DeployerHandler) (err error) {
 	}
 
 	defer func() {
-		err = errors.Join(err, execSession.Close())
+		if closeErr := execSession.Close(); closeErr != io.EOF {
+			err = errors.Join(closeErr)
+		}
 	}()
 
 	stdoutPipe, err := execSession.StdoutPipe()
