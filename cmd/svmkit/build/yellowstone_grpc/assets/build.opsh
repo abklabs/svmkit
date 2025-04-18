@@ -1,0 +1,58 @@
+# shellcheck disable=SC2164,SC1091 shell=bash
+
+lib::import git
+
+get_version() {
+    local dir package_name
+    dir=$1
+    shift
+    package_name=$1
+    shift
+    log::info "Getting version for $BUILD_DIR/$dir/$package_name"
+    cargo metadata --format-version 1 \
+        --manifest-path "$BUILD_DIR/$dir/Cargo.toml" \
+        | jq -r --arg pkg "$package_name" \
+            '.packages[] | select(.name==$pkg) | .version'
+}
+
+step::00::check-environment() {
+    log::info "Checking for clean git working tree..."
+    pushd "$BUILD_DIR"
+    git::repo::is-clean || log::fatal "Working tree must be clean"
+    popd
+}
+
+step::10::check-plugin-version() {
+    log::info "Checking plugin version matches $EXPECTED_INTERFACE_VERSION"
+    AGAVE_INTERFACE_VERSION=$(get_version "yellowstone-grpc-geyser" "agave-geyser-plugin-interface")
+    if [[ $AGAVE_INTERFACE_VERSION != "$EXPECTED_INTERFACE_VERSION" ]]; then
+        log::fatal "version mismatch: plugin=$AGAVE_INTERFACE_VERSION vs expected=$EXPECTED_INTERFACE_VERSION"
+    fi
+}
+
+step::20::build-plugin() {
+    pushd "$BUILD_DIR"
+    local version
+    version=$(get_version "yellowstone-grpc-geyser" "yellowstone-grpc-geyser")
+    cat <<EOF >>yellowstone-grpc-geyser/Cargo.toml
+[package.metadata.deb]
+name = "${PACKAGE_PREFIX}-yellowstone_grpc"
+maintainer = "${MAINTAINER}"
+provides = "svmkit-yellowstone-grpc"
+conflicts = "svmkit-yellowstone-grpc"
+replaces = "svmkit-yellowstone-grpc"
+EOF
+
+    (
+        IFS=$'\r\n '
+        set +u
+        source ci/rust-version.sh stable
+        env | grep rust_
+        if ! $NO_BUILD; then
+            # shellcheck disable=SC2154
+            cargo +"$rust_stable" deb -p "yellowstone-grpc-geyser" --deb-version "$version"
+        fi
+    )
+
+    popd
+}
