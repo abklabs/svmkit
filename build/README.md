@@ -71,3 +71,16 @@ $ find ../build  -type f
 ../build/pyth-network/pyth-v1.14.17/svmkit-pyth-validator_1.14.177-1_amd64.deb
 ../build/PowerLedger/upgrade_to_v1.16.28/svmkit-powerledger-validator_1.16.28-1_amd64.deb
 ```
+
+## Building Yellowstone-GRPC
+
+Similiarly to the above, you can build the Yellowstone-GRPC packages by adding the following to your `.git/config`:
+
+```
+[remote "yellowstone-grpc"]
+	url = git@github.com:rpcpool/yellowstone-grpc.git
+	fetch = +refs/tags/*:refs/remotes/yellowstone-grpc/*
+```
+
+Then you can run `yellowstone-grpc-build` to build the packages. In addition to the deps required
+for the `solana-build` you will also need to install `protoc` compiler for protobufs
