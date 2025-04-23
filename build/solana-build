@@ -107,6 +107,8 @@ lookup-grpc-ref() {
 }
 
 geyser-interface-version() {
+    local commit=$1
+    git checkout -f "$commit"
     cargo metadata --format-version 1 \
         --manifest-path validator/Cargo.toml |
     jq -r '.packages[] | select(.name=="agave-geyser-plugin-interface") | .version'
@@ -137,7 +139,7 @@ build-ref svmkit-solana solana-labs/master solana-validator
 for tag in v2.1.13 v2.1.14 v2.1.15 v2.1.16 v2.1.21 v2.2.0 v2.2.1; do
     commit=$(lookup-remote-tag anza-xyz "$tag")
     build-ref svmkit-agave "$commit" agave-validator anza-build-extra
-    agave_ver=$(geyser-interface-version)
+    agave_ver=$(geyser-interface-version "$commit")
     if grpc_ref=$(lookup-grpc-ref "$tag"); then
         build_dir="../build/$commit"
         build-grpc "$agave_ver" "$grpc_ref" "$build_dir"
