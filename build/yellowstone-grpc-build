@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+log::generic() {
+    local level
+    level=$1
+    shift
+
+    printf "%s\t%s\n" "$level" "$*"
+}
+
+log::info() {
+    log::generic INFO "$@"
+}
+
+log::fatal() {
+    log::generic FATAL "$@"
+    exit 1
+}
+
+lookup-remote-tag() {
+    local remote tag tagfile tagcount
+    remote=$1
+    shift
+    tag=$1
+    shift
+
+    tagfile=$(mktemp)
+
+    git ls-remote --tags "$remote" "$tag" >"$tagfile"
+
+    tagcount=$(wc -l <"$tagfile")
+
+    if [[ $tagcount -lt 1 ]]; then
+        log::fatal "no tags found on $remote for $tag!"
+    fi
+
+    if [[ $tagcount -gt 1 ]]; then
+        log::fatal "found more than one tag matching $tag on $remote.  cowardly giving up!"
+    fi
+
+    awk '{ print $1;}' <"$tagfile"
+    rm "$tagfile"
+}
+
+fetch-remote() {
+    local remote
+    remote=$1
+    shift
+    log::info "git fetching remote $remote..."
+    git fetch "$remote"
+}
+
+build-grpc() {
+    local agave_ver grpc_ref build_dir
+    agave_ver=$1
+    shift
+    grpc_ref=$1
+    shift
+    build_dir=$1
+    shift
+
+    log::info "→ yellowstone-grpc for $grpc_ref (agave_ver=$agave_ver)"
+    mkdir -p "$build_dir"
+    git clean -f -d -x
+    git checkout -f "$grpc_ref"
+    git submodule update --init
+    svmkit build yellowstone-grpc --geyser-interface-version "$agave_ver"
+    mv target/debian/*.deb "$build_dir/"
+    git submodule deinit --all
+    git checkout -f master
+}
+
+fetch-remote yellowstone-grpc
+
+for tag in v5.0.1+solana.2.1.13 v5.0.1+solana.2.1.14 v5.0.1+solana.2.1.15 v5.0.1+solana.2.1.16 v6.0.0+solana.2.2.1; do
+    commit=$(lookup-remote-tag yellowstone-grpc "$tag")
+    agave_ver=$(echo "$tag" | sed 's|.*solana\.||')
+    build_dir="../build/$commit"
+    build-grpc "$agave_ver" "$commit" "$build_dir"
+done
