@@ -90,14 +90,58 @@ build-with-other-clang() {
     default-build --use-alternative-clang "$@"
 }
 
-for remote in solana-labs anza-xyz PowerLedger jito-foundation pyth-network mantis xen tachyon; do
+lookup-grpc-ref() {
+    local agave_tag=$1
+    local pattern="*+solana.${agave_tag#v}"
+    readarray -t matches < <(
+        git ls-remote --tags yellowstone-grpc "$pattern" |
+        awk '{print $2}' | sed 's|refs/tags/||'
+    )
+    if [[ ${#matches[@]} -eq 0 ]]; then
+        log::info "no grpc tag for $pattern – skipping"
+        return 1
+    elif [[ ${#matches[@]} -gt 1 ]]; then
+        log::fatal "multiple grpc tags for $pattern"
+    fi
+    echo "${matches[0]}"
+}
+
+geyser-interface-version() {
+    cargo metadata --format-version 1 \
+        --manifest-path validator/Cargo.toml |
+    jq -r '.packages[] | select(.name=="agave-geyser-plugin-interface") | .version'
+}
+
+build-grpc() {
+    local agave_ver=$1
+    local grpc_ref=$2
+    local build_dir=$3
+
+    log::info "→ yellowstone-grpc for $grpc_ref (agave_ver=$agave_ver)"
+    mkdir -p "$build_dir"
+    git clean -f -d -x
+    git checkout -f "$grpc_ref"
+    git submodule update --init
+    svmkit build yellowstone-grpc --geyser-interface-version "$agave_ver"
+    mv target/debian/*.deb "$build_dir/"
+    git submodule deinit --all
+    git checkout -f master
+}
+
+for remote in solana-labs anza-xyz PowerLedger jito-foundation pyth-network mantis xen tachyon yellowstone-grpc; do
     fetch-remote $remote
 done
 
 build-ref svmkit-solana solana-labs/master solana-validator
 
 for tag in v2.1.13 v2.1.14 v2.1.15 v2.1.16 v2.1.21 v2.2.0 v2.2.1; do
-    build-ref svmkit-agave "$(lookup-remote-tag anza-xyz $tag)" agave-validator anza-build-extra
+    commit=$(lookup-remote-tag anza-xyz "$tag")
+    build-ref svmkit-agave "$commit" agave-validator anza-build-extra
+    agave_ver=$(geyser-interface-version)
+    if grpc_ref=$(lookup-grpc-ref "$tag"); then
+        build_dir="../build/$commit"
+        build-grpc "$agave_ver" "$grpc_ref" "$build_dir"
+    fi
 done
 
 build-ref svmkit-powerledger PowerLedger/upgrade_to_v1.16.28 solana-validator
