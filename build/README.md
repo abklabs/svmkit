@@ -38,6 +38,11 @@ Note: To use the scripts in this directory, you must have a recent version of th
 [remote "tachyon"]
 	url = git@github.com:x1-labs/tachyon.git
 	fetch = +refs/heads/*:refs/remotes/tachyon/*
+```
+
+Additionally, in a separate repo for yellowstone-grpc builds:
+
+```
 [remote "yellowstone-grpc"]
 	url = git@github.com:rpcpool/yellowstone-grpc.git
 	fetch = +refs/tags/*:refs/remotes/yellowstone-grpc/*
@@ -73,3 +78,4 @@ $ find ../build  -type f
 ../build/anza-xyz/master/svmkit-agave-validator_2.1.0-1_amd64.deb
 ../build/pyth-network/pyth-v1.14.17/svmkit-pyth-validator_1.14.177-1_amd64.deb
 ../build/PowerLedger/upgrade_to_v1.16.28/svmkit-powerledger-validator_1.16.28-1_amd64.deb
+```
