@@ -1,6 +1,4 @@
-#!/usr/bin/env bash
-
-set -euo pipefail
+#!/usr/bin/env opsh
 
 if [[ $# -ne 1 ]]; then
 	echo "$0 tag"
