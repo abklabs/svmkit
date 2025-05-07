@@ -92,9 +92,11 @@ func (cmd *InstallCommand) Check() error {
 		return err
 	}
 
-	if cmd.GeyserPlugin.YellowstoneGRPC != nil {
-		yellowstoneVersion := cmd.GeyserPlugin.YellowstoneGRPC.Version
-		packageInfo.PackageGroup.Add(deb.Package{Name: "svmkit-yellowstone_grpc", Version: &yellowstoneVersion})
+	if g := cmd.GeyserPlugin; g != nil {
+		if g.YellowstoneGRPC != nil {
+			yellowstoneVersion := g.YellowstoneGRPC.Version
+			packageInfo.PackageGroup.Add(deb.Package{Name: "svmkit-yellowstone_grpc", Version: &yellowstoneVersion})
+		}
 	}
 
 	if err := cmd.UpdatePackageGroup(packageInfo.PackageGroup); err != nil {
@@ -173,14 +175,16 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 
 	b.Set("LEDGER_PATH", ledgerPath)
 
-	if cmd.GeyserPlugin.YellowstoneGRPC != nil {
-		b.SetBool("YELLOWSTONE_GRPC", true)
+	if g := cmd.GeyserPlugin; g != nil {
+		if g.YellowstoneGRPC != nil {
+			b.SetBool("YELLOWSTONE_GRPC", true)
 
-		if cmd.GeyserPlugin.YellowstoneGRPC.Config != nil {
-			address := cmd.GeyserPlugin.YellowstoneGRPC.Config.Grpc.Address
-			_, port, err := net.SplitHostPort(address)
-			if err == nil {
-				b.Set("YELLOWSTONE_GRPC_PORT", port)
+			if g.YellowstoneGRPC.Config != nil {
+				address := g.YellowstoneGRPC.Config.Grpc.Address
+				_, port, err := net.SplitHostPort(address)
+				if err == nil {
+					b.Set("YELLOWSTONE_GRPC_PORT", port)
+				}
 			}
 		}
 	}
