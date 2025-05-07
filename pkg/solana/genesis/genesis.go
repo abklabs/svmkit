@@ -15,13 +15,6 @@ const (
 	primordialAccountPath  = "/home/sol/primordial.yaml"
 	primordialDefaultOwner = "11111111111111111111111111111111"
 	validatorAccountsPath  = "/home/sol/validator_accounts.yaml"
-
-	defaultClusterType                = "development"
-	defaultFaucetLamports             = 1000
-	defaultTargetLamportsPerSignature = 0
-	defaultInflation                  = "none"
-	defaultLamportsPerByteYear        = 1
-	defaultSlotsPerEpoch              = 150
 )
 
 type CreateCommand struct {
@@ -238,61 +231,21 @@ func (f GenesisFlags) Args(accounts []BootstrapAccount) []string {
 	b.AppendP("bootstrap-stake-authorized-pubkey", f.BootstrapStakeAuthorizedPubkey)
 	b.AppendIntP("bootstrap-validator-lamports", f.BootstrapValidatorLamports)
 	b.AppendIntP("bootstrap-validator-stake-lamports", f.BootstrapValidatorStakeLamports)
-
-	if f.ClusterType != nil {
-		b.AppendP("cluster-type", f.ClusterType)
-	} else {
-		value := defaultClusterType
-		b.AppendP("cluster-type", &value)
-	}
-
+	b.AppendP("cluster-type", f.ClusterType)
 	b.AppendP("creation-time", f.CreationTime)
 	b.AppendArrayP("deactivate-feature", f.DeactivateFeatures)
 	b.AppendBoolP("enable-warmup-epochs", f.EnableWarmupEpochs)
 	b.AppendP("faucet-pubkey", f.FaucetPubkey)
-
-	if f.FaucetLamports != nil {
-		b.AppendIntP("faucet-lamports", f.FaucetLamports)
-	} else {
-		value := defaultFaucetLamports
-		b.AppendIntP("faucet-lamports", &value)
-	}
-
+	b.AppendIntP("faucet-lamports", f.FaucetLamports)
 	b.AppendIntP("fee-burn-percentage", f.FeeBurnPercentage)
 	b.AppendP("hashes-per-tick", f.HashesPerTick) // This can be "auto", "sleep" or a number
-
-	if f.Inflation != nil {
-		b.AppendP("inflation", f.Inflation)
-	} else {
-		value := defaultInflation
-		b.AppendP("inflation", &value)
-	}
-
-	if f.LamportsPerByteYear != nil {
-		b.AppendIntP("lamports-per-byte-year", f.LamportsPerByteYear)
-	} else {
-		value := defaultLamportsPerByteYear
-		b.AppendIntP("lamports-per-byte-year", &value)
-	}
-
+	b.AppendP("inflation", f.Inflation)
+	b.AppendIntP("lamports-per-byte-year", f.LamportsPerByteYear)
 	b.AppendIntP("max-genesis-archive-unpacked-size", f.MaxGenesisArchiveUnpackedSize)
 	b.AppendIntP("rent-burn-percentage", f.RentBurnPercentage)
 	b.AppendIntP("rent-exemption-threshold", f.RentExemptionThreshold)
-
-	if f.SlotsPerEpoch != nil {
-		b.AppendIntP("slots-per-epoch", f.SlotsPerEpoch)
-	} else {
-		value := defaultSlotsPerEpoch
-		b.AppendIntP("slots-per-epoch", &value)
-	}
-
-	if f.TargetLamportsPerSignature != nil {
-		b.AppendIntP("target-lamports-per-signature", f.TargetLamportsPerSignature)
-	} else {
-		value := defaultTargetLamportsPerSignature
-		b.AppendIntP("target-lamports-per-signature", &value)
-	}
-
+	b.AppendIntP("slots-per-epoch", f.SlotsPerEpoch)
+	b.AppendIntP("target-lamports-per-signature", f.TargetLamportsPerSignature)
 	b.AppendIntP("target-signatures-per-slot", f.TargetSignaturesPerSlot)
 	b.AppendIntP("target-tick-duration", f.TargetTickDuration)
 	b.AppendIntP("ticks-per-slot", f.TicksPerSlot)
