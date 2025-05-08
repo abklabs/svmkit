@@ -32,6 +32,8 @@ step::60::build-fd() {
     tag=$(git::repo::version)
     resultdir=build/linux/gcc/x86_64
 
+    make distclean
+
     MACHINE=linux_gcc_x86_64 make -j fdctl
 
     (
