@@ -18,7 +18,10 @@ step::50::sync-submodules() {
 
 step::55::install-deps() {
     pushd "$BUILD_DIR"
+
+    ./deps.sh fetch +dev
     FD_AUTO_INSTALL_PACKAGES=1 ./deps.sh install
+
     popd
 }
 
