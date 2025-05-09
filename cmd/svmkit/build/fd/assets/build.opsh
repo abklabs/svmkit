@@ -2,11 +2,54 @@
 
 lib::import git
 
+# shellcheck disable=SC2034
+APT_LOCK_TIMEOUT=300
+KERNEL_HDR_DIR=$(mktemp -d)
+
 step::00::check-environment() {
     (
         cd "$BUILD_DIR"
         git::repo::is-clean || log::fatal "cannot build in a git environment that isn't clean!"
     )
+}
+
+step::05::setup-abklabs-apt() {
+    apt::setup-abk-apt-source
+}
+
+step::10::prepare-fd() {
+    pushd "$BUILD_DIR"
+
+    if [[ "${WITH_WIREDANCER:-false}" = "true" ]]; then
+        svmkit::apt::update
+        svmkit::apt::get install cmake alien
+
+        # get the aws-fpga repo and build the sdk
+        AWS_FPGA_REPO_DIR=$(mktemp -d /tmp/aws-fpga-XXXXXX)
+        export AWS_FPGA_REPO_DIR
+        git clone --depth 1 https://github.com/aws/aws-fpga.git "$AWS_FPGA_REPO_DIR"
+        set +u
+        source "${AWS_FPGA_REPO_DIR}/sdk_setup.sh" || true
+        set -u
+
+        if ! grep -q 'bpf_link_create_opts' /usr/include/linux/bpf.h 2>/dev/null; then
+            log::info "Installing newer linux-libc-dev for XDP support..."
+            # Ubuntu 20.04 headers are old and don't have XDP support even though
+            # the kernel is 5.15.
+            pushd "$KERNEL_HDR_DIR"
+            wget -q http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux-libc-dev_5.15.0-140.150_amd64.deb
+            dpkg-deb -x linux-libc-dev_5.15.0-140.150_amd64.deb extracted
+            export FD_EXTRA_CFLAGS="-I$KERNEL_HDR_DIR/extracted/usr/include"
+            export CFLAGS="$FD_EXTRA_CFLAGS ${CFLAGS:-}"
+            popd
+        fi
+
+        git checkout milestone-1.4-demo
+    else
+        git checkout main
+    fi
+
+    popd
 }
 
 step::50::sync-submodules() {
@@ -16,9 +59,17 @@ step::50::sync-submodules() {
     popd
 }
 
-step::50::install-deps() {
+step::55::install-deps() {
     pushd "$BUILD_DIR"
-    FD_AUTO_INSTALL_PACKAGES=1 ./deps.sh install
+
+    if [[ "${WITH_WIREDANCER:-false}" = "true" ]]; then
+        ./deps.sh fetch
+        ./deps.sh install
+    else
+        ./deps.sh fetch +dev
+        FD_AUTO_INSTALL_PACKAGES=1 ./deps.sh install
+    fi
+
     popd
 }
 
@@ -29,10 +80,18 @@ step::60::build-fd() {
     tag=$(git::repo::version)
     resultdir=build/linux/gcc/x86_64
 
-    MACHINE=linux_gcc_x86_64 make -j fdctl
+    make distclean
+
+    if [[ "${WITH_WIREDANCER:-false}" = "true" ]]; then
+        source activate-opt
+        MACHINE=linux_gcc_wd_f1 make CFLAGS="$FD_EXTRA_CFLAGS -Wno-pedantic -Wno-macro-redefined -Wno-error" -j
+    else
+        MACHINE=linux_gcc_x86_64 make -j fdctl
+    fi
 
     (
-        cd $resultdir
+        cd "$resultdir"
+        rm -rf opt/frankendancer
         mkdir -p opt/frankendancer
         mv bin opt/frankendancer
         tar cvf svmkit-frankendancer.tar.gz opt/frankendancer
@@ -40,6 +99,6 @@ step::60::build-fd() {
         rm svmkit-frankendancer.tar.gz
     )
 
-    mv $resultdir/*.deb .
+    mv "$resultdir"/*.deb .
     popd
 }

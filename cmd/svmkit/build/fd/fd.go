@@ -16,14 +16,19 @@ import (
 type Build struct {
 	runner.RunnerCommand
 
-	BuildDir    string
-	KeepPayload bool
+	BuildDir       string
+	KeepPayload    bool
+	WithWiredancer bool
 }
 
 func (cmd *Build) Env() *runner.EnvBuilder {
 	env := runner.NewEnvBuilder()
 
 	env.Set("BUILD_DIR", cmd.BuildDir)
+
+	if cmd.WithWiredancer {
+		env.SetBool("WITH_WIREDANCER", true)
+	}
 
 	return env
 }
@@ -69,14 +74,19 @@ var FDCmd = &cobra.Command{
 		flags := cmd.Flags()
 
 		keepPayload, err := flags.GetBool("keep-payload")
+		if err != nil {
+			return err
+		}
 
+		withWiredancer, err := flags.GetBool("with-wiredancer")
 		if err != nil {
 			return err
 		}
 
 		runnerCommand := &Build{
-			BuildDir:    cwd,
-			KeepPayload: keepPayload,
+			BuildDir:       cwd,
+			KeepPayload:    keepPayload,
+			WithWiredancer: withWiredancer,
 		}
 
 		if err := runnerCommand.Check(); err != nil {
@@ -123,4 +133,5 @@ func init() {
 	flags := FDCmd.Flags()
 
 	flags.Bool("keep-payload", false, "don't remove build scripts after completion")
+	flags.Bool("with-wiredancer", false, "Build with Wiredancer support")
 }
