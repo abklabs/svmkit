@@ -16,7 +16,7 @@ step::50::sync-submodules() {
     popd
 }
 
-step::50::install-deps() {
+step::55::install-deps() {
     pushd "$BUILD_DIR"
     FD_AUTO_INSTALL_PACKAGES=1 ./deps.sh install
     popd
@@ -32,7 +32,8 @@ step::60::build-fd() {
     MACHINE=linux_gcc_x86_64 make -j fdctl
 
     (
-        cd $resultdir
+        cd "$resultdir"
+        rm -rf opt/frankendancer
         mkdir -p opt/frankendancer
         mv bin opt/frankendancer
         tar cvf svmkit-frankendancer.tar.gz opt/frankendancer
@@ -40,6 +41,6 @@ step::60::build-fd() {
         rm svmkit-frankendancer.tar.gz
     )
 
-    mv $resultdir/*.deb .
+    mv "$resultdir"/*.deb .
     popd
 }
