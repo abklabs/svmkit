@@ -16,14 +16,22 @@ import (
 type Build struct {
 	runner.RunnerCommand
 
-	BuildDir    string
-	KeepPayload bool
+	BuildDir       string
+	KeepPayload    bool
+	DepsFetchExtra string
+	MakeMachine    string
+	MakeCFlags     string
+	MakeTarget     string
 }
 
 func (cmd *Build) Env() *runner.EnvBuilder {
 	env := runner.NewEnvBuilder()
 
 	env.Set("BUILD_DIR", cmd.BuildDir)
+	env.Set("FD_DEPS_FETCH_EXTRA", cmd.DepsFetchExtra)
+	env.Set("FD_MAKE_MACHINE", cmd.MakeMachine)
+	env.Set("FD_MAKE_CFLAGS", cmd.MakeCFlags)
+	env.Set("FD_MAKE_TARGET", cmd.MakeTarget)
 
 	return env
 }
@@ -31,7 +39,7 @@ func (cmd *Build) Env() *runner.EnvBuilder {
 func (cmd *Build) Check() error {
 	cmd.SetConfigDefaults()
 
-	pkgGrp := deb.Package{}.MakePackageGroup()
+	pkgGrp := deb.Package{}.MakePackageGroup("cmake", "alien")
 
 	if err := cmd.UpdatePackageGroup(pkgGrp); err != nil {
 		return err
@@ -67,14 +75,37 @@ var FDCmd = &cobra.Command{
 		flags := cmd.Flags()
 
 		keepPayload, err := flags.GetBool("keep-payload")
+		if err != nil {
+			return err
+		}
 
+		depsFetchExtra, err := flags.GetString("deps-fetch-extra")
+		if err != nil {
+			return err
+		}
+
+		makeMachine, err := flags.GetString("make-machine")
+		if err != nil {
+			return err
+		}
+
+		makeCFlags, err := flags.GetString("make-cflags")
+		if err != nil {
+			return err
+		}
+
+		makeTarget, err := flags.GetString("make-target")
 		if err != nil {
 			return err
 		}
 
 		runnerCommand := &Build{
-			BuildDir:    cwd,
-			KeepPayload: keepPayload,
+			BuildDir:       cwd,
+			KeepPayload:    keepPayload,
+			MakeMachine:    makeMachine,
+			MakeCFlags:     makeCFlags,
+			DepsFetchExtra: depsFetchExtra,
+			MakeTarget:     makeTarget,
 		}
 
 		if err := runnerCommand.Check(); err != nil {
@@ -120,4 +151,8 @@ func init() {
 	flags := FDCmd.Flags()
 
 	flags.Bool("keep-payload", false, "don't remove build scripts after completion")
+	flags.String("deps-fetch-extra", "+dev", "extra deps.sh fetch args")
+	flags.String("make-machine", "linux_gcc_x86_64", "MACHINE env var passed to make")
+	flags.String("make-cflags", "", "extra make CFLAGS")
+	flags.String("make-target", "fdctl", "TARGET env var passed to make")
 }
