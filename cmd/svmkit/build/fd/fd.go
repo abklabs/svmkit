@@ -42,7 +42,6 @@ func (cmd *Build) Check() error {
 
 func (cmd *Build) AddToPayload(p *runner.Payload) error {
 	script, err := assets.FS.Open(assets.BuildScript)
-
 	if err != nil {
 		return err
 	}
@@ -61,7 +60,6 @@ var FDCmd = &cobra.Command{
 	Short: "Build a Frankendancer Debian package",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cwd, err := os.Getwd()
-
 		if err != nil {
 			return err
 		}
@@ -84,7 +82,6 @@ var FDCmd = &cobra.Command{
 		}
 
 		outputDir, err := os.MkdirTemp("", "build-*")
-
 		if err != nil {
 			return err
 		}
