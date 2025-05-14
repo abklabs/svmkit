@@ -54,8 +54,6 @@ step::007::check-for-existing-ledger() {
 }
 
 step::010::install-dependencies() {
-    apt::setup-abk-apt-source
-
     svmkit::apt::get install "${PACKAGE_LIST[@]}"
 }
 
