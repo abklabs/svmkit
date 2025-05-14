@@ -1,0 +1,15 @@
+# -*- mode: shell-script -*-
+# shellcheck shell=bash
+
+step::00::wait-for-a-stable-environment() {
+    cloud-init::wait-for-stable-environment
+}
+
+step::05::setup-abklabs-apt() {
+    apt::setup-abk-apt-source
+}
+
+step::10::install-packages() {
+    svmkit::apt::update
+    svmkit::apt::get --allow-downgrades install "${PACKAGE_LIST[@]}"
+}
