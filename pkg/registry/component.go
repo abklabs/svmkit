@@ -5,6 +5,7 @@ import (
 
 	"github.com/abklabs/svmkit/pkg/agave"
 	"github.com/abklabs/svmkit/pkg/firedancer"
+	"github.com/abklabs/svmkit/pkg/machine"
 	"github.com/abklabs/svmkit/pkg/solana"
 	"github.com/abklabs/svmkit/pkg/solana/explorer"
 	"github.com/abklabs/svmkit/pkg/solana/faucet"
@@ -21,6 +22,7 @@ const (
 	ComponentExplorer
 	ComponentFaucet
 	ComponentGenesis
+	ComponentMachine
 	ComponentStakeAccount
 	ComponentTransfer
 	ComponentTuner
@@ -40,6 +42,8 @@ func (a Component) String() string {
 		return "faucet"
 	case ComponentGenesis:
 		return "genesis"
+	case ComponentMachine:
+		return "machine"
 	case ComponentStakeAccount:
 		return "stakeAccount"
 	case ComponentTransfer:
@@ -130,6 +134,18 @@ var Components = []ComponentCommand{
 				ActionCreate,
 				func() runner.Command {
 					return &genesis.CreateCommand{}
+				},
+			},
+		},
+	},
+	{
+		ComponentMachine,
+		"Configure a machine to be used by SVMKit.",
+		[]*ComponentOp{
+			{
+				ActionCreate,
+				func() runner.Command {
+					return &machine.CreateCommand{}
 				},
 			},
 		},

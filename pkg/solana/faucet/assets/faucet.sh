@@ -7,10 +7,6 @@ step::000::wait-for-a-stable-environment() {
     cloud-init::wait-for-stable-environment
 }
 
-step::001::setup-abklabs-api() {
-    apt::setup-abk-apt-source
-}
-
 step::003::install-faucet() {
     svmkit::apt::get install "${PACKAGE_LIST[@]}"
 }

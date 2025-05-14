@@ -9,10 +9,6 @@ step::00::wait-for-a-stable-environment() {
     cloud-init::wait-for-stable-environment
 }
 
-step::05::setup-abklabs-apt() {
-    apt::setup-abk-apt-source
-}
-
 step::20::create-sol-user() {
     create-sol-user
 }
