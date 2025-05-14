@@ -1,0 +1,39 @@
+#!/usr/bin/env opsh
+
+set -x
+
+KERNEL_HEADERS_DIR="$(temp::dir kernel-headers.XXXXXX)"
+AWS_FPGA_REPO_DIR="$(temp::dir aws-fpga.XXXXXX)"
+
+: "${KERNEL_VERSION:=5.15.0-140.150}"
+: "${WD_BRANCH_NAME:=milestone-1.4-demo}"
+
+# Clone AWS FPGA repo and set up SDK
+git clone --depth 1 https://github.com/aws/aws-fpga.git "${AWS_FPGA_REPO_DIR}"
+set +u
+source "${AWS_FPGA_REPO_DIR}/sdk_setup.sh" || true
+set -u
+
+FD_EXTRA_CFLAGS=""
+
+# Install newer headers for XDP if needed
+if ! grep -q 'bpf_link_create_opts' /usr/include/linux/bpf.h 2>/dev/null; then
+    log::info "Installing newer linux-libc-dev for XDP support..."
+    pushd "$KERNEL_HEADERS_DIR"
+    wget -q "http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux-libc-dev_${KERNEL_VERSION}_amd64.deb"
+    dpkg-deb -x "linux-libc-dev_${KERNEL_VERSION}_amd64.deb" extracted
+    FD_EXTRA_CFLAGS="-I${KERNEL_HEADERS_DIR}/extracted/usr/include"
+    popd
+fi
+
+git fetch origin
+git checkout "${WD_BRANCH_NAME}"
+MACHINE="linux_gcc_wd_f1" make distclean
+git clean -fxd
+source activate-opt
+
+svmkit build fd \
+  --deps-fetch-extra "" \
+  --make-machine "linux_gcc_wd_f1" \
+  --make-cflags "${FD_EXTRA_CFLAGS} -Wno-pedantic -Wno-macro-redefined -Wno-error ${CFLAGS:-}" \
+  --make-target ""
