@@ -8,6 +8,8 @@ import (
 
 type Machine struct {
 	runner.RunnerCommand
+
+	AptConfig *apt.Config `pulumi:"aptConfig,optional"`
 }
 
 type CreateCommand struct {
@@ -39,13 +41,23 @@ func (cmd *CreateCommand) AddToPayload(p *runner.Payload) error {
 
 	sources := apt.Sources{}
 
-	// Attach our default apt repo
-	sources = append(sources, apt.Source{
-		Types:      []string{"deb"},
-		URIs:       []string{"https://apt.abklabs.com/svmkit"},
-		Suites:     []string{"dev "},
-		Components: []string{"main"},
-	})
+	excludeDefaultSources := false
+
+	if conf := cmd.AptConfig; conf != nil {
+		if conf.ExcludeDefaultSources != nil {
+			excludeDefaultSources = *conf.ExcludeDefaultSources
+		}
+	}
+
+	if !excludeDefaultSources {
+		// Attach our default apt repo
+		sources = append(sources, apt.Source{
+			Types:      []string{"deb"},
+			URIs:       []string{"https://apt.abklabs.com/svmkit"},
+			Suites:     []string{"dev "},
+			Components: []string{"main"},
+		})
+	}
 
 	res, err := sources.MarshalText()
 
