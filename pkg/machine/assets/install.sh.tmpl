@@ -10,18 +10,15 @@ step::05::setup-abklabs-apt() {
     svmkit::apt::get install curl gnupg
 
     svmkit::flock::start
-    local did_add_key=false
-    if ! grep -q "^deb .*/svmkit dev main" /etc/apt/sources.list /etc/apt/sources.list.d/*; then
-        curl -s https://apt.abklabs.com/keys/abklabs-archive-dev.asc | svmkit::sudo apt-key add -
-        echo "deb https://apt.abklabs.com/svmkit dev main" |
-            svmkit::sudo tee /etc/apt/sources.list.d/svmkit.list >/dev/null
-        did_add_key=true
-    fi
+    # Remove our old list that might be hanging around.
+    svmkit::sudo rm -f /etc/apt/sources.list.d/svmkit.list
+    # Put our new deb822 config in its place.
+    svmkit::sudo cp svmkit.sources /etc/apt/sources.list.d/.
+    curl -s https://apt.abklabs.com/keys/abklabs-archive-dev.asc | svmkit::sudo apt-key add -
     svmkit::flock::end
 
-    if $did_add_key; then
-        svmkit::apt::update
-    fi
+    # Bring in the new packages from our source list
+    svmkit::apt::update
 }
 
 step::10::install-packages() {
