@@ -82,24 +82,6 @@ svmkit::apt::update() {
     svmkit::apt::get update
 }
 
-apt::setup-abk-apt-source() {
-    svmkit::apt::update
-    svmkit::apt::get install curl gnupg
-
-    svmkit::flock::start
-    local did_add_key=false
-    if ! grep -q "^deb .*/svmkit dev main" /etc/apt/sources.list /etc/apt/sources.list.d/*; then
-        curl -s https://apt.abklabs.com/keys/abklabs-archive-dev.asc | svmkit::sudo apt-key add -
-        echo "deb https://apt.abklabs.com/svmkit dev main" |
-            svmkit::sudo tee /etc/apt/sources.list.d/svmkit.list >/dev/null
-        did_add_key=true
-    fi
-    svmkit::flock::end
-
-    if $did_add_key; then
-        svmkit::apt::update
-    fi
-}
 
 cloud-init::wait-for-stable-environment() {
     local ret
