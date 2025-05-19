@@ -1,6 +1,7 @@
 package machine
 
 import (
+	"github.com/abklabs/svmkit/pkg/machine/apt"
 	"github.com/abklabs/svmkit/pkg/runner"
 	"github.com/abklabs/svmkit/pkg/runner/deb"
 )
@@ -35,6 +36,24 @@ func (cmd *CreateCommand) AddToPayload(p *runner.Payload) error {
 	if err := p.AddTemplate("steps.sh", installScriptTmpl, cmd); err != nil {
 		return err
 	}
+
+	sources := apt.Sources{}
+
+	// Attach our default apt repo
+	sources = append(sources, apt.Source{
+		Types:      []string{"deb"},
+		URIs:       []string{"https://apt.abklabs.com/svmkit"},
+		Suites:     []string{"dev "},
+		Components: []string{"main"},
+	})
+
+	res, err := sources.MarshalText()
+
+	if err != nil {
+		return err
+	}
+
+	p.NewBuffer(runner.PayloadFile{Path: "svmkit.sources"}, res)
 
 	if err := cmd.RunnerCommand.AddToPayload(p); err != nil {
 		return err
