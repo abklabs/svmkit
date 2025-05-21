@@ -1,5 +1,6 @@
 package apt
 
 type Config struct {
-	ExcludeDefaultSources *bool `pulumi:"excludeDefaultSources,optional"`
+	Sources               *Sources `pulumi:"sources,optional"`
+	ExcludeDefaultSources *bool    `pulumi:"excludeDefaultSources,optional"`
 }
