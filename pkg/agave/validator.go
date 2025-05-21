@@ -10,6 +10,7 @@ import (
 	"github.com/abklabs/svmkit/pkg/runner"
 	"github.com/abklabs/svmkit/pkg/runner/deb"
 	"github.com/abklabs/svmkit/pkg/solana"
+	"github.com/abklabs/svmkit/pkg/validator"
 )
 
 const (
@@ -252,4 +253,10 @@ func (agave *Agave) GetVariant() Variant {
 	} else {
 		return *agave.Variant
 	}
+}
+
+func (agave *Agave) Properties() validator.Properties {
+	variant := agave.GetVariant()
+
+	return validator.Properties{SystemdServiceName: variant.ServiceName()}
 }
