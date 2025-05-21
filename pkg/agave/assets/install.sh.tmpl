@@ -3,7 +3,7 @@
 
 : "${RPC_SERVICE_TIMEOUT:=60}"
 
-VALIDATOR_SERVICE=${VALIDATOR_PACKAGE}.service
+VALIDATOR_SERVICE=${VALIDATOR_SERVICE}.service
 
 step::00::wait-for-a-stable-environment() {
     cloud-init::wait-for-stable-environment
