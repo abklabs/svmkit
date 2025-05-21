@@ -47,6 +47,10 @@ func (cmd *CreateCommand) AddToPayload(p *runner.Payload) error {
 		if conf.ExcludeDefaultSources != nil {
 			excludeDefaultSources = *conf.ExcludeDefaultSources
 		}
+
+		if conf.Sources != nil {
+			sources = append(sources, *conf.Sources...)
+		}
 	}
 
 	if !excludeDefaultSources {
