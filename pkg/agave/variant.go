@@ -91,3 +91,7 @@ func (v Variant) ProcessName() string {
 func (v Variant) PackageName() string {
 	return "svmkit-" + string(v) + "-validator"
 }
+
+func (v Variant) ServiceName() string {
+	return v.PackageName()
+}

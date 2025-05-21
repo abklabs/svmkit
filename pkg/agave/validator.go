@@ -86,11 +86,13 @@ func (cmd *InstallCommand) Check() error {
 
 	cmd.SetConfigDefaults()
 
-	packageInfo, err := GeneratePackageInfo(cmd.Variant, cmd.Version)
+	packageInfo, err := GeneratePackageInfo(cmd.GetVariant(), cmd.Version)
 
 	if err != nil {
 		return err
 	}
+
+	cmd.Variant = &packageInfo.Variant
 
 	if g := cmd.GeyserPlugin; g != nil {
 		if g.YellowstoneGRPC != nil {
@@ -153,6 +155,7 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 	b.Set("VALIDATOR_VARIANT", string(cmd.packageInfo.Variant))
 	b.Set("VALIDATOR_PROCESS", cmd.packageInfo.Variant.ProcessName())
 	b.Set("VALIDATOR_PACKAGE", cmd.packageInfo.Variant.PackageName())
+	b.Set("VALIDATOR_SERVICE", cmd.packageInfo.Variant.ServiceName())
 	b.Merge(cmd.RunnerCommand.Env())
 
 	b.Set("RPC_BIND_ADDRESS", cmd.Flags.RpcBindAddress)
@@ -240,5 +243,13 @@ type Agave struct {
 func (agave *Agave) Install() runner.Command {
 	return &InstallCommand{
 		Agave: *agave,
+	}
+}
+
+func (agave *Agave) GetVariant() Variant {
+	if agave.Variant == nil {
+		return VariantAgave
+	} else {
+		return *agave.Variant
 	}
 }

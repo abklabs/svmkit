@@ -18,16 +18,8 @@ func (p PackageInfo) Check() error {
 	return nil
 }
 
-func GeneratePackageInfo(variant *Variant, version *string) (*PackageInfo, error) {
-	info := &PackageInfo{}
-
-	if variant == nil {
-		info.Variant = VariantAgave
-	} else {
-		info.Variant = *variant
-	}
-
-	info.Version = version
+func GeneratePackageInfo(variant Variant, version *string) (*PackageInfo, error) {
+	info := &PackageInfo{Version: version, Variant: variant}
 
 	if err := info.Check(); err != nil {
 		return nil, err
