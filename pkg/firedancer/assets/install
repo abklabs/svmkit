@@ -5,6 +5,8 @@ VALIDATOR_USER=sol
 VALIDATOR_GROUP=sol
 VALIDATOR_HOME=/home/$VALIDATOR_USER
 
+VALIDATOR_SERVICE=${VALIDATOR_SERVICE}.service
+
 step::00::wait-for-a-stable-environment() {
     cloud-init::wait-for-stable-environment
 }
@@ -42,8 +44,8 @@ step::80::setup-validator() {
 
     svmkit::sudo systemctl enable svmkit-fd-setup.service
     svmkit::sudo systemctl start svmkit-fd-setup.service
-    svmkit::sudo systemctl enable svmkit-fd-validator.service
-    svmkit::sudo systemctl start svmkit-fd-validator.service
+    svmkit::sudo systemctl enable "${VALIDATOR_SERVICE}"
+    svmkit::sudo systemctl start "${VALIDATOR_SERVICE}"
 }
 
 # vim:set ft=sh:

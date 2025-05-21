@@ -1,6 +1,8 @@
 package firedancer
 
 import (
+	"fmt"
+
 	"github.com/abklabs/svmkit/pkg/runner"
 	"github.com/abklabs/svmkit/pkg/runner/deb"
 	"github.com/abklabs/svmkit/pkg/solana"
@@ -20,6 +22,7 @@ type Firedancer struct {
 
 	Environment *solana.Environment `pulumi:"environment,optional"`
 	Version     *string             `pulumi:"version,optional"`
+	Variant     *Variant            `pulumi:"variant,optional"`
 
 	KeyPairs KeyPairs `pulumi:"keyPairs"`
 	Config   Config   `pulumi:"config"`
@@ -37,6 +40,14 @@ func (fd *Firedancer) Uninstall() runner.Command {
 	}
 }
 
+func (fd *Firedancer) GetVariant() Variant {
+	if fd.Variant == nil {
+		return VariantFrankendancer
+	} else {
+		return *fd.Variant
+	}
+}
+
 type InstallCommand struct {
 	Firedancer
 }
@@ -46,6 +57,14 @@ func (c *InstallCommand) Check() error {
 
 	pkgGrp := deb.Package{}.MakePackageGroup("svmkit-solana-cli")
 	pkgGrp.Add(deb.Package{Name: "svmkit-frankendancer", Version: c.Version})
+
+	variant := c.GetVariant()
+
+	if err := variant.Check(); err != nil {
+		return err
+	}
+
+	c.Variant = &variant
 
 	if err := c.UpdatePackageGroup(pkgGrp); err != nil {
 		return err
@@ -71,7 +90,8 @@ func (c *InstallCommand) Env() *runner.EnvBuilder {
 	}
 
 	e.Merge(c.RunnerCommand.Env())
-	e.Set("VALIDATOR_PACKAGE", "svmkit-frankendancer")
+	e.Set("VALIDATOR_PACKAGE", c.Variant.PackageName())
+	e.Set("VALIDATOR_SERVICE", c.Variant.ServiceName())
 
 	return e
 }
@@ -102,7 +122,7 @@ func (c *InstallCommand) AddToPayload(p *runner.Payload) error {
 			return err
 		}
 
-		p.AddReader("svmkit-fd-validator.service", r)
+		p.AddReader(fmt.Sprintf("%s.service", c.Variant.ServiceName()), r)
 	}
 
 	{
@@ -136,6 +156,14 @@ type UninstallCommand struct {
 func (u *UninstallCommand) Check() error {
 	u.SetConfigDefaults()
 
+	variant := u.GetVariant()
+
+	if err := variant.Check(); err != nil {
+		return err
+	}
+
+	u.Variant = &variant
+
 	pkgGrp := deb.Package{}.MakePackageGroup()
 
 	if err := u.UpdatePackageGroup(pkgGrp); err != nil {
@@ -146,7 +174,13 @@ func (u *UninstallCommand) Check() error {
 }
 
 func (u *UninstallCommand) Env() *runner.EnvBuilder {
-	return u.RunnerCommand.Env()
+	e := runner.NewEnvBuilder()
+
+	e.Merge(u.RunnerCommand.Env())
+	e.Set("VALIDATOR_PACKAGE", u.Variant.PackageName())
+	e.Set("VALIDATOR_SERVICE", u.Variant.ServiceName())
+
+	return e
 }
 
 func (u *UninstallCommand) AddToPayload(p *runner.Payload) error {
