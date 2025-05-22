@@ -60,6 +60,9 @@ func (cmd *CreateCommand) AddToPayload(p *runner.Payload) error {
 			URIs:       []string{"https://apt.abklabs.com/svmkit"},
 			Suites:     []string{"dev "},
 			Components: []string{"main"},
+			SignedBy: &apt.SignedBy{
+				PublicKey: &ABKLabsArchiveDevPubKey,
+			},
 		})
 	}
 

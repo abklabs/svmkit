@@ -14,7 +14,6 @@ step::05::setup-abklabs-apt() {
     svmkit::sudo rm -f /etc/apt/sources.list.d/svmkit.list
     # Put our new deb822 config in its place.
     svmkit::sudo cp svmkit.sources /etc/apt/sources.list.d/.
-    curl -s https://apt.abklabs.com/keys/abklabs-archive-dev.asc | svmkit::sudo apt-key add -
     svmkit::flock::end
 
     # Bring in the new packages from our source list
