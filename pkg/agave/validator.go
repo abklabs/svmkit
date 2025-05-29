@@ -246,6 +246,14 @@ type UninstallCommand struct {
 // AddToPayload implements runner.Command.
 // Subtle: this method shadows the method (Agave).AddToPayload of UninstallCommand.Agave.
 func (u *UninstallCommand) AddToPayload(p *runner.Payload) error {
+	uninstallScript, err := assets.Open(assetsUninstallScript)
+
+	if err != nil {
+		return err
+	}
+
+	p.AddReader("steps.sh", uninstallScript)
+
 	if err := deletion.AddToPayload(p); err != nil {
 		return err
 	}

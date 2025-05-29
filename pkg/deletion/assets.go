@@ -19,7 +19,7 @@ func AddToPayload(p *runner.Payload) error {
 		return err
 	}
 
-	p.AddReader("deletion-lib.bash", file)
+	p.AddReader("deletion-lib.sh", file)
 
 	return nil
 }
