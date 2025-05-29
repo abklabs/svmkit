@@ -1,6 +1,9 @@
 # -*- mode: shell-script -*-
 # shellcheck shell=bash
 
+# shellcheck disable=SC1091
+. ./deletion-lib.sh
+
 upgradeableLoader=BPFLoaderUpgradeab1e11111111111111111111111
 genesis_args=()
 
@@ -47,10 +50,11 @@ step::005::create-sol-user() {
     create-sol-user
 }
 
-step::007::check-for-existing-ledger() {
+step::007::check-for-existing-files() {
     if [[ -d $LEDGER_PATH/rocksdb ]]; then
         log::fatal "Ledger directory '$LEDGER_PATH' already appears populated!"
     fi
+    deletion::check-create
 }
 
 step::010::install-dependencies() {
