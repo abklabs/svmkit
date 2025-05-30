@@ -15,7 +15,7 @@ type FirewallCommand struct {
 func (cmd *FirewallCommand) Env() *runner.EnvBuilder {
 	firewallEnv := runner.NewEnvBuilder()
 
-	if cmd.Params.AllowPorts != nil && len(cmd.Params.AllowPorts) > 0 {
+	if len(cmd.Params.AllowPorts) > 0 {
 		ports := strings.Join(cmd.Params.AllowPorts, ",")
 		firewallEnv.Set("ALLOW_PORTS", ports)
 	} else {
