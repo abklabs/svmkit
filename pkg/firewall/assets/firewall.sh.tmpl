@@ -1,0 +1,21 @@
+# -*- mode: shell-script -*-
+# shellcheck shell=bash
+
+step::00::wait-for-a-stable-environment() {
+    cloud-init::wait-for-stable-environment
+}
+
+step::10::install-packages() {
+    svmkit::apt::update
+    svmkit::apt::get --allow-downgrades install "${PACKAGE_LIST[@]}"
+}
+
+step::40::configure-firewall() {
+    svmkit::sudo ufw default deny incoming  # the default - deny all
+    {{- range .Params.AllowPorts }}
+    svmkit::sudo ufw allow {{ . }}
+    {{- end }}
+
+    svmkit::sudo ufw --force enable
+}
+
