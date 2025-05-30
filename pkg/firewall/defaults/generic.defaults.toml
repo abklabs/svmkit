@@ -1,0 +1,12 @@
+# generic.defaults.toml
+
+[params]
+
+# List of ports and/or services to allow through the firewall.
+# If this is empty or omitted, all ports are denied (except those allowed by default ufw rules).
+allow_ports = []
+# Or it could be something like:
+# [
+#  "ssh",           # Allow SSH
+#  "53",            # Allow DNS (TCP+UDP)
+#]
