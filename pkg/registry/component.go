@@ -12,6 +12,7 @@ import (
 	"github.com/abklabs/svmkit/pkg/solana/genesis"
 	"github.com/abklabs/svmkit/pkg/solana/watchtower"
 	"github.com/abklabs/svmkit/pkg/tuner"
+	"github.com/abklabs/svmkit/pkg/firewall"
 )
 
 type Component int
@@ -26,6 +27,7 @@ const (
 	ComponentStakeAccount
 	ComponentTransfer
 	ComponentTuner
+	ComponentFirewall
 	ComponentVoteAccount
 	ComponentWatchtower
 )
@@ -50,6 +52,8 @@ func (a Component) String() string {
 		return "transfer"
 	case ComponentTuner:
 		return "tuner"
+	case ComponentFirewall:
+		return "firewall"
 	case ComponentVoteAccount:
 		return "voteAccount"
 	case ComponentWatchtower:
@@ -182,6 +186,18 @@ var Components = []ComponentCommand{
 				ActionCreate,
 				func() runner.Command {
 					return (&tuner.Tuner{}).Create()
+				},
+			},
+		},
+	},
+	{
+		ComponentFirewall,
+		"Configure the SVMKit firewall.",
+		[]*ComponentOp{
+			{
+				ActionCreate,
+				func() runner.Command {
+					return (&firewall.Firewall{}).Create()
 				},
 			},
 		},
