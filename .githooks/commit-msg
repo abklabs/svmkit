@@ -1,0 +1,28 @@
+#!/usr/bin/env opsh
+# shellcheck shell=bash
+
+source "$SCRIPTDIR/lib.opsh"
+
+MSGFILE=$1
+shift
+LINE=0
+
+while read -r; do
+	case "$LINE" in
+	0)
+		[[ ${#REPLY} -gt 0 ]] || log::fatal "blank summary lines are not allowed"
+		[[ ${#REPLY} -le 50 ]] || log::fatal "summary line is longer than 50 characters"
+		;;
+	1)
+		[[ ${#REPLY} -eq 0 ]] || log::fatal "an empty line must exist between summary and body"
+		;;
+	*)
+		[[ ${#REPLY} -gt 0 ]] || log::fatal "blank body lines are not allowed"
+		[[ ${#REPLY} -le 72 ]] || log::fatal "body line is longer than 72 characters"
+		;;
+	esac
+	LINE=$((LINE + 1))
+done <"$MSGFILE"
+
+[[ "$LINE" -ne 0 ]] || log::fatal "commit message is empty"
+[[ "$LINE" -ne 2 ]] || log::fatal "unneeded newline after summary"
