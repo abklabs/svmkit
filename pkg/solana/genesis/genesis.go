@@ -6,6 +6,7 @@ import (
 	"io"
 	"strconv"
 
+	"github.com/abklabs/svmkit/pkg/deletion"
 	"github.com/abklabs/svmkit/pkg/runner"
 	"github.com/abklabs/svmkit/pkg/runner/deb"
 	"gopkg.in/yaml.v3"
@@ -32,11 +33,12 @@ func (cmd *CreateCommand) Env() *runner.EnvBuilder {
 
 	b.Merge(cmd.RunnerCommand.Env())
 
+	cmd.DeletionPolicy.Create(&cmd.Genesis, b)
+
 	return b
 }
 
 func (cmd *CreateCommand) Check() error {
-
 	if cmd.Flags.HashesPerTick != nil {
 		value := *cmd.Flags.HashesPerTick
 		switch value {
@@ -58,6 +60,13 @@ func (cmd *CreateCommand) Check() error {
 			return err
 		}
 	}
+
+	policy := cmd.GetDeletionPolicy()
+	if err := policy.Check(); err != nil {
+		return err
+	}
+
+	cmd.DeletionPolicy = &policy
 
 	return nil
 }
@@ -97,6 +106,10 @@ func (cmd *CreateCommand) AddToPayload(p *runner.Payload) error {
 	err = cmd.RunnerCommand.AddToPayload(p)
 
 	if err != nil {
+		return err
+	}
+
+	if err := deletion.AddToPayload(p); err != nil {
 		return err
 	}
 
@@ -145,6 +158,71 @@ func (cmd *CreateCommand) BuildPrimordialYaml(w io.Writer) (err error) {
 	return nil
 }
 
+type DeleteCommand struct {
+	Genesis
+}
+
+// AddToPayload implements runner.Command.
+// Subtle: this method shadows the method (Genesis).AddToPayload of DeleteCommand.Genesis.
+func (d *DeleteCommand) AddToPayload(p *runner.Payload) error {
+	uninstallScript, err := assets.Open(assetsUninstallScript)
+	if err != nil {
+		return err
+	}
+
+	p.AddReader("steps.sh", uninstallScript)
+
+	if err := deletion.AddToPayload(p); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Check implements runner.Command.
+func (d *DeleteCommand) Check() error {
+	d.SetConfigDefaults()
+
+	pkgGrp := deb.Package{}.MakePackageGroup()
+
+	if err := d.UpdatePackageGroup(pkgGrp); err != nil {
+		return err
+	}
+
+	policy := d.GetDeletionPolicy()
+	if err := policy.Check(); err != nil {
+		return err
+	}
+
+	d.DeletionPolicy = &policy
+
+	return nil
+}
+
+// Config implements runner.Command.
+// Subtle: this method shadows the method (Genesis).Config of DeleteCommand.Genesis.
+func (d *DeleteCommand) Config() *runner.Config {
+	return d.RunnerConfig
+}
+
+// Env implements runner.Command.
+// Subtle: this method shadows the method (Genesis).Env of DeleteCommand.Genesis.
+func (d *DeleteCommand) Env() *runner.EnvBuilder {
+	b := runner.NewEnvBuilder()
+
+	b.Merge(d.RunnerCommand.Env())
+
+	d.DeletionPolicy.Delete(&d.Genesis, b)
+
+	return b
+}
+
+func (g *Genesis) Delete() runner.Command {
+	return &DeleteCommand{
+		Genesis: *g,
+	}
+}
+
 // maps to --validator-accounts-file
 type BootstrapAccount struct {
 	IdentityPubkey  string `pulumi:"identityPubkey" yaml:"identity_account"`
@@ -172,10 +250,23 @@ type PrimordialAccount struct {
 type Genesis struct {
 	runner.RunnerCommand
 
-	Flags      GenesisFlags        `pulumi:"flags"`
-	Primordial []PrimordialAccount `pulumi:"primordial"`
-	Accounts   []BootstrapAccount  `pulumi:"accounts,optional"`
-	Version    *string             `pulumi:"version,optional"`
+	Flags          GenesisFlags        `pulumi:"flags"`
+	Primordial     []PrimordialAccount `pulumi:"primordial"`
+	Accounts       []BootstrapAccount  `pulumi:"accounts,optional"`
+	Version        *string             `pulumi:"version,optional"`
+	DeletionPolicy *deletion.Policy    `pulumi:"deletionPolicy,optional"`
+}
+
+func (g *Genesis) GetDeletionPolicy() deletion.Policy {
+	if g.DeletionPolicy == nil {
+		return deletion.PolicyKeep
+	} else {
+		return *g.DeletionPolicy
+	}
+}
+
+func (g *Genesis) ManagedFiles() []string {
+	return []string{g.Flags.LedgerPath}
 }
 
 type GenesisFlags struct {
