@@ -3,6 +3,7 @@ package firedancer
 import (
 	"fmt"
 
+	"github.com/abklabs/svmkit/pkg/deletion"
 	"github.com/abklabs/svmkit/pkg/runner"
 	"github.com/abklabs/svmkit/pkg/runner/deb"
 	"github.com/abklabs/svmkit/pkg/solana"
@@ -21,9 +22,10 @@ type KeyPairs struct {
 type Firedancer struct {
 	runner.RunnerCommand
 
-	Environment *solana.Environment `pulumi:"environment,optional"`
-	Version     *string             `pulumi:"version,optional"`
-	Variant     *Variant            `pulumi:"variant,optional"`
+	Environment    *solana.Environment `pulumi:"environment,optional"`
+	Version        *string             `pulumi:"version,optional"`
+	Variant        *Variant            `pulumi:"variant,optional"`
+	DeletionPolicy *deletion.Policy    `pulumi:"deletionPolicy,optional"`
 
 	KeyPairs KeyPairs `pulumi:"keyPairs"`
 	Config   Config   `pulumi:"config"`
@@ -49,9 +51,33 @@ func (fd *Firedancer) GetVariant() Variant {
 	}
 }
 
+func (fd *Firedancer) GetDeletionPolicy() deletion.Policy {
+	if fd.DeletionPolicy == nil {
+		return deletion.PolicyKeep
+	} else {
+		return *fd.DeletionPolicy
+	}
+}
+
 func (fd *Firedancer) Properties() validator.Properties {
 	variant := fd.GetVariant()
 	return validator.Properties{SystemdServiceName: variant.ServiceName()}
+}
+
+func (fd *Firedancer) checkManagedFiles() error {
+	if fd.Config.Ledger.Path == nil {
+		return fmt.Errorf("missing ledger.path in Firedancer config")
+	}
+
+	if fd.Config.Ledger.AccountsPath == nil {
+		return fmt.Errorf("missing ledger.accountsPath in Firedancer config")
+	}
+
+	return nil
+}
+
+func (fd *Firedancer) ManagedFiles() []string {
+	return []string{*fd.Config.Ledger.Path, *fd.Config.Ledger.AccountsPath}
 }
 
 type InstallCommand struct {
@@ -76,6 +102,19 @@ func (c *InstallCommand) Check() error {
 		return err
 	}
 
+	if c.DeletionPolicy != nil {
+		if err := c.checkManagedFiles(); err != nil {
+			return err
+		}
+	}
+
+	policy := c.GetDeletionPolicy()
+	if err := policy.Check(); err != nil {
+		return err
+	}
+
+	c.DeletionPolicy = &policy
+
 	return nil
 }
 
@@ -98,6 +137,8 @@ func (c *InstallCommand) Env() *runner.EnvBuilder {
 	e.Merge(c.RunnerCommand.Env())
 	e.Set("VALIDATOR_PACKAGE", c.Variant.PackageName())
 	e.Set("VALIDATOR_SERVICE", c.Variant.ServiceName())
+
+	c.DeletionPolicy.Create(&c.Firedancer, e)
 
 	return e
 }
@@ -148,6 +189,10 @@ func (c *InstallCommand) AddToPayload(p *runner.Payload) error {
 		return err
 	}
 
+	if err := deletion.AddToPayload(p); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -176,6 +221,19 @@ func (u *UninstallCommand) Check() error {
 		return err
 	}
 
+	if u.DeletionPolicy != nil {
+		if err := u.checkManagedFiles(); err != nil {
+			return err
+		}
+	}
+
+	policy := u.GetDeletionPolicy()
+	if err := policy.Check(); err != nil {
+		return err
+	}
+
+	u.DeletionPolicy = &policy
+
 	return nil
 }
 
@@ -185,6 +243,8 @@ func (u *UninstallCommand) Env() *runner.EnvBuilder {
 	e.Merge(u.RunnerCommand.Env())
 	e.Set("VALIDATOR_PACKAGE", u.Variant.PackageName())
 	e.Set("VALIDATOR_SERVICE", u.Variant.ServiceName())
+
+	u.DeletionPolicy.Delete(&u.Firedancer, e)
 
 	return e
 }
@@ -198,6 +258,10 @@ func (u *UninstallCommand) AddToPayload(p *runner.Payload) error {
 		}
 
 		p.AddReader("steps.sh", r)
+	}
+
+	if err := deletion.AddToPayload(p); err != nil {
+		return err
 	}
 
 	return nil
