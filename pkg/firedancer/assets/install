@@ -1,6 +1,9 @@
 # -*- mode: shell-script -*-
 # shellcheck shell=bash
 
+# shellcheck disable=SC1091
+. ./deletion-lib.sh
+
 VALIDATOR_USER=sol
 VALIDATOR_GROUP=sol
 VALIDATOR_HOME=/home/$VALIDATOR_USER
@@ -13,6 +16,10 @@ step::00::wait-for-a-stable-environment() {
 
 step::20::create-sol-user() {
     create-sol-user
+}
+
+step::25::check-existing-files() {
+    deletion::check-create
 }
 
 step::30::copy-assets() {

@@ -1,6 +1,9 @@
 # -*- mode: shell-script -*-
 # shellcheck shell=bash
 
+# shellcheck disable=SC1091
+. ./deletion-lib.sh
+
 VALIDATOR_SERVICE=${VALIDATOR_SERVICE}.service
 
 step::00::wait-for-a-stable-environment() {
@@ -12,6 +15,10 @@ step::10::stop-services() {
   svmkit::sudo systemctl disable "${VALIDATOR_SERVICE}"
   svmkit::sudo systemctl stop svmkit-fd-setup.service
   svmkit::sudo systemctl disable svmkit-fd-setup.service
+}
+
+step::80::delete-files() {
+    deletion::delete
 }
 
 # vim:set ft=sh:
