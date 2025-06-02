@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/abklabs/svmkit/pkg/agave/geyser"
+	"github.com/abklabs/svmkit/pkg/deletion"
 	"github.com/abklabs/svmkit/pkg/runner"
 	"github.com/abklabs/svmkit/pkg/runner/deb"
 	"github.com/abklabs/svmkit/pkg/solana"
@@ -108,6 +109,13 @@ func (cmd *InstallCommand) Check() error {
 
 	cmd.packageInfo = packageInfo
 
+	policy := cmd.GetDeletionPolicy()
+	if err := policy.Check(); err != nil {
+		return err
+	}
+
+	cmd.DeletionPolicy = &policy
+
 	return nil
 }
 
@@ -193,6 +201,8 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 		}
 	}
 
+	cmd.DeletionPolicy.Create(&cmd.Agave, b)
+
 	return b
 }
 
@@ -222,7 +232,71 @@ func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
 		p.AddString("geyser-config.json", confString)
 	}
 
+	if err := deletion.AddToPayload(p); err != nil {
+		return err
+	}
+
 	return nil
+}
+
+type UninstallCommand struct {
+	Agave
+}
+
+// AddToPayload implements runner.Command.
+// Subtle: this method shadows the method (Agave).AddToPayload of UninstallCommand.Agave.
+func (u *UninstallCommand) AddToPayload(p *runner.Payload) error {
+	uninstallScript, err := assets.Open(assetsUninstallScript)
+
+	if err != nil {
+		return err
+	}
+
+	p.AddReader("steps.sh", uninstallScript)
+
+	if err := deletion.AddToPayload(p); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Check implements runner.Command.
+func (u *UninstallCommand) Check() error {
+	u.SetConfigDefaults()
+
+	pkgGrp := deb.Package{}.MakePackageGroup()
+
+	if err := u.UpdatePackageGroup(pkgGrp); err != nil {
+		return err
+	}
+
+	policy := u.GetDeletionPolicy()
+	if err := policy.Check(); err != nil {
+		return err
+	}
+
+	u.DeletionPolicy = &policy
+
+	return nil
+}
+
+// Config implements runner.Command.
+// Subtle: this method shadows the method (Agave).Config of UninstallCommand.Agave.
+func (u *UninstallCommand) Config() *runner.Config {
+	return u.RunnerConfig
+}
+
+// Env implements runner.Command.
+// Subtle: this method shadows the method (Agave).Env of UninstallCommand.Agave.
+func (u *UninstallCommand) Env() *runner.EnvBuilder {
+	b := runner.NewEnvBuilder()
+
+	b.Merge(u.RunnerCommand.Env())
+
+	u.DeletionPolicy.Delete(&u.Agave, b)
+
+	return b
 }
 
 type Agave struct {
@@ -239,6 +313,7 @@ type Agave struct {
 	StartupPolicy  *StartupPolicy        `pulumi:"startupPolicy,optional"`
 	ShutdownPolicy *ShutdownPolicy       `pulumi:"shutdownPolicy,optional"`
 	GeyserPlugin   *geyser.GeyserPlugin  `pulumi:"geyserPlugin,optional"`
+	DeletionPolicy *deletion.Policy      `pulumi:"deletionPolicy,optional"`
 }
 
 func (agave *Agave) Install() runner.Command {
@@ -255,8 +330,26 @@ func (agave *Agave) GetVariant() Variant {
 	}
 }
 
+func (agave *Agave) GetDeletionPolicy() deletion.Policy {
+	if agave.DeletionPolicy == nil {
+		return deletion.PolicyKeep
+	} else {
+		return *agave.DeletionPolicy
+	}
+}
+
 func (agave *Agave) Properties() validator.Properties {
 	variant := agave.GetVariant()
 
 	return validator.Properties{SystemdServiceName: variant.ServiceName()}
+}
+
+func (agave *Agave) Uninstall() runner.Command {
+	return &UninstallCommand{
+		Agave: *agave,
+	}
+}
+
+func (agave *Agave) ManagedFiles() []string {
+	return []string{accountsPath, ledgerPath}
 }
