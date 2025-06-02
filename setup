@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 
 setup::mac() {
-  brew install golangci-lint
+  brew install golangci-lint shfmt shellcheck
 }
 
 setup::linux() {
   sudo snap install --classic golangci-lint
+  sudo apt-get update
+  sudo DEBIAN_FRONTEND=noninteractive apt-get install -qy shfmt shellcheck
 }
 
 if [ "$(uname)" = "Darwin" ]; then
