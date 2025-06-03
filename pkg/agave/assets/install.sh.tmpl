@@ -35,24 +35,6 @@ step::35::copy-plugin-config() {
     fi
 }
 
-step::40::configure-firewall() {
-    svmkit::sudo ufw allow 53
-    svmkit::sudo ufw allow ssh
-    svmkit::sudo ufw allow 8000:8020/tcp
-    svmkit::sudo ufw allow 8000:8020/udp
-    # TODO: Only open for RPC nodes
-    svmkit::sudo ufw allow 8899/tcp
-    svmkit::sudo ufw allow 8899/udp
-    svmkit::sudo ufw allow 8900/tcp
-
-    if [[ -v YELLOWSTONE_GRPC_PORT ]] ; then
-      svmkit::sudo ufw allow "${YELLOWSTONE_GRPC_PORT}"/tcp
-      svmkit::sudo ufw allow "${YELLOWSTONE_GRPC_PORT}"/udp
-    fi
-
-    svmkit::sudo ufw --force enable
-}
-
 step::60::setup-solana-cli() {
     [[ -v SOLANA_CLI_CONFIG_FLAGS ]] || return 0
 
