@@ -56,13 +56,13 @@ done
 
 build-ref svmkit-solana solana-labs/master solana-validator
 
-for tag in v2.1.13 v2.1.14 v2.1.15 v2.1.16 v2.1.21 v2.2.0 v2.2.1 v2.2.14; do
+for tag in v2.1.16 v2.1.21 v2.2.0 v2.2.1 v2.2.14 v2.2.15; do
     build-ref svmkit-agave "$(git::tag::lookup::remote anza-xyz $tag)" agave-validator anza-build-extra
 done
 
 build-ref svmkit-powerledger PowerLedger/upgrade_to_v1.16.28 solana-validator
 
-for tag in v2.0.18-jito v2.0.19-jito v2.0.21-jito v2.0.22-jito v2.1.7-jito v2.1.11-jito v2.1.13-jito v2.1.16-jito v2.1.21-jito v2.2.14-jito; do
+for tag in v2.1.16-jito v2.1.21-jito v2.2.14-jito v2.2.15-jito; do
     build-ref svmkit-jito "$(git::tag::lookup::remote jito-foundation $tag)" agave-validator
 done
 
