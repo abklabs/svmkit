@@ -241,6 +241,8 @@ func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
 
 type UninstallCommand struct {
 	Agave
+
+	packageInfo *PackageInfo
 }
 
 // AddToPayload implements runner.Command.
@@ -271,6 +273,15 @@ func (u *UninstallCommand) Check() error {
 		return err
 	}
 
+	packageInfo, err := GeneratePackageInfo(u.GetVariant(), u.Version)
+
+	if err != nil {
+		return err
+	}
+
+	u.Variant = &packageInfo.Variant
+	u.packageInfo = packageInfo
+
 	policy := u.GetDeletionPolicy()
 	if err := policy.Check(); err != nil {
 		return err
@@ -292,6 +303,7 @@ func (u *UninstallCommand) Config() *runner.Config {
 func (u *UninstallCommand) Env() *runner.EnvBuilder {
 	b := runner.NewEnvBuilder()
 
+	b.Set("VALIDATOR_SERVICE", u.packageInfo.Variant.ServiceName())
 	b.Merge(u.RunnerCommand.Env())
 
 	u.DeletionPolicy.Delete(&u.Agave, b)
