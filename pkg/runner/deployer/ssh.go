@@ -9,7 +9,6 @@ import (
 	"text/template"
 
 	"github.com/abklabs/svmkit/pkg/runner/payload"
-
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 )
@@ -30,7 +29,7 @@ type SSH struct {
 	KeepPayload bool
 }
 
-func (p *SSH) Deploy() (err error) {
+func (p *SSH) Deploy(statusCallback ProgressStatusCallback) (err error) {
 	sftpClient, err := sftp.NewClient(p.Client)
 	if err != nil {
 		return fmt.Errorf("failed to create SFTP client: %w", err)
@@ -63,11 +62,19 @@ func (p *SSH) Deploy() (err error) {
 			return fmt.Errorf("couldn't change ownership of file %s: %w", path, err)
 		}
 
-		if _, err := io.Copy(remoteFile, f.Reader); err != nil {
+		tracker, err := NewProgressStatus(
+			f.Path,
+			f.Reader,
+			statusCallback)
+
+		if err != nil {
+			return fmt.Errorf("couldn't create progress status for %s: %w", path, err)
+		}
+
+		if _, err := io.Copy(remoteFile, tracker); err != nil {
 			return fmt.Errorf("failed to write to remote file %s: %w", path, err)
 		}
 	}
-
 	return nil
 }
 

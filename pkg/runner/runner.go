@@ -41,7 +41,7 @@ func PrepareCommandPayload(p *Payload, command Command) error {
 	return nil
 }
 
-func (r *Runner) Run(ctx context.Context, handler deployer.DeployerHandler) error {
+func (r *Runner) Run(ctx context.Context, handler deployer.DeployerHandler, statusCallback deployer.ProgressStatusCallback) error {
 	p := &Payload{
 		RootPath:    fmt.Sprintf("/tmp/runner-%d-%d", time.Now().Unix(), rand.Int()),
 		DefaultMode: 0640,
@@ -60,8 +60,7 @@ func (r *Runner) Run(ctx context.Context, handler deployer.DeployerHandler) erro
 	}
 
 	d := deployer.SSH{Payload: p, Client: r.client, KeepPayload: keepPayload}
-
-	if err := d.Deploy(); err != nil {
+	if err := d.Deploy(statusCallback); err != nil {
 		return err
 	}
 
