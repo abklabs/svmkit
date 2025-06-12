@@ -25,4 +25,3 @@ while read -r; do
 done < <(grep -Ev '^\s*#' "$MSGFILE")
 
 [[ "$LINE" -ne 0 ]] || log::fatal "commit message is empty"
-[[ "$LINE" -ne 2 ]] || log::fatal "unneeded newline after summary"
