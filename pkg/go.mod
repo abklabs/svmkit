@@ -1,8 +1,8 @@
 module github.com/abklabs/svmkit/pkg
 
-go 1.22
+go 1.23.0
 
-toolchain go1.22.7
+toolchain go1.24.4
 
 require (
 	dario.cat/mergo v1.0.1
