@@ -1,6 +1,6 @@
 module github.com/abklabs/svmkit/cmd
 
-go 1.22.8
+go 1.23.0
 
 require (
 	github.com/BurntSushi/toml v1.2.1
