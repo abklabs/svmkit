@@ -8,6 +8,8 @@ Type=exec
 User=root
 Group=root
 ExecStart=/opt/frankendancer/bin/fdctl run --config /home/sol/config.toml
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=default.target

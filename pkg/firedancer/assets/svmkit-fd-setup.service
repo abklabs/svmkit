@@ -10,6 +10,8 @@ Group=root
 ExecStart=/opt/frankendancer/bin/fdctl configure init all --config /home/sol/config.toml 
 RemainAfterExit=true
 Type=oneshot
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=default.target
