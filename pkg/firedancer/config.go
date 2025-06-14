@@ -7,7 +7,7 @@ import (
 )
 
 type ConfigLog struct {
-	Path         *string `toml:"path,omitempty" pulumi:"path,optional"`
+	Path         *string `toml:"path" pulumi:"path,optional"`
 	Colorize     *string `toml:"colorize,omitempty" pulumi:"colorize,optional"`
 	LevelLogfile *string `toml:"level_logfile,omitempty" pulumi:"levelLogfile,optional"`
 	LevelStderr  *string `toml:"level_stderr,omitempty" pulumi:"levelStderr,optional"`
