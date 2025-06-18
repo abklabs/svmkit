@@ -30,7 +30,7 @@ find-ref() {
 
 default-build() {
     svmkit build agave "$@"
-    mv target/debian/*.deb "../build/$ref/."
+    mv target/debian/*.deb "../build/."
 }
 
 anza-build-extra() {
@@ -53,7 +53,7 @@ build-ref() {
     fi
 
     log::info "building $ref -> $target..."
-    mkdir -p "../build/$ref"
+    mkdir -p "../build"
     git clean -f -d -x
     git checkout -f "$ref"
     git submodule update --init
