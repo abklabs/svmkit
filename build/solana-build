@@ -12,6 +12,22 @@ fetch-remote() {
     git fetch "$remote"
 }
 
+find-ref() {
+    local remote=$1
+    shift
+    local ref=$1
+    shift
+
+    local t
+
+    # Try to find a remote tag, otherwise assume it's a branch
+    if t=$(git::tag::lookup::remote "$remote" "$ref"); then
+        ref=$t
+    fi
+
+    echo "$ref"
+}
+
 default-build() {
     svmkit build agave "$@"
     mv target/debian/*.deb "../build/$ref/."
@@ -50,26 +66,76 @@ build-with-other-clang() {
     default-build --use-alternative-clang "$@"
 }
 
-for remote in solana-labs anza-xyz PowerLedger jito-foundation pyth-network mantis xen tachyon; do
-    fetch-remote $remote
-done
+usage() {
+    local status=$1
+    shift
 
-build-ref svmkit-solana solana-labs/master solana-validator
+    log::info "$0 remote tag"
+    exit "$status"
+}
 
-for tag in v2.1.16 v2.1.21 v2.2.0 v2.2.1 v2.2.14 v2.2.15; do
-    build-ref svmkit-agave "$(git::tag::lookup::remote anza-xyz $tag)" agave-validator anza-build-extra
-done
+if [[ $# -lt 2 ]]; then
+    usage 1
+fi
 
-build-ref svmkit-powerledger PowerLedger/upgrade_to_v1.16.28 solana-validator
+remote=$1
+shift
 
-for tag in v2.1.16-jito v2.1.21-jito v2.2.14-jito v2.2.15-jito; do
-    build-ref svmkit-jito "$(git::tag::lookup::remote jito-foundation $tag)" agave-validator
-done
+tag=$1
+shift
 
-build-ref svmkit-pyth pyth-network/pyth-v1.14.17 solana-validator build-with-other-clang
+cmd=(build-ref)
 
-build-ref svmkit-mantis mantis/mantis/diet-validator-rpc solana-validator
+case "$remote" in
+solana-labs)
+    cmd+=(svmkit-solana)
+    ;;
+anza-xyz)
+    cmd+=(svmkit-agave)
+    ;;
+PowerLedger)
+    cmd+=(svmkit-powerledger)
+    ;;
+jito-foundation)
+    cmd+=(svmkit-jito)
+    ;;
+pyth-network)
+    cmd+=(svmkit-pyth)
+    ;;
+mantis)
+    cmd+=(svmkit-mantis)
+    ;;
+xen)
+    cmd+=(svmkit-xen)
+    ;;
+tachyon)
+    cmd+=(svmkit-tachyon)
+    ;;
+*)
+    log::fatal "unknown remote '$remote'"
+    ;;
+esac
 
-build-ref svmkit-xen xen/dyn_fees_v1 solana-validator
+fetch-remote "$remote"
 
-build-ref svmkit-tachyon tachyon/dyn_fees_v2 tachyon-validator
+cmd+=("$(find-ref "$remote" "$tag")")
+
+case "$remote" in
+anza-xyz)
+    cmd+=(agave-validator anza-build-extra)
+    ;;
+jito-foundation)
+    cmd+=(agave-validator)
+    ;;
+pyth-network)
+    cmd+=(solana-validator build-with-other-clang)
+    ;;
+tachyon)
+    cmd+=(tachyon-validator)
+    ;;
+*)
+    cmd+=(solana-validator)
+    ;;
+esac
+
+"${cmd[@]}"
