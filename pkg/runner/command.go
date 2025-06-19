@@ -6,6 +6,7 @@ import (
 
 type RunnerCommand struct {
 	RunnerConfig *Config `pulumi:"runnerConfig,optional"`
+	Triggers     *[]any  `pulumi:"triggers,optional" provider:"replaceOnChanges"`
 
 	packageGroup *deb.PackageGroup
 }
