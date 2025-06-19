@@ -15,7 +15,7 @@ const (
 
 func AddToPayload(p *runner.Payload) error {
 	file, err := assets.Open(assetsLib)
-	if  err != nil {
+	if err != nil {
 		return err
 	}
 
