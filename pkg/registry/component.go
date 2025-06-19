@@ -5,6 +5,7 @@ import (
 
 	"github.com/abklabs/svmkit/pkg/agave"
 	"github.com/abklabs/svmkit/pkg/firedancer"
+	"github.com/abklabs/svmkit/pkg/firewall"
 	"github.com/abklabs/svmkit/pkg/machine"
 	"github.com/abklabs/svmkit/pkg/solana"
 	"github.com/abklabs/svmkit/pkg/solana/explorer"
@@ -12,7 +13,6 @@ import (
 	"github.com/abklabs/svmkit/pkg/solana/genesis"
 	"github.com/abklabs/svmkit/pkg/solana/watchtower"
 	"github.com/abklabs/svmkit/pkg/tuner"
-	"github.com/abklabs/svmkit/pkg/firewall"
 )
 
 type Component int
