@@ -183,7 +183,8 @@ func (d *DeleteCommand) AddToPayload(p *runner.Payload) error {
 func (d *DeleteCommand) Check() error {
 	d.SetConfigDefaults()
 
-	pkgGrp := deb.Package{}.MakePackageGroup()
+	pkgGrp := deb.Package{}.MakePackageGroup("bzip2")
+	pkgGrp.Add(deb.Package{Version: d.Version}.MakePackages("svmkit-solana-genesis", "svmkit-solana-cli", "svmkit-agave-ledger-tool")...)
 
 	if err := d.UpdatePackageGroup(pkgGrp); err != nil {
 		return err
