@@ -267,12 +267,6 @@ func (u *UninstallCommand) AddToPayload(p *runner.Payload) error {
 func (u *UninstallCommand) Check() error {
 	u.SetConfigDefaults()
 
-	pkgGrp := deb.Package{}.MakePackageGroup()
-
-	if err := u.UpdatePackageGroup(pkgGrp); err != nil {
-		return err
-	}
-
 	packageInfo, err := GeneratePackageInfo(u.GetVariant(), u.Version)
 
 	if err != nil {
@@ -280,6 +274,11 @@ func (u *UninstallCommand) Check() error {
 	}
 
 	u.Variant = &packageInfo.Variant
+
+	if err := u.UpdatePackageGroup(packageInfo.PackageGroup); err != nil {
+		return err
+	}
+
 	u.packageInfo = packageInfo
 
 	policy := u.GetDeletionPolicy()
