@@ -16,13 +16,6 @@ step::004::create-sol-user() {
     create-sol-user
 }
 
-step::005::configure-firewall() {
-    svmkit::sudo ufw allow "$EXPLORER_PORT/tcp"
-    svmkit::sudo ufw allow 22/tcp
-    svmkit::sudo ufw --force enable
-    svmkit::sudo ufw reload
-}
-
 step::006::setup-explorer() {
     svmkit::sudo chown -R sol:sol /opt/svmkit-solana-explorer
 }

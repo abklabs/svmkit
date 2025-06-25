@@ -49,7 +49,7 @@ func (cmd *ExplorerCommand) Env() *runner.EnvBuilder {
 func (cmd *ExplorerCommand) Check() error {
 	cmd.SetConfigDefaults()
 
-	pkgGrp := deb.Package{}.MakePackageGroup("ufw", "nodejs", "npm")
+	pkgGrp := deb.Package{}.MakePackageGroup("nodejs", "npm")
 	pkgGrp.Add(deb.Package{Name: "svmkit-solana-explorer", Version: cmd.Version})
 
 	if err := cmd.UpdatePackageGroup(pkgGrp); err != nil {
