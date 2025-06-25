@@ -215,7 +215,8 @@ func (u *UninstallCommand) Check() error {
 
 	u.Variant = &variant
 
-	pkgGrp := deb.Package{}.MakePackageGroup()
+	pkgGrp := deb.Package{}.MakePackageGroup("svmkit-solana-cli")
+	pkgGrp.Add(deb.Package{Name: "svmkit-frankendancer", Version: u.Version})
 
 	if err := u.UpdatePackageGroup(pkgGrp); err != nil {
 		return err
