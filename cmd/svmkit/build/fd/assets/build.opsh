@@ -50,7 +50,7 @@ step::60::build-fd() {
     (
         cd "$resultdir"
         rm -rf opt/frankendancer
-        mkdir -p opt/frankendancer
+        mkdir -p include lib obj unit-test opt/frankendancer
         mv bin include lib obj unit-test opt/frankendancer
         tar cvf svmkit-frankendancer.tar.gz opt/frankendancer
         fakeroot alien --verbose --target=amd64 --version="${tag#v}" --description="SVMKit build of Jump's Frankendancer" svmkit-frankendancer.tar.gz
