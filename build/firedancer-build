@@ -14,5 +14,6 @@ git fetch origin
 git checkout "$TAG"
 make clean
 git clean -f -d -x
+rm -rf opt
 svmkit build fd
 mv *.deb ../build/.
