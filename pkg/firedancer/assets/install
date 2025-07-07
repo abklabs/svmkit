@@ -45,8 +45,8 @@ step::75::setup-solana-cli() {
 }
 
 step::80::setup-validator() {
-    if systemctl list-unit-files svmkit-fd.service >/dev/null; then
-        svmkit::sudo systemctl stop svmkit-fd.service || true
+    if systemctl list-unit-files "${VALIDATOR_SERVICE}" >/dev/null; then
+        svmkit::sudo systemctl stop "${VALIDATOR_SERVICE}" || true
     fi
 
     svmkit::sudo systemctl enable svmkit-fd-setup.service
