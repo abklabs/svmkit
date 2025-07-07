@@ -40,7 +40,7 @@ func (cmd *InstallCommand) Check() error {
 	cmd.SetConfigDefaults()
 
 	pkgGrp := deb.Package{}.MakePackageGroup()
-	
+
 	pkgGrp.Add(deb.Package{Name: "svmkit-solana-faucet", Version: cmd.Version})
 
 	if err := cmd.UpdatePackageGroup(pkgGrp); err != nil {
