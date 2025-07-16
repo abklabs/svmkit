@@ -10,6 +10,7 @@ setup:
 	./setup
 
 lint:
+	./bin/check-env
 	golangci-lint run $(GO_PACKAGES)
 	shfmt -d .githooks/*
 	shellcheck -P .githooks .githooks/*
@@ -22,3 +23,13 @@ check: test lint
 format:
 	for dir in $(GO_DIRS) ; do ( cd $$dir && go fmt ./... ) ; done
 	shfmt -w .githooks/*
+
+clean:
+	rm -f .env-checked	
+
+
+.env-checked: bin/check-env
+	./bin/check-env
+	touch .env-checked
+
+include .env-checked
