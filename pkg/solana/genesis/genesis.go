@@ -285,6 +285,7 @@ type GenesisFlags struct {
 	FaucetLamports                  *int                 `pulumi:"faucetLamports,optional"`
 	FeeBurnPercentage               *int                 `pulumi:"feeBurnPercentage,optional"`
 	HashesPerTick                   *string              `pulumi:"hashesPerTick,optional"` // can be "auto", "sleep", or a number
+	IgnoreChangesOnUpdate           *bool                `pulumi:"ignoreChangesOnUpdate,optional"`
 	Inflation                       *string              `pulumi:"inflation,optional"`
 	LamportsPerByteYear             *int                 `pulumi:"lamportsPerByteYear,optional"`
 	MaxGenesisArchiveUnpackedSize   *int                 `pulumi:"maxGenesisArchiveUnpackedSize,optional"`
@@ -331,6 +332,7 @@ func (f GenesisFlags) Args(accounts []BootstrapAccount) []string {
 	b.AppendIntP("faucet-lamports", f.FaucetLamports)
 	b.AppendIntP("fee-burn-percentage", f.FeeBurnPercentage)
 	b.AppendP("hashes-per-tick", f.HashesPerTick) // This can be "auto", "sleep" or a number
+	b.AppendBoolP("ignore-changes-on-update", f.IgnoreChangesOnUpdate)
 	b.AppendP("inflation", f.Inflation)
 	b.AppendIntP("lamports-per-byte-year", f.LamportsPerByteYear)
 	b.AppendIntP("max-genesis-archive-unpacked-size", f.MaxGenesisArchiveUnpackedSize)
