@@ -5,7 +5,7 @@ setup::mac() {
 }
 
 setup::linux() {
-        sudo curl -o /usr/local/bin/opsh https://github.com/alexanderguy/opsh/releases/latest/download/opsh
+        sudo curl -fsSL -o /usr/local/bin/opsh https://github.com/alexanderguy/opsh/releases/latest/download/opsh
         sudo chmod a+rx /usr/local/bin/opsh
     
 	sudo snap install --classic golangci-lint
