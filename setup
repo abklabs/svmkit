@@ -13,6 +13,12 @@ setup::linux() {
 	sudo DEBIAN_FRONTEND=noninteractive apt-get install -qy shfmt shellcheck
 }
 
+if git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+  git config core.hooksPath .githooks
+else
+  echo "Not inside a Git repository. Skipping hook path setup."
+fi
+
 if [ "$(uname)" = "Darwin" ]; then
 	setup::mac
 else
