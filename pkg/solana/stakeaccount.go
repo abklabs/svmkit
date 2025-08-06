@@ -60,7 +60,7 @@ func (v *StakeAccountCreate) AddToPayload(p *runner.Payload) error {
 		return err
 	}
 
-	p.AddReader("steps.sh", stakeAccountScript)
+	p.AddReader(runner.ScriptNameSteps, stakeAccountScript)
 
 	p.AddString("stake_account.json", v.StakeAccountKeyPairs.StakeAccount)
 	p.AddString("vote_account.json", v.StakeAccountKeyPairs.VoteAccount)

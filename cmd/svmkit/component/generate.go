@@ -47,7 +47,7 @@ func makeCommandGlue(runnerCommand runner.Command) func(cmd *cobra.Command, args
 		}
 
 		for i, f := range p.Files {
-			if f.Path == "steps.sh" {
+			if f.Path == runner.ScriptNameSteps {
 				newReader, err := utils.AssembleScript(GenerateCmd.Flags(), f.Reader)
 
 				if err != nil {

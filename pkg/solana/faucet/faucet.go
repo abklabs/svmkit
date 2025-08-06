@@ -57,7 +57,7 @@ func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
 		return err
 	}
 
-	p.AddReader("steps.sh", faucetScript)
+	p.AddReader(runner.ScriptNameSteps, faucetScript)
 	p.AddString("faucet-keypair.json", cmd.KeyPair)
 
 	if err := cmd.RunnerCommand.AddToPayload(p); err != nil {

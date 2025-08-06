@@ -101,7 +101,7 @@ func (cmd *CreateCommand) AddToPayload(p *runner.Payload) error {
 		return err
 	}
 
-	p.AddReader("steps.sh", genesisScript)
+	p.AddReader(runner.ScriptNameSteps, genesisScript)
 
 	err = cmd.RunnerCommand.AddToPayload(p)
 
@@ -170,7 +170,7 @@ func (d *DeleteCommand) AddToPayload(p *runner.Payload) error {
 		return err
 	}
 
-	p.AddReader("steps.sh", uninstallScript)
+	p.AddReader(runner.ScriptNameSteps, uninstallScript)
 
 	if err := deletion.AddToPayload(p); err != nil {
 		return err

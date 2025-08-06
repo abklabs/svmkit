@@ -67,7 +67,7 @@ func (v *VoteAccountCreate) AddToPayload(p *runner.Payload) error {
 		return err
 	}
 
-	p.AddReader("steps.sh", voteAccountScript)
+	p.AddReader(runner.ScriptNameSteps, voteAccountScript)
 
 	return nil
 }
@@ -94,7 +94,7 @@ func (v *VoteAccountDelete) AddToPayload(p *runner.Payload) error {
 		return err
 	}
 
-	p.AddReader("steps.sh", voteAccountScript)
+	p.AddReader(runner.ScriptNameSteps, voteAccountScript)
 
 	return nil
 }

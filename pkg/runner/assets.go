@@ -12,3 +12,5 @@ var RunScript string
 
 //go:embed assets/opsh
 var OPSH string
+
+const ScriptNameSteps = "steps.sh"
