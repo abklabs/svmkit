@@ -11,6 +11,7 @@ import (
 	"github.com/abklabs/svmkit/pkg/runner/deployer"
 
 	"github.com/abklabs/svmkit/cmd/svmkit/build/yellowstone_grpc/assets"
+	"github.com/abklabs/svmkit/cmd/svmkit/utils"
 )
 
 type Build struct {
@@ -54,7 +55,13 @@ func (cmd *Build) AddToPayload(p *runner.Payload) error {
 		return err
 	}
 
-	p.AddReader("steps.sh", script)
+	reader, err := utils.AssembleScript(YellowstoneGRPCCmd.Flags(), script)
+
+	if err != nil {
+		return err
+	}
+
+	p.AddReader("steps.sh", reader)
 
 	if err := cmd.RunnerCommand.AddToPayload(p); err != nil {
 		return err
