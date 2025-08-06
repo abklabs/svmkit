@@ -15,6 +15,7 @@ var BuildCmd = &cobra.Command{
 
 func init() {
 	utils.AddScriptFlags(BuildCmd.PersistentFlags())
+	BuildCmd.PersistentFlags().BoolP("dry-run", "n", false, "generate the build scripts but perform no actions")
 	BuildCmd.AddCommand(agave.AgaveCmd)
 	BuildCmd.AddCommand(yellowstone_grpc.YellowstoneGRPCCmd)
 	BuildCmd.AddCommand(fd.FDCmd)
