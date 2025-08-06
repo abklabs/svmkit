@@ -130,6 +130,12 @@ var AgaveCmd = &cobra.Command{
 			return err
 		}
 
+		dryRun, err := flags.GetBool("dry-run")
+
+		if err != nil {
+			return err
+		}
+
 		runnerCommand := &Build{
 			BuildDir:           cwd,
 			Maintainer:         maintainer,
@@ -174,6 +180,11 @@ var AgaveCmd = &cobra.Command{
 			LogCallback: func(s string) {
 				log.Print(s)
 			},
+		}
+
+		if dryRun {
+			log.Printf("performing a dry run; no commands executed")
+			return nil
 		}
 
 		return d.Run([]string{"./run.sh"}, handler)
