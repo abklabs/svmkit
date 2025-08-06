@@ -159,7 +159,7 @@ func (c *InstallCommand) AddToPayload(p *runner.Payload) error {
 			return err
 		}
 
-		p.AddReader("steps.sh", r)
+		p.AddReader(runner.ScriptNameSteps, r)
 	}
 
 	{
@@ -258,7 +258,7 @@ func (u *UninstallCommand) AddToPayload(p *runner.Payload) error {
 			return err
 		}
 
-		p.AddReader("steps.sh", r)
+		p.AddReader(runner.ScriptNameSteps, r)
 	}
 
 	if err := deletion.AddToPayload(p); err != nil {

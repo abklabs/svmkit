@@ -35,7 +35,7 @@ func (cmd *CreateCommand) Check() error {
 }
 
 func (cmd *CreateCommand) AddToPayload(p *runner.Payload) error {
-	if err := p.AddTemplate("steps.sh", installScriptTmpl, cmd); err != nil {
+	if err := p.AddTemplate(runner.ScriptNameSteps, installScriptTmpl, cmd); err != nil {
 		return err
 	}
 

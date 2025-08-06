@@ -66,7 +66,7 @@ func (cmd *ExplorerCommand) AddToPayload(p *runner.Payload) error {
 		return err
 	}
 
-	p.AddReader("steps.sh", explorerScript)
+	p.AddReader(runner.ScriptNameSteps, explorerScript)
 
 	if err := cmd.RunnerCommand.AddToPayload(p); err != nil {
 		return err

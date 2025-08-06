@@ -207,7 +207,7 @@ func (cmd *InstallCommand) Env() *runner.EnvBuilder {
 }
 
 func (cmd *InstallCommand) AddToPayload(p *runner.Payload) error {
-	err := p.AddTemplate("steps.sh", installScriptTmpl, cmd)
+	err := p.AddTemplate(runner.ScriptNameSteps, installScriptTmpl, cmd)
 
 	if err != nil {
 		return err
@@ -254,7 +254,7 @@ func (u *UninstallCommand) AddToPayload(p *runner.Payload) error {
 		return err
 	}
 
-	p.AddReader("steps.sh", uninstallScript)
+	p.AddReader(runner.ScriptNameSteps, uninstallScript)
 
 	if err := deletion.AddToPayload(p); err != nil {
 		return err

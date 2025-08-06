@@ -24,7 +24,7 @@ func (cmd *FirewallCommand) Check() error {
 }
 
 func (cmd *FirewallCommand) AddToPayload(p *runner.Payload) error {
-	if err := p.AddTemplate("steps.sh", firewallScriptTmpl, cmd); err != nil {
+	if err := p.AddTemplate(runner.ScriptNameSteps, firewallScriptTmpl, cmd); err != nil {
 		return err
 	}
 	if err := cmd.RunnerCommand.AddToPayload(p); err != nil {

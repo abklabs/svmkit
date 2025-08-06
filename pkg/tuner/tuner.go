@@ -40,7 +40,7 @@ func (cmd *TunerCommand) Check() error {
 }
 
 func (cmd *TunerCommand) AddToPayload(p *runner.Payload) error {
-	if err := p.AddTemplate("steps.sh", tunerScriptTmpl, cmd); err != nil {
+	if err := p.AddTemplate(runner.ScriptNameSteps, tunerScriptTmpl, cmd); err != nil {
 		return err
 	}
 

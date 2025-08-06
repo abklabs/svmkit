@@ -61,7 +61,7 @@ func (v *TransferCreate) AddToPayload(p *runner.Payload) error {
 		return err
 	}
 
-	p.AddReader("steps.sh", transferScript)
+	p.AddReader(runner.ScriptNameSteps, transferScript)
 
 	if opt := v.TransactionOptions; opt != nil {
 		cli := CLITxnOptions{*opt}
