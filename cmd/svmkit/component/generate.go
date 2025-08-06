@@ -7,6 +7,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/spf13/cobra"
 
+	"github.com/abklabs/svmkit/cmd/svmkit/utils"
 	"github.com/abklabs/svmkit/pkg/registry"
 	"github.com/abklabs/svmkit/pkg/runner"
 	"github.com/abklabs/svmkit/pkg/runner/deployer"
@@ -45,6 +46,18 @@ func makeCommandGlue(runnerCommand runner.Command) func(cmd *cobra.Command, args
 			return err
 		}
 
+		for i, f := range p.Files {
+			if f.Path == "steps.sh" {
+				newReader, err := utils.AssembleScript(GenerateCmd.Flags(), f.Reader)
+
+				if err != nil {
+					return err
+				}
+
+				p.Files[i].Reader = newReader
+			}
+		}
+
 		d := &deployer.Local{
 			Payload:     p,
 			KeepPayload: true,
@@ -57,6 +70,8 @@ func makeCommandGlue(runnerCommand runner.Command) func(cmd *cobra.Command, args
 }
 
 func init() {
+	utils.AddScriptFlags(GenerateCmd.PersistentFlags())
+
 	for _, comp := range registry.Components {
 		compCommand := &cobra.Command{
 			Use:   comp.Name.String(),
