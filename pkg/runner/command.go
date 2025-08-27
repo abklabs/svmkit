@@ -16,12 +16,7 @@ func (r *RunnerCommand) Config() *Config {
 }
 
 func (r *RunnerCommand) SetConfigDefaults() {
-	if r.RunnerConfig != nil {
-		r.RunnerConfig.SetDefaults()
-	} else {
-		r.RunnerConfig = &Config{}
-		r.RunnerConfig.SetDefaults()
-	}
+	// XXX - Reserved for future use.
 }
 
 func (r *RunnerCommand) UpdatePackageGroup(grp *deb.PackageGroup) error {

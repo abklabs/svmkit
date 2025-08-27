@@ -14,13 +14,6 @@ type Config struct {
 	KeepPayload    *bool              `pulumi:"keepPayload,optional"`
 }
 
-func (c *Config) SetDefaults() {
-	if c.AptLockTimeout == nil {
-		temp := aptLockTimeout
-		c.AptLockTimeout = &temp
-	}
-}
-
 func (c *Config) UpdatePackageGroup(grp *deb.PackageGroup) error {
 	if c.PackageConfig == nil {
 		return nil
