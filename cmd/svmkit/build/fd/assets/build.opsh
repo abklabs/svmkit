@@ -11,8 +11,8 @@ step::00::check-environment() {
 
 step::50::sync-submodules() {
 	pushd "$BUILD_DIR"
-	git submodule sync
-	git submodule update
+	git submodule sync --recursive
+	git submodule update --recursive
 	popd
 }
 
