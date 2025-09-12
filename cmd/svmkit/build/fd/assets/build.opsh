@@ -3,60 +3,60 @@
 lib::import git
 
 step::00::check-environment() {
-    (
-        cd "$BUILD_DIR"
-        git::repo::is-clean || log::fatal "cannot build in a git environment that isn't clean!"
-    )
+	(
+		cd "$BUILD_DIR"
+		git::repo::is-clean || log::fatal "cannot build in a git environment that isn't clean!"
+	)
 }
 
 step::50::sync-submodules() {
-    pushd "$BUILD_DIR"
-    git submodule sync
-    git submodule update
-    popd
+	pushd "$BUILD_DIR"
+	git submodule sync
+	git submodule update
+	popd
 }
 
 step::55::install-deps() {
-    pushd "$BUILD_DIR"
-    ./deps.sh nuke
-    if [[ -n "${FD_DEPS_FETCH_EXTRA:-}" ]]; then
-        ./deps.sh fetch "${FD_DEPS_FETCH_EXTRA}"
-    else
-        ./deps.sh fetch
-    fi
-    FD_AUTO_INSTALL_PACKAGES=1 ./deps.sh install
-    popd
+	pushd "$BUILD_DIR"
+	./deps.sh nuke
+	if [[ -n "${FD_DEPS_FETCH_EXTRA:-}" ]]; then
+		./deps.sh fetch "${FD_DEPS_FETCH_EXTRA}"
+	else
+		./deps.sh fetch
+	fi
+	FD_AUTO_INSTALL_PACKAGES=1 ./deps.sh install
+	popd
 }
 
 step::60::build-fd() {
-    pushd "$BUILD_DIR"
-    local resultdir tag
+	pushd "$BUILD_DIR"
+	local resultdir tag
 
-    tag=$(git::repo::version)
-    resultdir=build/linux/gcc/x86_64
+	tag=$(git::repo::version)
+	resultdir=build/linux/gcc/x86_64
 
-    local makeargs=(make -j MACHINE="${FD_MAKE_MACHINE}")
+	local makeargs=(make -j MACHINE="${FD_MAKE_MACHINE}")
 
-    if [[ -n "${FD_MAKE_TARGET:-}" ]]; then
-        makeargs+=("${FD_MAKE_TARGET}")
-    fi
+	if [[ -n "${FD_MAKE_TARGET:-}" ]]; then
+		makeargs+=("${FD_MAKE_TARGET}")
+	fi
 
-    if [[ -n "${FD_MAKE_CFLAGS:-}" ]]; then
-        makeargs+=(CFLAGS="${FD_MAKE_CFLAGS}")
-    fi
+	if [[ -n "${FD_MAKE_CFLAGS:-}" ]]; then
+		makeargs+=(CFLAGS="${FD_MAKE_CFLAGS}")
+	fi
 
-    "${makeargs[@]}"
+	"${makeargs[@]}"
 
-    (
-        cd "$resultdir"
-        rm -rf opt/frankendancer
-        mkdir -p include lib obj unit-test opt/frankendancer
-        mv bin include lib obj unit-test opt/frankendancer
-        tar cvf svmkit-frankendancer.tar.gz opt/frankendancer
-        fakeroot alien --verbose --target=amd64 --version="${tag#v}" --description="SVMKit build of Jump's Frankendancer" svmkit-frankendancer.tar.gz
-        rm svmkit-frankendancer.tar.gz
-    )
+	(
+		cd "$resultdir"
+		rm -rf opt/frankendancer
+		mkdir -p include lib obj unit-test opt/frankendancer
+		mv bin include lib obj unit-test opt/frankendancer
+		tar cvf svmkit-frankendancer.tar.gz opt/frankendancer
+		fakeroot alien --verbose --target=amd64 --version="${tag#v}" --description="SVMKit build of Jump's Frankendancer" svmkit-frankendancer.tar.gz
+		rm svmkit-frankendancer.tar.gz
+	)
 
-    mv "$resultdir"/*.deb .
-    popd
+	mv "$resultdir"/*.deb .
+	popd
 }
