@@ -43,15 +43,22 @@ func (p *SSH) Deploy(statusCallback ProgressStatusCallback) (err error) {
 		path := filepath.Join(p.Payload.RootPath, f.Path)
 
 		dir := filepath.Dir(path)
+		parentDir := filepath.Dir(dir)
 
 		if err := sftpClient.MkdirAll(dir); err != nil {
-			return fmt.Errorf("failed to create remote directory for %s: %w", dir, err)
+			return errors.Join(
+				fmt.Errorf("failed to create remote directory for %s: %w", dir, err),
+				p.checkFSSpace(parentDir),
+			)
 		}
 
 		remoteFile, err := sftpClient.Create(path)
 
 		if err != nil {
-			return fmt.Errorf("failed to create remote file %s: %w", path, err)
+			return errors.Join(
+				fmt.Errorf("failed to create remote file %s: %w", path, err),
+				p.checkFSSpace(parentDir),
+			)
 		}
 
 		defer func() {
@@ -72,7 +79,9 @@ func (p *SSH) Deploy(statusCallback ProgressStatusCallback) (err error) {
 		}
 
 		if _, err := io.Copy(remoteFile, tracker); err != nil {
-			return fmt.Errorf("failed to write to remote file %s: %w", path, err)
+			return errors.Join(
+				fmt.Errorf("failed to write to remote file %s: %w", path, err),
+				p.checkFSSpace(parentDir))
 		}
 	}
 	return nil
@@ -131,6 +140,19 @@ func (p *SSH) Run(cmdSegs []string, handler DeployerHandler) (err error) {
 	if err := execSession.Wait(); err != nil {
 		err = handler.AugmentError(err)
 		return fmt.Errorf("command execution failed: %w", err)
+	}
+
+	return nil
+}
+
+func (p *SSH) checkFSSpace(path string) error {
+	stats, err := GetFileSystemStats(p.Client, path)
+	if err != nil {
+		return fmt.Errorf("fsblocks check failed for %s: %w", path, err)
+	}
+
+	if stats.FreeBytes() == 0 {
+		return fmt.Errorf("no space on device %s", stats.Path)
 	}
 
 	return nil
