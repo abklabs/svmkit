@@ -102,7 +102,7 @@ func (p *SSH) Run(cmdSegs []string, handler DeployerHandler) (err error) {
 
 	defer func() {
 		if closeErr := execSession.Close(); closeErr != io.EOF {
-			err = errors.Join(closeErr)
+			err = errors.Join(err, closeErr)
 		}
 	}()
 
