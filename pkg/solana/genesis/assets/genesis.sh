@@ -68,6 +68,11 @@ step::020::fetch-all-programs() {
     fetch-program memo 3.0.0 MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr BPFLoader2111111111111111111111111111111111
     fetch-program associated-token-account 1.1.2 ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL BPFLoader2111111111111111111111111111111111
     fetch-program feature-proposal 1.0.0 Feat1YXHhH6t1juaWF74WLcfv4XoNocjXA6sPWHNgAse BPFLoader2111111111111111111111111111111111
+
+    fetch-program address-lookup-table 3.0.0 AddressLookupTab1e1111111111111111111111111 BPFLoaderUpgradeab1e11111111111111111111111
+    fetch-program config 3.0.0 Config1111111111111111111111111111111111111 BPFLoaderUpgradeab1e11111111111111111111111
+    fetch-program feature-gate 0.0.1 Feature111111111111111111111111111111111111 BPFLoaderUpgradeab1e11111111111111111111111
+    fetch-program stake 1.0.0 Stake11111111111111111111111111111111111111 BPFLoaderUpgradeab1e11111111111111111111111
 }
 
 step::030::write-primordial-accounts-file() {
