@@ -42,6 +42,43 @@ fetch-spl-program() {
     fi
 }
 
+fetch-core-program() {
+    local name=$1
+    local version=$2
+    local address=$3
+    local loader=$4
+
+    local so=core-bpf-$name-$version.so
+
+    if [[ $loader == "$upgradeableLoader" ]]; then
+        genesis_args+=(--upgradeable-program "$address" "$loader" "$so" none)
+    else
+        genesis_args+=(--bpf-program "$address" "$loader" "$so")
+    fi
+
+    if [[ -r $so ]]; then
+        return
+    fi
+
+    if [[ -r ~/.cache/solana-core-bpf/$so ]]; then
+        cp ~/.cache/solana-core-bpf/"$so" "$so"
+    else
+        echo "Downloading $name $version"
+        local so_name="solana_${name//-/_}_program.so"
+        (
+            set -x
+            curl -s -S -L --retry 5 --retry-delay 2 --retry-connrefused \
+                 -o "$so" \
+		 "https://github.com/solana-program/$name/releases/download/program%40$version/$so_name"
+        )
+
+        mkdir -p ~/.cache/solana-core-bpf
+        cp "$so" ~/.cache/solana-core-bpf/"$so"
+    fi
+}
+
+
+
 step::000::wait-for-a-stable-environment() {
     cloud-init::wait-for-stable-environment
 }
@@ -68,6 +105,13 @@ step::020::fetch-spl-programs() {
     fetch-spl-program memo 3.0.0 MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr BPFLoader2111111111111111111111111111111111
     fetch-spl-program associated-token-account 1.1.2 ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL BPFLoader2111111111111111111111111111111111
     fetch-spl-program feature-proposal 1.0.0 Feat1YXHhH6t1juaWF74WLcfv4XoNocjXA6sPWHNgAse BPFLoader2111111111111111111111111111111111
+}
+
+step::025::fetch-core-programs() {
+    fetch-core-program address-lookup-table 3.0.0 AddressLookupTab1e1111111111111111111111111 BPFLoaderUpgradeab1e11111111111111111111111
+    fetch-core-program config 3.0.0 Config1111111111111111111111111111111111111 BPFLoaderUpgradeab1e11111111111111111111111
+    fetch-core-program feature-gate 0.0.1 Feature111111111111111111111111111111111111 BPFLoaderUpgradeab1e11111111111111111111111
+    fetch-core-program stake 1.0.0 Stake11111111111111111111111111111111111111 BPFLoaderUpgradeab1e11111111111111111111111
 }
 
 step::030::write-primordial-accounts-file() {
