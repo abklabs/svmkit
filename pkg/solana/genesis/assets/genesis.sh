@@ -103,8 +103,8 @@ step::020::fetch-spl-programs() {
 step::025::fetch-core-programs() {
     fetch-core-program address-lookup-table 3.0.0 AddressLookupTab1e1111111111111111111111111 BPFLoaderUpgradeab1e11111111111111111111111
     fetch-core-program config 3.0.0 Config1111111111111111111111111111111111111 BPFLoaderUpgradeab1e11111111111111111111111
-    fetch-core-program feature-gate 0.0.1 Feature111111111111111111111111111111111111 BPFLoaderUpgradeab1e11111111111111111111111
-    fetch-core-program stake 1.0.0 Stake11111111111111111111111111111111111111 BPFLoaderUpgradeab1e11111111111111111111111
+    fetch-core-program feature-gate v0.0.1 Feature111111111111111111111111111111111111 BPFLoaderUpgradeab1e11111111111111111111111
+    fetch-core-program stake v1.0.0 Stake11111111111111111111111111111111111111 BPFLoaderUpgradeab1e11111111111111111111111
 }
 
 step::030::write-primordial-accounts-file() {
