@@ -48,6 +48,8 @@ fetch-program() {
         mkdir -p "$cachedir"
         cp "$so" "$cachedir/$so"
     fi
+
+    file "$so" | grep eBPF >/dev/null || log::fatal "$so doesn't appear to contain an eBPF program"
 }
 
 fetch-core-program() {
