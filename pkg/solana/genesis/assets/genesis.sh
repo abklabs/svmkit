@@ -7,13 +7,22 @@
 upgradeableLoader=BPFLoaderUpgradeab1e11111111111111111111111
 genesis_args=()
 
-fetch-spl-program() {
+fetch-program() {
+    local prefix=$1
+    shift
     local name=$1
-    local version=$2
-    local address=$3
-    local loader=$4
+    shift
+    local version=$1
+    shift
+    local address=$1
+    shift
+    local loader=$1
+    shift
+    local url=$1
+    shift
 
-    local so=spl_$name-$version.so
+    local so=$prefix-$name-$version.so
+    local cachedir="$HOME/.cache/solana-$prefix"
 
     if [[ $loader == "$upgradeableLoader" ]]; then
         genesis_args+=(--upgradeable-program "$address" "$loader" "$so" none)
@@ -25,59 +34,41 @@ fetch-spl-program() {
         return
     fi
 
-    if [[ -r ~/.cache/solana-spl/$so ]]; then
-        cp ~/.cache/solana-spl/"$so" "$so"
+    if [[ -r "$cachedir/$so" ]]; then
+        cp "$cachedir/$so" "$so"
     else
         echo "Downloading $name $version"
-        local so_name="spl_${name//-/_}.so"
         (
             set -x
             curl -s -S -L --retry 5 --retry-delay 2 --retry-connrefused \
-                 -o "$so" \
-		 "https://github.com/solana-program/$name/releases/download/program@v$version/$so_name"
+                -o "$so" "$url"
+
         )
 
-        mkdir -p ~/.cache/solana-spl
-        cp "$so" ~/.cache/solana-spl/"$so"
+        mkdir -p "$cachedir"
+        cp "$so" "$cachedir/$so"
     fi
 }
 
 fetch-core-program() {
-    local name=$1
-    local version=$2
-    local address=$3
-    local loader=$4
+    local prefix="core-bpf"
+    local name="$1"
+    local version="$2"
+    local so_name="solana_${name//-/_}_program.so"
+    local url="https://github.com/solana-program/$name/releases/download/program%40$version/$so_name"
 
-    local so=core-bpf-$name-$version.so
-
-    if [[ $loader == "$upgradeableLoader" ]]; then
-        genesis_args+=(--upgradeable-program "$address" "$loader" "$so" none)
-    else
-        genesis_args+=(--bpf-program "$address" "$loader" "$so")
-    fi
-
-    if [[ -r $so ]]; then
-        return
-    fi
-
-    if [[ -r ~/.cache/solana-core-bpf/$so ]]; then
-        cp ~/.cache/solana-core-bpf/"$so" "$so"
-    else
-        echo "Downloading $name $version"
-        local so_name="solana_${name//-/_}_program.so"
-        (
-            set -x
-            curl -s -S -L --retry 5 --retry-delay 2 --retry-connrefused \
-                 -o "$so" \
-		 "https://github.com/solana-program/$name/releases/download/program%40$version/$so_name"
-        )
-
-        mkdir -p ~/.cache/solana-core-bpf
-        cp "$so" ~/.cache/solana-core-bpf/"$so"
-    fi
+    fetch-program "$prefix" "${@}" "$url"
 }
 
+fetch-spl-program() {
+    local prefix="spl"
+    local name="$1"
+    local version="$2"
+    local so_name="${prefix}_${name//-/_}.so"
+    local url="https://github.com/solana-program/$name/releases/download/program@v$version/$so_name"
 
+    fetch-program "$prefix" "${@}" "$url"
+}
 
 step::000::wait-for-a-stable-environment() {
     cloud-init::wait-for-stable-environment
