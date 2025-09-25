@@ -1,5 +1,7 @@
 #!/usr/bin/env ./opsh
 
+PATH="$PWD:$PATH"
+
 source ./lib.bash
 source ./env
 source ./steps.sh
